@@ -9,4 +9,12 @@
     <artifactId>sms-app</artifactId>
     <name> sms-app</name>
     <url>http://maven.apache.org</url>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.niiish32x.sugar-sms</groupId>
+            <artifactId>common</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+    </dependencies>
 </project>

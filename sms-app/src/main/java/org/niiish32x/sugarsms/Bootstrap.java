@@ -10,7 +10,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  * @date 2024.12.08 13:21
  */
 
-@SpringBootApplication
+@SpringBootApplication(scanBasePackages = "org.niiish32x.sugarsms.*")
 public class Bootstrap {
     public static void main(String[] args) {
         SpringApplication.run(Bootstrap.class);
