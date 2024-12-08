@@ -13,7 +13,9 @@ import java.util.List;
 
 
 public interface SuposUserService {
-    public List<SuposUserDTO> getSuposUsersFromSupos();
 
-    public List<SuposUserDTO> getCompanyUsersFromSupos();
+
+    List<SuposUserDTO> getUsersFromSupos(String company);
+
+    List<SuposUserDTO> getUsersFromSupos(String companyCode, String roleCode);
 }

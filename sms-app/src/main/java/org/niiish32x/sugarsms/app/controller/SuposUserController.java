@@ -21,9 +21,8 @@ public class SuposUserController {
     SuposUserService suposUserService;
 
     @RequestMapping("/test/user")
-    public String testUser() {
+    public List<SuposUserDTO> testUser() {
         System.out.println("xxxxxxxxxxxxxx");
-        List<SuposUserDTO> suposUsersFromSupos = suposUserService.getCompanyUsersFromSupos();
-        return "hello";
+        return  suposUserService.getUsersFromSupos("default_org_company");
     }
 }
