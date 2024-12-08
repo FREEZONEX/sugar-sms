@@ -35,10 +35,10 @@ public class SuposUserServiceImpl implements SuposUserService {
     @Data
     class UserResponse implements Serializable {
         @JSONField(name = "list")
-        List<SuposUserDTO> userDTOS;
+        private List<SuposUserDTO> userDTOS;
 
         @JSONField(name = "pagination")
-        PageDTO pageDTO;
+        private PageDTO pageDTO;
     }
 
     @Override
@@ -64,7 +64,8 @@ public class SuposUserServiceImpl implements SuposUserService {
         queryMap.put("roleCode",roleCode);
         HttpResponse response = suposRequestManager.suposApiGet(USER_API_URI, headerMap, queryMap);
 
+        UserResponse userResponse = JSON.parseObject(response.body(), UserResponse.class);
 
-        return null;
+        return userResponse.getUserDTOS();
     }
 }
