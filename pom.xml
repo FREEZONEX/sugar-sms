@@ -81,7 +81,7 @@
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <version>${spring-boot.version}</version>
                 <configuration>
-                    <mainClass>org.niiish32x.sugarsms.sugarsms.SugarSmsApplication</mainClass>
+                    <mainClass>org.niiish32x.sugarsms.Bootstrap</mainClass>
                     <skip>true</skip>
                 </configuration>
                 <executions>

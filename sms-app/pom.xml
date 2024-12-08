@@ -7,6 +7,6 @@
         <version>0.0.1-SNAPSHOT</version>
     </parent>
     <artifactId>sms-app</artifactId>
-    <name>Archetype - sms-app</name>
+    <name> sms-app</name>
     <url>http://maven.apache.org</url>
 </project>
