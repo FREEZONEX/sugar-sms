@@ -1,6 +1,5 @@
 package org.niiish32x.sugarsms.app.dto;
 
-import com.alibaba.fastjson2.annotation.JSONField;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -9,21 +8,17 @@ import lombok.NoArgsConstructor;
 import java.io.Serializable;
 
 /**
- * SuposUserRole
+ * GenderDTO
  *
  * @author shenghao ni
- * @date 2024.12.08 13:29
+ * @date 2024.12.08 18:31
  */
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class SuposUserRoleDTO implements Serializable {
-    Integer total;
-    String name;
-    @JSONField(name = "showname")
-    String showName;
-    String description;
-
+public class GenderDTO implements Serializable {
+    private String code;
+    private String name;
 }

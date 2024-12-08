@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 
@@ -20,7 +21,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class SuposUserDTO {
+public class SuposUserDTO implements Serializable {
     String username;
     String userDesc;
     Integer accountType;
