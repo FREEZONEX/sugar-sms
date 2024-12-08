@@ -6,6 +6,7 @@ import com.alibaba.fastjson2.annotation.JSONField;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.niiish32x.sugarsms.app.dto.PageDTO;
+import org.niiish32x.sugarsms.app.dto.PersonCodesDTO;
 import org.niiish32x.sugarsms.app.dto.PersonDTO;
 import org.niiish32x.sugarsms.app.enums.ApiEnum;
 import org.niiish32x.sugarsms.app.service.PersonService;
@@ -51,5 +52,19 @@ public class PersonServiceImpl implements PersonService {
         PersonsResponse personsResponse = JSON.parseObject(response.body(),PersonsResponse.class);
 
         return personsResponse.getList();
+    }
+
+    @Override
+    public PersonDTO getOnePersonByPersonCodes(PersonCodesDTO personCodesDTO) {
+        Map<String, String> headerMap = new HashMap<>();
+        Map<String, String> queryMap = new HashMap<>();
+        String join = String.join(",", personCodesDTO.getPersonCodes());
+        queryMap.put("personCodes", join);
+        queryMap.put("current","1");
+        HttpResponse response = requestManager.suposApiGet(ApiEnum.PESRON_API.value, headerMap, queryMap);
+
+        PersonsResponse dto = JSON.parseObject(response.body(), PersonsResponse.class);
+
+        return dto.getList().get(0);
     }
 }

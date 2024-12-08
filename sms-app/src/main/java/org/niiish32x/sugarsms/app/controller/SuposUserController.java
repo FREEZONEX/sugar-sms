@@ -1,6 +1,7 @@
 package org.niiish32x.sugarsms.app.controller;
 
-import org.niiish32x.sugarsms.app.service.SuposUserService;
+import org.apache.commons.lang3.StringUtils;
+import org.niiish32x.sugarsms.app.service.UserService;
 import org.niiish32x.sugarsms.app.dto.SuposUserDTO;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -18,11 +19,11 @@ import java.util.List;
 @RestController
 public class SuposUserController {
     @Resource
-    SuposUserService suposUserService;
+    UserService suposUserService;
 
-    @RequestMapping("/test/user")
-    public List<SuposUserDTO> testUser() {
-        System.out.println("xxxxxxxxxxxxxx");
-        return  suposUserService.getUsersFromSupos("default_org_company");
+    @RequestMapping("/users/company")
+    public List<SuposUserDTO> getCompanyUser(String companyCode) {
+
+        return  suposUserService.getUsersFromSupos(StringUtils.isBlank(companyCode) ? "default_org_company" : companyCode);
     }
 }

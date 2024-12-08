@@ -1,10 +1,9 @@
 package org.niiish32x.sugarsms.app.controller;
 
+import org.niiish32x.sugarsms.app.dto.PersonCodesDTO;
 import org.niiish32x.sugarsms.app.dto.PersonDTO;
 import org.niiish32x.sugarsms.app.service.PersonService;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import java.util.List;
@@ -16,13 +15,17 @@ import java.util.List;
  * @date 2024.12.08 19:03
  */
 @RestController
-public class PersonController {
+public class SuposPersonController {
     @Resource
     PersonService personService;
 
     @RequestMapping("/persons/all")
-    public List<PersonDTO> getAllPeron(@RequestParam Integer currentPageSize) {
+    public List<PersonDTO> getAllPerson(@RequestParam Integer currentPageSize) {
        return  personService.getPersonsFromSuposByPage(currentPageSize);
     }
 
+    @RequestMapping("/persons/personCodes")
+    public PersonDTO getOnePersonByPersonCode(@RequestBody PersonCodesDTO personCodesDTO){
+        return personService.getOnePersonByPersonCodes(personCodesDTO);
+    }
 }
