@@ -8,9 +8,16 @@ package org.niiish32x.sugarsms.app.enums;
  */
 public enum ApiEnum {
 
-    USER_API("/open-api/auth/v2/users");
+    USER_API("/open-api/auth/v2/users"),
+
+    PESRON_API("/open-api/organization/v2/persons");
+
+
+    public final String value;
 
     ApiEnum(String value) {
-
+        this.value = value;
     }
+
+
 }
