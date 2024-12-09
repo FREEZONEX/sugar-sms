@@ -10,8 +10,10 @@ public enum ApiEnum {
 
     USER_API("/open-api/auth/v2/users"),
 
-    PESRON_API("/open-api/organization/v2/persons");
+    PESRON_GET_API("/open-api/organization/v2/persons"),
 
+
+    PESRON_POST_API("/open-api/organization/v2/persons/bulk");
 
     public final String value;
 

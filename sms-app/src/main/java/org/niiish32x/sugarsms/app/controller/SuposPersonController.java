@@ -29,4 +29,9 @@ public class SuposPersonController {
     public PersonDTO getOnePersonByPersonCode(@RequestBody PersonCodesDTO personCodesDTO){
         return personService.getOnePersonByPersonCodes(personCodesDTO);
     }
+
+    @RequestMapping("/persons/mock")
+    public Result mockPerson(){
+        return personService.mockPerson();
+    }
 }

@@ -8,7 +8,7 @@ import java.util.Random;
 import java.util.Set;
 
 /**
- * CredentialGenerator
+ * SuposUserMocker
  *
  * @author shenghao ni
  * @date 2024.12.09 14:18
@@ -20,10 +20,8 @@ public class SuposUserMocker {
     private static final String UPPERCASE_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     private static final String LOWERCASE_CHARS = "abcdefghijklmnopqrstuvwxyz";
     private static final String DIGITS = "0123456789";
-    private static final String SPECIAL_CHARS = "!@#$%^&*();'?.,";
-    private static final String ALLOWED_SYMBOLS_FOR_USERNAME = "*()-_.abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    private static final String SPECIAL_CHARS = "!@#$%*()?.";
     private static final Random RANDOM = new SecureRandom();
-    private static final Set<String> usedUsernames = new HashSet<>();
 
     /**
      * 生成符合规则的密码
@@ -49,22 +47,20 @@ public class SuposUserMocker {
     }
 
     /**
-     * 生成符合规则的用户名
+     * 生成符合规则的用户名，6位以内由大小写组成
      *
      * @return 生成的用户名字符串
      */
     public static String generateUsername() {
-        StringBuilder username;
-        do {
-            int length = RANDOM.nextInt(41) + 10; // 长度在10-50之间
-            username = new StringBuilder(length);
-            for (int i = 0; i < length; i++) {
-                username.append(ALLOWED_SYMBOLS_FOR_USERNAME.charAt(RANDOM.nextInt(ALLOWED_SYMBOLS_FOR_USERNAME.length())));
+        StringBuilder username = new StringBuilder();
+        int length = RANDOM.nextInt(6) + 1;
+        for (int i = 0; i < length; i++) {
+            if (RANDOM.nextBoolean()) {
+                username.append(UPPERCASE_CHARS.charAt(RANDOM.nextInt(UPPERCASE_CHARS.length())));
+            } else {
+                username.append(LOWERCASE_CHARS.charAt(RANDOM.nextInt(LOWERCASE_CHARS.length())));
             }
-        } while (usedUsernames.contains(username.toString()));
-
-        usedUsernames.add(username.toString());
+        }
         return username.toString();
     }
-
 }
