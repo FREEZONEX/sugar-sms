@@ -2,19 +2,19 @@ package org.niiish32x.sugarsms.common.supos.request;
 
 import cn.hutool.http.HttpRequest;
 import cn.hutool.http.HttpResponse;
-import cn.hutool.http.HttpUtil;
+import cn.hutool.http.Method;
+import cn.hutool.json.JSONArray;
+import cn.hutool.json.JSONObject;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.niiish32x.sugarsms.common.supos.aksk.SignUtils;
-import org.niiish32x.sugarsms.common.supos.config.AppConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.Resource;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -61,13 +61,16 @@ public class SuposRequestManager implements Serializable {
     }
 
     public HttpResponse suposApiPost(String uri, Map<String, String> headerMap, Map<String,String> queryMap,String body) {
-        SuposRequestManager suposRequest = httpGetBuilder(uri, headerMap, queryMap);
+        SuposRequestManager suposRequest = httpPostBuilder(uri, headerMap, queryMap,body);
+
         HttpRequest request = new HttpRequest(suposRequest.getUrl())
-                .addHeaders(headerMap)
-                .body(body)
-                .formStr(queryMap);
+                .addHeaders(suposRequest.headerMap)
+                .body(suposRequest.body)
+                .formStr(suposRequest.queryMap)
+                .setMethod(Method.POST);
 
         HttpResponse response = request.execute();
+
         return response;
     }
 
@@ -76,7 +79,7 @@ public class SuposRequestManager implements Serializable {
         SimpleDateFormat sf = new SimpleDateFormat("yyyyMMdd'T'HHmmss'Z'");
         headerMap.put("X-MC-Type", "openAPI");
         headerMap.put("X-MC-Date", sf.format(new Date()));
-        sign(uri,headerMap,queryMap);
+        signGet(uri,headerMap,queryMap);
 
         return SuposRequestManager.builder()
                 .url(baseUrl + uri)
@@ -90,7 +93,7 @@ public class SuposRequestManager implements Serializable {
         SimpleDateFormat sf = new SimpleDateFormat("yyyyMMdd'T'HHmmss'Z'");
         headerMap.put("X-MC-Type", "openAPI");
         headerMap.put("X-MC-Date", sf.format(new Date()));
-        sign(uri,headerMap,queryMap);
+        signPost(uri,headerMap,queryMap);
 
         return SuposRequestManager.builder()
                 .url(baseUrl + uri)
@@ -100,9 +103,14 @@ public class SuposRequestManager implements Serializable {
                 .build();
     }
 
-    private void sign(String uri,Map<String, String> headerMap,Map<String,String> queryMap) {
+    private void signGet(String uri, Map<String, String> headerMap, Map<String,String> queryMap) {
         SignUtils signUtil = new SignUtils("xx", "xx", ak , sk);
         signUtil.signHeaderUseAkSk(uri, "GET", headerMap, queryMap);
+    }
+
+    private void signPost(String uri, Map<String, String> headerMap, Map<String,String> queryMap) {
+        SignUtils signUtil = new SignUtils("xx", "xx", ak , sk);
+        signUtil.signHeaderUseAkSk(uri, "POST", headerMap, queryMap);
     }
 
 }

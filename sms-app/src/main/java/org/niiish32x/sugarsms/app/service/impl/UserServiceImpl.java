@@ -7,7 +7,9 @@ import com.alibaba.fastjson2.annotation.JSONField;
 import lombok.Data;
 import org.niiish32x.sugarsms.app.dto.SuposUserDTO;
 import org.niiish32x.sugarsms.app.enums.ApiEnum;
+import org.niiish32x.sugarsms.app.external.SuposUserAddRequest;
 import org.niiish32x.sugarsms.app.service.UserService;
+import org.niiish32x.sugarsms.app.tools.SuposUserMocker;
 import org.niiish32x.sugarsms.common.supos.request.PageResponse;
 import org.niiish32x.sugarsms.common.supos.request.SuposRequestManager;
 import org.niiish32x.sugarsms.common.supos.result.Result;
@@ -39,16 +41,29 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Result addSuposUser(SuposUserDTO userDTO) {
+    public Result addSuposUser(String username,String password) {
         Map<String, String> headerMap = new HashMap<>();
         Map<String, String> queryMap = new HashMap<>();
-        HttpResponse response = suposRequestManager.suposApiPost(ApiEnum.USER_API.value, headerMap, queryMap, JSON.toJSONString(userDTO));
 
-        return response.isOk() ?  Result.build(response.body(), ResultCodeEnum.SUCCESS) : Result.build(response.body(),ResultCodeEnum.FAIL);
+        SuposUserAddRequest request = new SuposUserAddRequest(username,password);
+
+        HttpResponse response = suposRequestManager.suposApiPost(ApiEnum.USER_API.value, headerMap, queryMap, JSON.toJSONString(request));
+
+        return response.isOk() ?  Result.build(response.body(), ResultCodeEnum.SUCCESS) : Result.build(JSON.toJSONString(response.body()),ResultCodeEnum.FAIL);
     }
 
     @Override
-    public List<SuposUserDTO> getUsersFromSupos(String company) {
+    public Result mockUser() {
+        for(int i = 0  ; i < 10 ; i++) {
+            String username = SuposUserMocker.generateUsername();
+            String password = SuposUserMocker.generatePassword();
+            addSuposUser(username,password);
+        }
+        return getUsersFromSupos("default_org_company");
+    }
+
+    @Override
+    public Result getUsersFromSupos(String company) {
         Map<String, String> headerMap = new HashMap<>();
         Map<String, String> queryMap = new HashMap<>();
         // default_org_company
@@ -57,7 +72,7 @@ public class UserServiceImpl implements UserService {
 
         UsersResponse usersResponse = JSON.parseObject(response.body(), UsersResponse.class);
 
-        return usersResponse.getList();
+        return response.isOk() ? Result.build(usersResponse,ResultCodeEnum.SUCCESS) : Result.build(JSON.toJSONString(response),ResultCodeEnum.FAIL);
     }
 
     @Override

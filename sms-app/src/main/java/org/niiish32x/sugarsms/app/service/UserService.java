@@ -1,6 +1,7 @@
 package org.niiish32x.sugarsms.app.service;
 
 import org.niiish32x.sugarsms.app.dto.SuposUserDTO;
+import org.niiish32x.sugarsms.app.external.SuposUserAddRequest;
 import org.niiish32x.sugarsms.common.supos.result.Result;
 
 import java.util.List;
@@ -16,9 +17,11 @@ import java.util.List;
 public interface UserService {
 
 
-    Result addSuposUser(SuposUserDTO userDTO);
+    Result addSuposUser(String username,String password);
 
-    List<SuposUserDTO> getUsersFromSupos(String company);
+    Result mockUser();
+
+    Result getUsersFromSupos(String company);
 
     List<SuposUserDTO> getUsersFromSupos(String companyCode, String roleCode);
 

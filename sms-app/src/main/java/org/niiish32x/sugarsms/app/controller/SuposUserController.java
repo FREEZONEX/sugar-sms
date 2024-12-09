@@ -4,10 +4,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.niiish32x.sugarsms.app.service.UserService;
 import org.niiish32x.sugarsms.app.dto.SuposUserDTO;
 import org.niiish32x.sugarsms.common.supos.result.Result;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import java.util.List;
@@ -25,13 +22,20 @@ public class SuposUserController {
     UserService suposUserService;
 
     @RequestMapping("/users/company")
-    public List<SuposUserDTO> getCompanyUser(String companyCode) {
-
+    public Result getCompanyUser(String companyCode) {
         return  suposUserService.getUsersFromSupos(StringUtils.isBlank(companyCode) ? "default_org_company" : companyCode);
     }
 
-    @PostMapping("/users/company")
-    public Result getCompanyUser(@RequestBody SuposUserDTO userDTO) {
-        return  suposUserService.addSuposUser(userDTO);
+    @PostMapping("/users/add")
+    public Result getCompanyUser(@RequestParam String username,@RequestParam String password) {
+        return  suposUserService.addSuposUser(username,password);
     }
+
+    @RequestMapping("/users/mock")
+    public Result mockCompanyUser() {
+
+
+        return  suposUserService.mockUser();
+    }
+
 }
