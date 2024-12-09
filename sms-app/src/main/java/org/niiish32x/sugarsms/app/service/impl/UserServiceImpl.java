@@ -10,6 +10,8 @@ import org.niiish32x.sugarsms.app.enums.ApiEnum;
 import org.niiish32x.sugarsms.app.service.UserService;
 import org.niiish32x.sugarsms.common.supos.request.PageResponse;
 import org.niiish32x.sugarsms.common.supos.request.SuposRequestManager;
+import org.niiish32x.sugarsms.common.supos.result.Result;
+import org.niiish32x.sugarsms.common.supos.result.ResultCodeEnum;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -37,6 +39,15 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public Result addSuposUser(SuposUserDTO userDTO) {
+        Map<String, String> headerMap = new HashMap<>();
+        Map<String, String> queryMap = new HashMap<>();
+        HttpResponse response = suposRequestManager.suposApiPost(ApiEnum.USER_API.value, headerMap, queryMap, JSON.toJSONString(userDTO));
+
+        return response.isOk() ?  Result.build(response.body(), ResultCodeEnum.SUCCESS) : Result.build(response.body(),ResultCodeEnum.FAIL);
+    }
+
+    @Override
     public List<SuposUserDTO> getUsersFromSupos(String company) {
         Map<String, String> headerMap = new HashMap<>();
         Map<String, String> queryMap = new HashMap<>();
@@ -61,5 +72,12 @@ public class UserServiceImpl implements UserService {
         UsersResponse usersResponse = JSON.parseObject(response.body(), UsersResponse.class);
 
         return usersResponse.getList();
+    }
+
+    @Override
+    public Result<SuposUserDTO> role(String username, String role) {
+        Map<String, String> headerMap = new HashMap<>();
+        Map<String, String> queryMap = new HashMap<>();
+        return null;
     }
 }
