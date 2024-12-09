@@ -1,6 +1,7 @@
 package org.niiish32x.sugarsms.app.controller;
 
 import org.niiish32x.sugarsms.app.service.SendMessageService;
+import org.niiish32x.sugarsms.common.supos.result.Result;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -19,7 +20,7 @@ public class SendMessageController {
     SendMessageService sendMessageService;
 
     @RequestMapping("/send/test")
-    public void test(){
-        sendMessageService.sendOne();
+    public Result test(){
+        return sendMessageService.sendMessageToSugarSmsUser();
     }
 }

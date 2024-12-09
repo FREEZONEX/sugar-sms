@@ -3,6 +3,7 @@ package org.niiish32x.sugarsms.app.controller;
 import org.niiish32x.sugarsms.app.dto.PersonCodesDTO;
 import org.niiish32x.sugarsms.app.dto.PersonDTO;
 import org.niiish32x.sugarsms.app.service.PersonService;
+import org.niiish32x.sugarsms.common.supos.result.Result;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -27,5 +28,10 @@ public class SuposPersonController {
     @RequestMapping("/persons/personCodes")
     public PersonDTO getOnePersonByPersonCode(@RequestBody PersonCodesDTO personCodesDTO){
         return personService.getOnePersonByPersonCodes(personCodesDTO);
+    }
+
+    @RequestMapping("/persons/mock")
+    public Result mockPerson(){
+        return personService.mockPerson();
     }
 }

@@ -2,6 +2,7 @@ package org.niiish32x.sugarsms.app.service;
 
 import org.niiish32x.sugarsms.app.dto.PersonCodesDTO;
 import org.niiish32x.sugarsms.app.dto.PersonDTO;
+import org.niiish32x.sugarsms.common.supos.result.Result;
 
 import java.util.List;
 
@@ -17,4 +18,9 @@ public interface PersonService {
 
 
     PersonDTO getOnePersonByPersonCodes(PersonCodesDTO personCodesDTO);
+
+    Result addPerson(String code);
+
+    Result mockPerson();
+
 }
