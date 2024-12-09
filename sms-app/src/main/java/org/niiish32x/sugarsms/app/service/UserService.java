@@ -19,6 +19,8 @@ public interface UserService {
 
     Result addSuposUser(String username,String password);
 
+    Result addSuposUser(String username,String password,List<String> roleNameList);
+
     Result mockUser();
 
     Result getUsersFromSupos(String company);

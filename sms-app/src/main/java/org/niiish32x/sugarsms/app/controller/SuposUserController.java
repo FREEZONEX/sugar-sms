@@ -34,7 +34,6 @@ public class SuposUserController {
     @RequestMapping("/users/mock")
     public Result mockCompanyUser() {
 
-
         return  suposUserService.mockUser();
     }
 

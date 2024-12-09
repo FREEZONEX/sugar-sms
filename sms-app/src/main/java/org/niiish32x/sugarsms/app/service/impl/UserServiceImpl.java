@@ -4,10 +4,14 @@ import cn.hutool.http.HttpResponse;
 
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.annotation.JSONField;
+import com.sun.org.apache.bcel.internal.generic.LUSHR;
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
+import org.niiish32x.sugarsms.app.dto.PersonDTO;
 import org.niiish32x.sugarsms.app.dto.SuposUserDTO;
 import org.niiish32x.sugarsms.app.enums.ApiEnum;
 import org.niiish32x.sugarsms.app.external.SuposUserAddRequest;
+import org.niiish32x.sugarsms.app.service.PersonService;
 import org.niiish32x.sugarsms.app.service.UserService;
 import org.niiish32x.sugarsms.app.tools.SuposUserMocker;
 import org.niiish32x.sugarsms.common.supos.request.PageResponse;
@@ -18,9 +22,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.io.Serializable;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * SuposUserServiceImpl
@@ -29,7 +31,11 @@ import java.util.Map;
  * @date 2024.12.08 13:34
  */
 @Service
+@Slf4j
 public class UserServiceImpl implements UserService {
+
+    @Resource
+    PersonService personService;
 
     @Resource
     SuposRequestManager suposRequestManager;
@@ -53,12 +59,34 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public Result addSuposUser(String username, String password, List<String> roleNameList) {
+        Map<String, String> headerMap = new HashMap<>();
+        Map<String, String> queryMap = new HashMap<>();
+
+        SuposUserAddRequest request = new SuposUserAddRequest(username,password,roleNameList);
+
+        HttpResponse response = suposRequestManager.suposApiPost(ApiEnum.USER_API.value, headerMap, queryMap, JSON.toJSONString(request));
+
+        return response.isOk() ?  Result.build(response.body(), ResultCodeEnum.SUCCESS) : Result.build(JSON.toJSONString(response.body()),ResultCodeEnum.FAIL);
+    }
+
+    @Override
     public Result mockUser() {
-        for(int i = 0  ; i < 10 ; i++) {
-            String username = SuposUserMocker.generateUsername();
+
+        List<PersonDTO> persons = personService.getPersonsFromSuposByPage(1);
+
+        List<String> roleNameList = new ArrayList<>();
+        roleNameList.add("sugarsms");
+
+        for (PersonDTO personDTO : persons) {
             String password = SuposUserMocker.generatePassword();
-            addSuposUser(username,password);
+            Result res = addSuposUser(personDTO.getName(), password, roleNameList);
+
+            if(Objects.equals(res.getCode(), ResultCodeEnum.CODE_ERROR.getCode())) {
+                return res;
+            }
         }
+
         return getUsersFromSupos("default_org_company");
     }
 
