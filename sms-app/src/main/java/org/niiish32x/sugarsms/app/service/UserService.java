@@ -25,7 +25,7 @@ public interface UserService {
 
     Result getUsersFromSupos(String company);
 
-    List<SuposUserDTO> getUsersFromSupos(String companyCode, String roleCode);
+    Result<List<SuposUserDTO>>  getUsersFromSupos(String companyCode, String roleCode);
 
     /**
      * 为指定用户 绑定角色角色

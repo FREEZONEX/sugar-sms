@@ -104,7 +104,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<SuposUserDTO> getUsersFromSupos(String companyCode, String roleCode) {
+    public Result<List<SuposUserDTO>>  getUsersFromSupos(String companyCode, String roleCode) {
         Map<String, String> headerMap = new HashMap<>();
         Map<String, String> queryMap = new HashMap<>();
 
@@ -114,7 +114,7 @@ public class UserServiceImpl implements UserService {
 
         UsersResponse usersResponse = JSON.parseObject(response.body(), UsersResponse.class);
 
-        return usersResponse.getList();
+        return Result.build(usersResponse.getList(),ResultCodeEnum.SUCCESS);
     }
 
     @Override

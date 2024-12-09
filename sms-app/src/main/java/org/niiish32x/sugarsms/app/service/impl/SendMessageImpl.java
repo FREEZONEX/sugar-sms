@@ -65,7 +65,9 @@ public class SendMessageImpl implements SendMessageService {
 
     @Override
     public Result sendMessageToSugarSmsUser() {
-        List<SuposUserDTO> sugasmsUsers = userService.getUsersFromSupos("default_org_company", "sugarsms");
+        Result<List<SuposUserDTO>> res = userService.getUsersFromSupos("default_org_company", "sugarsms");
+
+        List<SuposUserDTO> sugasmsUsers = res.getData();
 
         if(sugasmsUsers.isEmpty()) {
             return Result.build(sugasmsUsers,ResultCodeEnum.SUCCESS);
