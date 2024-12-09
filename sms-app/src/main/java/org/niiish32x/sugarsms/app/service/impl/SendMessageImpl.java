@@ -10,6 +10,8 @@ import org.niiish32x.sugarsms.app.external.SMSMessageRequest;
 import org.niiish32x.sugarsms.app.service.PersonService;
 import org.niiish32x.sugarsms.app.service.SendMessageService;
 import org.niiish32x.sugarsms.app.service.UserService;
+import org.niiish32x.sugarsms.common.supos.result.Result;
+import org.niiish32x.sugarsms.common.supos.result.ResultCodeEnum;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -62,8 +64,12 @@ public class SendMessageImpl implements SendMessageService {
     }
 
     @Override
-    public void SendMessageToSugarSmsUser() {
+    public Result sendMessageToSugarSmsUser() {
         List<SuposUserDTO> sugasmsUsers = userService.getUsersFromSupos("default_org_company", "sugarsms");
+
+        if(sugasmsUsers.isEmpty()) {
+            return Result.build(sugasmsUsers,ResultCodeEnum.SUCCESS);
+        }
 
         for (SuposUserDTO userDTO : sugasmsUsers) {
             PersonDTO person = personService.getOnePersonByPersonCodes(
@@ -74,6 +80,8 @@ public class SendMessageImpl implements SendMessageService {
 
             sendOne(person.getIdNumber(),"text");
         }
+
+        return Result.build(sugasmsUsers,ResultCodeEnum.SUCCESS);
     }
 
 

@@ -1,5 +1,7 @@
 package org.niiish32x.sugarsms.app.service;
 
+import org.niiish32x.sugarsms.common.supos.result.Result;
+
 /**
  * SendMessageService
  *
@@ -11,5 +13,5 @@ public interface SendMessageService {
 
     void sendOne(String number,String text);
 
-    void SendMessageToSugarSmsUser();
+    Result sendMessageToSugarSmsUser();
 }
