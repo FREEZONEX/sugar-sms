@@ -12,7 +12,7 @@ import java.util.List;
  */
 
 
-public interface SuposUserService {
+public interface UserService {
 
 
     List<SuposUserDTO> getUsersFromSupos(String company);
