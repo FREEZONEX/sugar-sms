@@ -12,8 +12,9 @@ public enum ApiEnum {
 
     PESRON_GET_API("/open-api/organization/v2/persons"),
 
+    PESRON_POST_API("/open-api/organization/v2/persons/bulk"),
 
-    PESRON_POST_API("/open-api/organization/v2/persons/bulk");
+    MESSAGE_POST_API("/open-api/p/notification/v2/topic/messages");
 
     public final String value;
 

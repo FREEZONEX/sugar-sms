@@ -34,4 +34,6 @@ public interface UserService {
      * @return
      */
     Result <SuposUserDTO> role(String username,String role);
+
+    Result getMessageReceived(String username);
 }

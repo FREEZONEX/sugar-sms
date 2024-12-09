@@ -7,6 +7,7 @@ import com.alibaba.fastjson2.annotation.JSONField;
 import com.sun.org.apache.bcel.internal.generic.LUSHR;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.niiish32x.sugarsms.app.dto.MessageDTO;
 import org.niiish32x.sugarsms.app.dto.PersonDTO;
 import org.niiish32x.sugarsms.app.dto.SuposUserDTO;
 import org.niiish32x.sugarsms.app.enums.ApiEnum;
@@ -22,6 +23,8 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.io.Serializable;
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 /**
@@ -122,5 +125,33 @@ public class UserServiceImpl implements UserService {
         Map<String, String> headerMap = new HashMap<>();
         Map<String, String> queryMap = new HashMap<>();
         return null;
+    }
+
+
+    @Data
+    class UserMessagesResponse extends PageResponse implements Serializable {
+        @JSONField(name = "list")
+        private List<MessageDTO> list;
+    }
+
+    @Override
+    public Result getMessageReceived(String username) {
+        Map<String, String> headerMap = new HashMap<>();
+        Map<String, String> queryMap = new HashMap<>();
+
+        queryMap.put("startTime","2021-01-26T16:02:15.666+0800");
+        queryMap.put("endTime",getTime()+"+0800");
+
+        HttpResponse response = suposRequestManager.suposApiGet("/open-api/p/notification/v2alpha1/users/" + username + "/messgae", headerMap, queryMap);
+        UserMessagesResponse userMessagesResponse = JSON.parseObject(response.body(), UserMessagesResponse.class);
+
+        return Result.build(userMessagesResponse.getList(),ResultCodeEnum.SUCCESS);
+    }
+
+    private String getTime() {
+        OffsetDateTime now = OffsetDateTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss XXX");
+        String formattedTime = now.format(formatter);
+        return formattedTime;
     }
 }
