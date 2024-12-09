@@ -48,11 +48,23 @@ public class SuposRequestManager implements Serializable {
     private String url;
     private Map<String, String> headerMap;
     private Map<String,String> queryMap;
+    private String body;
 
     public HttpResponse suposApiGet(String uri, Map<String, String> headerMap, Map<String,String> queryMap) {
         SuposRequestManager suposRequest = httpGetBuilder(uri, headerMap, queryMap);
         HttpRequest request = new HttpRequest(suposRequest.getUrl())
                 .addHeaders(headerMap)
+                .formStr(queryMap);
+
+        HttpResponse response = request.execute();
+        return response;
+    }
+
+    public HttpResponse suposApiPost(String uri, Map<String, String> headerMap, Map<String,String> queryMap,String body) {
+        SuposRequestManager suposRequest = httpGetBuilder(uri, headerMap, queryMap);
+        HttpRequest request = new HttpRequest(suposRequest.getUrl())
+                .addHeaders(headerMap)
+                .body(body)
                 .formStr(queryMap);
 
         HttpResponse response = request.execute();
@@ -70,6 +82,21 @@ public class SuposRequestManager implements Serializable {
                 .url(baseUrl + uri)
                 .headerMap(headerMap)
                 .queryMap(queryMap)
+                .build();
+    }
+
+    private  SuposRequestManager httpPostBuilder (String uri, Map<String, String> headerMap, Map<String,String> queryMap,String body) {
+        headerMap.put("Content-Type", "application/json;charset=utf-8");
+        SimpleDateFormat sf = new SimpleDateFormat("yyyyMMdd'T'HHmmss'Z'");
+        headerMap.put("X-MC-Type", "openAPI");
+        headerMap.put("X-MC-Date", sf.format(new Date()));
+        sign(uri,headerMap,queryMap);
+
+        return SuposRequestManager.builder()
+                .url(baseUrl + uri)
+                .headerMap(headerMap)
+                .queryMap(queryMap)
+                .body(body)
                 .build();
     }
 
