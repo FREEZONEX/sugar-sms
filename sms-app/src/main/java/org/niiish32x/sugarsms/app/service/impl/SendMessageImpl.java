@@ -80,7 +80,7 @@ public class SendMessageImpl implements SendMessageService {
                             .build()
             );
 
-            sendOne(person.getIdNumber(),"text");
+            sendOne(person.getPhone(),"text");
         }
 
         return Result.build(sugasmsUsers,ResultCodeEnum.SUCCESS);
