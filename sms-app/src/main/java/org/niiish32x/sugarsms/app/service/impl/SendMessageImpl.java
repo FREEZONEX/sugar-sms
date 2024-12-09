@@ -3,13 +3,17 @@ package org.niiish32x.sugarsms.app.service.impl;
 import cn.hutool.http.HttpRequest;
 import cn.hutool.http.HttpResponse;
 import cn.hutool.http.HttpUtil;
+import org.niiish32x.sugarsms.app.dto.PersonCodesDTO;
+import org.niiish32x.sugarsms.app.dto.PersonDTO;
+import org.niiish32x.sugarsms.app.dto.SuposUserDTO;
 import org.niiish32x.sugarsms.app.external.SMSMessageRequest;
+import org.niiish32x.sugarsms.app.service.PersonService;
 import org.niiish32x.sugarsms.app.service.SendMessageService;
+import org.niiish32x.sugarsms.app.service.UserService;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Queue;
+import javax.annotation.Resource;
+import java.util.*;
 
 /**
  * SendMessageImpl
@@ -20,6 +24,13 @@ import java.util.Queue;
 
 @Service
 public class SendMessageImpl implements SendMessageService {
+
+    @Resource
+    UserService userService;
+
+    @Resource
+    PersonService personService;
+
     @Override
     public void sendOne() {
         String number = "+919747934655";
@@ -34,6 +45,35 @@ public class SendMessageImpl implements SendMessageService {
         HttpResponse response = request.execute();
 
         System.out.println(response.body());
+    }
+
+    @Override
+    public void sendOne(String number, String text) {
+        SMSMessageRequest smsMessageRequest = new SMSMessageRequest();
+        smsMessageRequest.CreateSMSRequest(number,text);
+
+        Map<String, String> queryParam = buildQueryParam(smsMessageRequest);
+        HttpRequest request = HttpRequest.get("http://cloudsms.zubrixtechnologies.com/api/mt/GetBalance");
+        request.formStr(queryParam);
+
+        HttpResponse response = request.execute();
+
+        System.out.println(response.body());
+    }
+
+    @Override
+    public void SendMessageToSugarSmsUser() {
+        List<SuposUserDTO> sugasmsUsers = userService.getUsersFromSupos("default_org_company", "sugarsms");
+
+        for (SuposUserDTO userDTO : sugasmsUsers) {
+            PersonDTO person = personService.getOnePersonByPersonCodes(
+                    PersonCodesDTO.builder()
+                            .personCodes(Arrays.asList(userDTO.getPersonCode()))
+                            .build()
+            );
+
+            sendOne(person.getIdNumber(),"text");
+        }
     }
 
 
