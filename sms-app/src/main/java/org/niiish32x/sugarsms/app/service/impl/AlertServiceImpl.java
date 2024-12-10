@@ -47,7 +47,7 @@ public class AlertServiceImpl implements AlertService {
 
 
     @Override
-    public Result getAlert() {
+    public Result getAlerts() {
         Map<String, String> headerMap = new HashMap<>();
         Map<String, String> queryMap = new HashMap<>();
         HttpResponse response = requestManager.suposApiGet(ApiEnum.ALERT_API.value, headerMap, queryMap);

@@ -28,4 +28,9 @@ public class SendMessageController {
     public Result sendToSugarsmsUser(){
         return sendMessageService.sendMessageToSugarSmsUser();
     }
+
+    @RequestMapping("/send/alert/sugarsms")
+    public Result sendAlertToSugarsmsUser(){
+        return sendMessageService.sendMessageToSugarSmsUser();
+    }
 }

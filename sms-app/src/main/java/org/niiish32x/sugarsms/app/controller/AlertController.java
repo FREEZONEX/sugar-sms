@@ -1,6 +1,5 @@
 package org.niiish32x.sugarsms.app.controller;
 
-import org.niiish32x.sugarsms.app.dto.AlertInfoDTO;
 import org.niiish32x.sugarsms.app.service.AlertService;
 import org.niiish32x.sugarsms.common.supos.result.Result;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -23,6 +22,6 @@ public class AlertController {
 
     @RequestMapping("/alert")
     public Result getAlert() {
-        return alertService.getAlert();
+        return alertService.getAlerts();
     }
 }
