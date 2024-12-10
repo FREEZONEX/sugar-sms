@@ -33,4 +33,9 @@ public class SendMessageController {
     public Result sendAlertToSugarsmsUser(){
         return sendMessageService.sendMessageToSugarSmsUser();
     }
+
+    @RequestMapping("/send/sms/test")
+    public Result sendSmsTest(){
+        return sendMessageService.sendOneSmsMessage("+919747934655","xx");
+    }
 }

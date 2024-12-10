@@ -11,6 +11,9 @@ import org.niiish32x.sugarsms.common.supos.result.Result;
 public interface SendMessageService {
     void sendOne();
 
+
+    Result sendOneSmsMessage(String number, String text);
+
     void sendOne(String number,String text);
 
     Result sendMessageToSugarSmsUser();
