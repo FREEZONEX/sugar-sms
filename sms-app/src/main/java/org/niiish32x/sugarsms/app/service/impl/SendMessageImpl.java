@@ -3,15 +3,14 @@ package org.niiish32x.sugarsms.app.service.impl;
 import cn.hutool.http.HttpRequest;
 import cn.hutool.http.HttpResponse;
 import com.alibaba.fastjson2.JSON;
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
 import lombok.extern.slf4j.Slf4j;
 import org.niiish32x.sugarsms.app.cache.UserPhoneCache;
 import org.niiish32x.sugarsms.app.dto.AlertInfoDTO;
 import org.niiish32x.sugarsms.app.dto.PersonCodesDTO;
 import org.niiish32x.sugarsms.app.dto.PersonDTO;
 import org.niiish32x.sugarsms.app.dto.SuposUserDTO;
-import org.niiish32x.sugarsms.app.external.SMSMessageRequest;
+import org.niiish32x.sugarsms.app.enums.ApiEnum;
+import org.niiish32x.sugarsms.app.external.SendSMSMessageRequest;
 import org.niiish32x.sugarsms.app.external.SMSMessageResponse;
 import org.niiish32x.sugarsms.app.service.AlertService;
 import org.niiish32x.sugarsms.app.service.PersonService;
@@ -22,10 +21,8 @@ import org.niiish32x.sugarsms.common.supos.result.ResultCodeEnum;
 import org.niiish32x.sugarsms.common.supos.utils.Retrys;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 
 /**
  * SendMessageImpl
@@ -48,13 +45,13 @@ public class SendMessageImpl implements SendMessageService {
     AlertService alertService;
 
     @Override
-    public void sendOne() {
+    public void sendOneToSms() {
         String number = "+919747934655";
         String text = "xx";
-        SMSMessageRequest smsMessageRequest = new SMSMessageRequest();
-        smsMessageRequest.CreateSMSRequest(number,text);
+        SendSMSMessageRequest sendSmsMessageRequest = new SendSMSMessageRequest();
+        sendSmsMessageRequest.CreateSMSRequest(number,text);
 
-        Map<String, String> queryParam = buildQueryParam(smsMessageRequest);
+        Map<String, String> queryParam = buildTestSendQueryParam(sendSmsMessageRequest);
         HttpRequest request = HttpRequest.get("http://cloudsms.zubrixtechnologies.com/api/mt/GetBalance");
         request.formStr(queryParam);
 
@@ -65,23 +62,22 @@ public class SendMessageImpl implements SendMessageService {
 
     @Override
     public Result sendOneSmsMessage(String number, String text) {
-        SMSMessageRequest smsMessageRequest = new SMSMessageRequest();
-        smsMessageRequest.CreateSMSRequest(number,text);
+        SendSMSMessageRequest sendSmsMessageRequest = new SendSMSMessageRequest();
+        sendSmsMessageRequest.CreateSMSRequest(number,text);
 
-        Map<String, String> queryParam = buildQueryParam(smsMessageRequest);
-        HttpRequest request = HttpRequest.get("http://cloudsms.zubrixtechnologies.com/api/mt/GetBalance").formStr(queryParam);
+        Map<String, String> queryParam = buildTestSendQueryParam(sendSmsMessageRequest);
+        HttpRequest request = HttpRequest.get(ApiEnum.SENDSMS_API.value).formStr(queryParam);
         HttpResponse response = request.execute();
         SMSMessageResponse messageResponse = JSON.parseObject(response.body(), SMSMessageResponse.class);
         return messageResponse.getErrorCode() == 0 ? Result.build(messageResponse,ResultCodeEnum.SUCCESS) : Result.build(messageResponse,ResultCodeEnum.FAIL);
     }
 
     @Override
-    public void sendOne(String number, String text) {
-        SMSMessageRequest smsMessageRequest = new SMSMessageRequest();
-        smsMessageRequest.CreateSMSRequest(number,text);
+    public void sendOneToSms(String number, String text) {
+        SendSMSMessageRequest sendSMSMessageRequest = buildSendSMSMessageRequest(number, text);
 
-        Map<String, String> queryParam = buildQueryParam(smsMessageRequest);
-        HttpRequest request = HttpRequest.get("http://cloudsms.zubrixtechnologies.com/api/mt/GetBalance");
+        Map<String, String> queryParam = buildSmsSendQueryParam(sendSMSMessageRequest);
+        HttpRequest request = HttpRequest.get(ApiEnum.SENDSMS_API.value);
         request.formStr(queryParam);
 
         HttpResponse response = request.execute();
@@ -146,7 +142,7 @@ public class SendMessageImpl implements SendMessageService {
                             .build()
             );
 
-            sendOne(person.getPhone(),text);
+            sendOneToSms(person.getPhone(),text);
         }
 
         return Result.build(sugasmsUsers,ResultCodeEnum.SUCCESS);
@@ -164,7 +160,24 @@ public class SendMessageImpl implements SendMessageService {
     }
 
 
-    private Map<String,String> buildQueryParam(SMSMessageRequest request) {
+
+    private SendSMSMessageRequest buildSendSMSMessageRequest(String number,String text) {
+        return SendSMSMessageRequest.builder()
+                .user("SUPINCO123")
+                .password("123456")
+                .senderId("DSMDPR")
+                .channel("Trans")
+                .dcs("0")
+                .flashSMS("0")
+                .number(number)
+                .text(text)
+                .route("02")
+                .dltTemplateId("1607100000000331206")
+                .peid("1601100000000014322")
+                .build();
+    }
+
+    private Map<String,String> buildTestSendQueryParam(SendSMSMessageRequest request) {
         Map<String,String> queryParams = new HashMap<>();
         queryParams.put("APIKey",request.getApiKey());
         queryParams.put("senderid",request.getSenderId());
@@ -177,4 +190,20 @@ public class SendMessageImpl implements SendMessageService {
 
         return queryParams;
     }
+
+    private Map<String,String> buildSmsSendQueryParam(SendSMSMessageRequest request) {
+        Map<String,String> queryParams = new HashMap<>();
+        queryParams.put("user",request.getUser());
+        queryParams.put("password",request.getPassword());
+        queryParams.put("senderid",request.getSenderId());
+        queryParams.put("channel",request.getChannel());
+        queryParams.put("DCS",request.getDcs());
+        queryParams.put("flashsms",request.getFlashSMS());
+        queryParams.put("route",request.getRoute());
+        queryParams.put("DLTTemplateId",request.getDltTemplateId());
+        queryParams.put("PEID",request.getPeid());
+
+        return queryParams;
+    }
+
 }
