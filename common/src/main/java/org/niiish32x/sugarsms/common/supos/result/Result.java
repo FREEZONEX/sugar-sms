@@ -61,6 +61,11 @@ public class Result<T> {
         return build(data, ResultCodeEnum.SUCCESS);
     }
 
+    public static<T> Result<T> success(T data){
+        Result<T> result = build(data);
+        return build(data, ResultCodeEnum.SUCCESS);
+    }
+
     public static<T> Result<T> fail(){
         return Result.fail(null);
     }

@@ -11,6 +11,7 @@ import org.niiish32x.sugarsms.app.dto.PageDTO;
 import org.niiish32x.sugarsms.app.dto.PersonCodesDTO;
 import org.niiish32x.sugarsms.app.dto.PersonDTO;
 import org.niiish32x.sugarsms.app.enums.ApiEnum;
+import org.niiish32x.sugarsms.app.external.PersonsResponse;
 import org.niiish32x.sugarsms.app.external.SuposPersonAddRequest;
 import org.niiish32x.sugarsms.app.service.PersonService;
 import org.niiish32x.sugarsms.app.tools.SuposUserMocker;
@@ -38,14 +39,6 @@ public class PersonServiceImpl implements PersonService {
     SuposRequestManager requestManager;
 
 
-    @Data
-    class PersonsResponse extends PageResponse {
-        @JSONField(name = "list")
-        private List<PersonDTO> list;
-        @JSONField(name = "pagination")
-        private PageDTO pageDTO;
-    }
-
     @Override
     public List<PersonDTO> getPersonsFromSuposByPage(Integer currentPageSize) {
         Map<String, String> headerMap = new HashMap<>();
@@ -59,7 +52,7 @@ public class PersonServiceImpl implements PersonService {
     }
 
     @Override
-    public PersonDTO getOnePersonByPersonCodes(PersonCodesDTO personCodesDTO) {
+    public PersonDTO getOnePersonByPersonCode(PersonCodesDTO personCodesDTO) {
 
         Map<String, String> headerMap = new HashMap<>();
         Map<String, String> queryMap = new HashMap<>();
@@ -71,6 +64,22 @@ public class PersonServiceImpl implements PersonService {
         PersonsResponse dto = JSON.parseObject(response.body(), PersonsResponse.class);
 
         return dto.getList().get(0);
+    }
+
+    @Override
+    public Result <PersonsResponse> getPersonsByPersonCodes(PersonCodesDTO personCodesDTOS) {
+        Map<String, String> headerMap = new HashMap<>();
+        Map<String, String> queryMap = new HashMap<>();
+
+        String join = String.join(",", personCodesDTOS.getPersonCodes());
+        queryMap.put("personCodes", join);
+        queryMap.put("current","1");
+        queryMap.put("pageSize","500");
+
+        HttpResponse response = requestManager.suposApiGet(ApiEnum.PESRON_GET_API.value, headerMap, queryMap);
+
+        PersonsResponse dto = JSON.parseObject(response.body(), PersonsResponse.class);
+        return  response.isOk() ? Result.success(dto) : Result.fail(dto);
     }
 
     @Override

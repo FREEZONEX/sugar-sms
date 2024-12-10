@@ -17,6 +17,7 @@ import java.util.List;
 public interface UserService {
 
 
+
     Result addSuposUser(String username,String password);
 
     Result addSuposUser(String username,String password,List<String> roleNameList);

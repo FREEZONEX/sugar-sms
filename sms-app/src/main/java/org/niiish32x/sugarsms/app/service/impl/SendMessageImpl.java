@@ -6,7 +6,7 @@ import com.alibaba.fastjson2.JSON;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import lombok.extern.slf4j.Slf4j;
-import org.checkerframework.checker.nullness.qual.EnsuresKeyFor;
+import org.niiish32x.sugarsms.app.cache.UserPhoneCache;
 import org.niiish32x.sugarsms.app.dto.AlertInfoDTO;
 import org.niiish32x.sugarsms.app.dto.PersonCodesDTO;
 import org.niiish32x.sugarsms.app.dto.PersonDTO;
@@ -22,9 +22,9 @@ import org.niiish32x.sugarsms.common.supos.result.ResultCodeEnum;
 import org.niiish32x.sugarsms.common.supos.utils.Retrys;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import java.util.*;
-import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -37,10 +37,6 @@ import java.util.concurrent.TimeUnit;
 @Service
 @Slf4j
 public class SendMessageImpl implements SendMessageService {
-
-    private static Cache<String,String> sugarSmsPersonPhoneCache = CacheBuilder.newBuilder()
-            .expireAfterAccess(30, TimeUnit.SECONDS)
-            .build();
 
     @Resource
     UserService userService;
@@ -106,16 +102,16 @@ public class SendMessageImpl implements SendMessageService {
 
         for (SuposUserDTO userDTO : sugasmsUsers) {
 
-            String phoneNumber = sugarSmsPersonPhoneCache.getIfPresent(userDTO.getPersonCode());
+            String phoneNumber = UserPhoneCache.cache.getIfPresent(userDTO.getPersonCode());
 
             if(phoneNumber == null) {
-                PersonDTO person = personService.getOnePersonByPersonCodes(
+                PersonDTO person = personService.getOnePersonByPersonCode(
                         PersonCodesDTO.builder()
                                 .personCodes(Arrays.asList(userDTO.getPersonCode()))
                                 .build()
                 );
                 phoneNumber = person.getPhone();
-                sugarSmsPersonPhoneCache.put(userDTO.getPersonCode(),person.getPhone());
+                UserPhoneCache.cache.put(userDTO.getPersonCode(),person.getPhone());
             }
 
             try {
@@ -144,7 +140,7 @@ public class SendMessageImpl implements SendMessageService {
         }
 
         for (SuposUserDTO userDTO : sugasmsUsers) {
-            PersonDTO person = personService.getOnePersonByPersonCodes(
+            PersonDTO person = personService.getOnePersonByPersonCode(
                     PersonCodesDTO.builder()
                             .personCodes(Arrays.asList(userDTO.getPersonCode()))
                             .build()
