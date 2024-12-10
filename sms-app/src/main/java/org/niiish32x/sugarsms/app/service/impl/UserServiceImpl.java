@@ -13,6 +13,7 @@ import org.niiish32x.sugarsms.app.dto.PersonDTO;
 import org.niiish32x.sugarsms.app.dto.SuposUserDTO;
 import org.niiish32x.sugarsms.app.enums.ApiEnum;
 import org.niiish32x.sugarsms.app.external.SuposUserAddRequest;
+import org.niiish32x.sugarsms.app.external.UsersResponse;
 import org.niiish32x.sugarsms.app.service.PersonService;
 import org.niiish32x.sugarsms.app.service.UserService;
 import org.niiish32x.sugarsms.app.tools.SuposUserMocker;
@@ -45,11 +46,6 @@ public class UserServiceImpl implements UserService {
     SuposRequestManager suposRequestManager;
 
 
-    @Data
-    class UsersResponse extends PageResponse implements Serializable {
-        @JSONField(name = "list")
-        private List<SuposUserDTO> list;
-    }
 
     @Override
     public Result addSuposUser(String username,String password) {
@@ -77,20 +73,22 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Result mockUser() {
+        for (int i = 1 ;  i <= 10 ;  i++){
+            List<PersonDTO> persons = personService.getPersonsFromSuposByPage(i);
 
-        List<PersonDTO> persons = personService.getPersonsFromSuposByPage(1);
+            List<String> roleNameList = new ArrayList<>();
+            roleNameList.add("sugarsms");
 
-        List<String> roleNameList = new ArrayList<>();
-        roleNameList.add("sugarsms");
+            for (PersonDTO personDTO : persons) {
+                String password = SuposUserMocker.generatePassword();
+                Result res = addSuposUser(personDTO.getName(), password, roleNameList);
 
-        for (PersonDTO personDTO : persons) {
-            String password = SuposUserMocker.generatePassword();
-            Result res = addSuposUser(personDTO.getName(), password, roleNameList);
-
-            if(Objects.equals(res.getCode(), ResultCodeEnum.CODE_ERROR.getCode())) {
-                return res;
+                if(Objects.equals(res.getCode(), ResultCodeEnum.CODE_ERROR.getCode())) {
+                    return res;
+                }
             }
         }
+
 
         return getUsersFromSupos("default_org_company");
     }
@@ -112,14 +110,26 @@ public class UserServiceImpl implements UserService {
     public Result<List<SuposUserDTO>>  getUsersFromSupos(String companyCode, String roleCode) {
         Map<String, String> headerMap = new HashMap<>();
         Map<String, String> queryMap = new HashMap<>();
+        UsersResponse res = new UsersResponse();
+        int pageIndex = 1;
+        while (true) {
+            queryMap.put("companyCode",companyCode);
+            queryMap.put("roleCode",roleCode);
+            queryMap.put("pageSize","500");
+            queryMap.put("pageIndex",String.valueOf(pageIndex));
+            HttpResponse response = suposRequestManager.suposApiGet(ApiEnum.USER_API.value, headerMap, queryMap);
 
-        queryMap.put("companyCode",companyCode);
-        queryMap.put("roleCode",roleCode);
-        HttpResponse response = suposRequestManager.suposApiGet(ApiEnum.USER_API.value, headerMap, queryMap);
+            UsersResponse usersResponse = JSON.parseObject(response.body(), UsersResponse.class);
 
-        UsersResponse usersResponse = JSON.parseObject(response.body(), UsersResponse.class);
+            if( usersResponse.getList() == null  || usersResponse.getList().isEmpty()){
+                break;
+            }
+            res.getList().addAll(usersResponse.getList());
+            pageIndex++;
+        }
 
-        return Result.build(usersResponse.getList(),ResultCodeEnum.SUCCESS);
+
+        return Result.build(res.getList(),ResultCodeEnum.SUCCESS);
     }
 
     @Override
