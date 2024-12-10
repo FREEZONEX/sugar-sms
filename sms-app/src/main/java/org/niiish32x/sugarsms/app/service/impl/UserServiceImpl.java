@@ -4,6 +4,7 @@ import cn.hutool.http.HttpResponse;
 
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.annotation.JSONField;
+import com.google.common.cache.LoadingCache;
 import com.sun.org.apache.bcel.internal.generic.LUSHR;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -42,6 +43,7 @@ public class UserServiceImpl implements UserService {
 
     @Resource
     SuposRequestManager suposRequestManager;
+
 
     @Data
     class UsersResponse extends PageResponse implements Serializable {

@@ -3,6 +3,8 @@ package org.niiish32x.sugarsms.app.service.impl;
 import cn.hutool.http.HttpRequest;
 import cn.hutool.http.HttpResponse;
 import com.alibaba.fastjson2.JSON;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import org.niiish32x.sugarsms.app.dto.AlertInfoDTO;
 import org.niiish32x.sugarsms.app.dto.PersonCodesDTO;
 import org.niiish32x.sugarsms.app.dto.PersonDTO;
@@ -18,6 +20,8 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.TimeUnit;
 
 /**
  * SendMessageImpl
@@ -28,6 +32,10 @@ import java.util.*;
 
 @Service
 public class SendMessageImpl implements SendMessageService {
+
+    private static Cache<String,String> sugarSmsPersonPhoneCache = CacheBuilder.newBuilder()
+            .expireAfterAccess(30, TimeUnit.SECONDS)
+            .build();
 
     @Resource
     UserService userService;
@@ -70,6 +78,7 @@ public class SendMessageImpl implements SendMessageService {
 
     @Override
     public Result sendMessageToSugarSmsUser() {
+
         Result<List<SuposUserDTO>> res = userService.getUsersFromSupos("default_org_company", "sugarsms");
 
         List<SuposUserDTO> sugasmsUsers = res.getData();
@@ -79,13 +88,22 @@ public class SendMessageImpl implements SendMessageService {
         }
 
         for (SuposUserDTO userDTO : sugasmsUsers) {
-            PersonDTO person = personService.getOnePersonByPersonCodes(
-                    PersonCodesDTO.builder()
-                            .personCodes(Arrays.asList(userDTO.getPersonCode()))
-                            .build()
-            );
 
-            sendOne(person.getPhone(),"text");
+            String phone = sugarSmsPersonPhoneCache.getIfPresent(userDTO.getPersonCode());
+
+            if(phone != null) {
+                sendOne(phone,"text");
+            } else {
+                PersonDTO person = personService.getOnePersonByPersonCodes(
+                        PersonCodesDTO.builder()
+                                .personCodes(Arrays.asList(userDTO.getPersonCode()))
+                                .build()
+                );
+
+                sendOne(person.getPhone(),"text");
+                sugarSmsPersonPhoneCache.put(userDTO.getPersonCode(),person.getPhone());
+            }
+
         }
 
         return Result.build(sugasmsUsers,ResultCodeEnum.SUCCESS);
