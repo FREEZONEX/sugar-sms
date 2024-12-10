@@ -19,11 +19,13 @@ public interface UserService {
 
     Result addSuposUser(String username,String password);
 
+    Result addSuposUser(String username,String password,List<String> roleNameList);
+
     Result mockUser();
 
     Result getUsersFromSupos(String company);
 
-    List<SuposUserDTO> getUsersFromSupos(String companyCode, String roleCode);
+    Result<List<SuposUserDTO>>  getUsersFromSupos(String companyCode, String roleCode);
 
     /**
      * 为指定用户 绑定角色角色
@@ -32,4 +34,6 @@ public interface UserService {
      * @return
      */
     Result <SuposUserDTO> role(String username,String role);
+
+    Result getMessageReceived(String username);
 }

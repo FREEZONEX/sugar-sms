@@ -23,4 +23,14 @@ public class SendMessageController {
     public Result test(){
         return sendMessageService.sendMessageToSugarSmsUser();
     }
+
+    @RequestMapping("/send/sugarsms")
+    public Result sendToSugarsmsUser(){
+        return sendMessageService.sendMessageToSugarSmsUser();
+    }
+
+    @RequestMapping("/send/alert/sugarsms")
+    public Result sendAlertToSugarsmsUser(){
+        return sendMessageService.sendMessageToSugarSmsUser();
+    }
 }

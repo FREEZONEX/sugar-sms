@@ -14,4 +14,8 @@ public interface SendMessageService {
     void sendOne(String number,String text);
 
     Result sendMessageToSugarSmsUser();
+
+    Result sendMessageToSugarSmsUser(String text);
+
+    Result sendAlertToSugarSmsUser();
 }

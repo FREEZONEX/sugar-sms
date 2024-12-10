@@ -2,11 +2,13 @@ package org.niiish32x.sugarsms.app.service.impl;
 
 import cn.hutool.http.HttpRequest;
 import cn.hutool.http.HttpResponse;
-import cn.hutool.http.HttpUtil;
+import com.alibaba.fastjson2.JSON;
+import org.niiish32x.sugarsms.app.dto.AlertInfoDTO;
 import org.niiish32x.sugarsms.app.dto.PersonCodesDTO;
 import org.niiish32x.sugarsms.app.dto.PersonDTO;
 import org.niiish32x.sugarsms.app.dto.SuposUserDTO;
 import org.niiish32x.sugarsms.app.external.SMSMessageRequest;
+import org.niiish32x.sugarsms.app.service.AlertService;
 import org.niiish32x.sugarsms.app.service.PersonService;
 import org.niiish32x.sugarsms.app.service.SendMessageService;
 import org.niiish32x.sugarsms.app.service.UserService;
@@ -32,6 +34,9 @@ public class SendMessageImpl implements SendMessageService {
 
     @Resource
     PersonService personService;
+
+    @Resource
+    AlertService alertService;
 
     @Override
     public void sendOne() {
@@ -65,7 +70,9 @@ public class SendMessageImpl implements SendMessageService {
 
     @Override
     public Result sendMessageToSugarSmsUser() {
-        List<SuposUserDTO> sugasmsUsers = userService.getUsersFromSupos("default_org_company", "sugarsms");
+        Result<List<SuposUserDTO>> res = userService.getUsersFromSupos("default_org_company", "sugarsms");
+
+        List<SuposUserDTO> sugasmsUsers = res.getData();
 
         if(sugasmsUsers.isEmpty()) {
             return Result.build(sugasmsUsers,ResultCodeEnum.SUCCESS);
@@ -78,10 +85,44 @@ public class SendMessageImpl implements SendMessageService {
                             .build()
             );
 
-            sendOne(person.getIdNumber(),"text");
+            sendOne(person.getPhone(),"text");
         }
 
         return Result.build(sugasmsUsers,ResultCodeEnum.SUCCESS);
+    }
+
+    @Override
+    public Result sendMessageToSugarSmsUser(String text) {
+        Result<List<SuposUserDTO>> res = userService.getUsersFromSupos("default_org_company", "sugarsms");
+
+        List<SuposUserDTO> sugasmsUsers = res.getData();
+
+        if(sugasmsUsers.isEmpty()) {
+            return Result.build(sugasmsUsers,ResultCodeEnum.SUCCESS);
+        }
+
+        for (SuposUserDTO userDTO : sugasmsUsers) {
+            PersonDTO person = personService.getOnePersonByPersonCodes(
+                    PersonCodesDTO.builder()
+                            .personCodes(Arrays.asList(userDTO.getPersonCode()))
+                            .build()
+            );
+
+            sendOne(person.getPhone(),text);
+        }
+
+        return Result.build(sugasmsUsers,ResultCodeEnum.SUCCESS);
+    }
+
+    @Override
+    public Result sendAlertToSugarSmsUser() {
+        List<AlertInfoDTO> alerts = alertService.getAlerts().getData();
+
+        for (AlertInfoDTO alert : alerts) {
+            sendMessageToSugarSmsUser(JSON.toJSONString(alert));
+        }
+
+        return Result.build("发送完成",ResultCodeEnum.SUCCESS);
     }
 
 

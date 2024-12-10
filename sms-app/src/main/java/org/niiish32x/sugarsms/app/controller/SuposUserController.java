@@ -22,8 +22,13 @@ public class SuposUserController {
     UserService suposUserService;
 
     @RequestMapping("/users/company")
-    public Result getCompanyUser(String companyCode) {
+    public Result getCompanyUser(@RequestParam String companyCode) {
         return  suposUserService.getUsersFromSupos(StringUtils.isBlank(companyCode) ? "default_org_company" : companyCode);
+    }
+
+    @RequestMapping("/users/company/role")
+    public Result getCompanyUserByRole(String companyCode,String roleCode) {
+        return  suposUserService.getUsersFromSupos(StringUtils.isBlank(companyCode) ? "default_org_company" : companyCode,roleCode);
     }
 
     @PostMapping("/users/add")
@@ -31,9 +36,15 @@ public class SuposUserController {
         return  suposUserService.addSuposUser(username,password);
     }
 
+    @RequestMapping("/users/message")
+    public Result getUserMessage() {
+
+        return  suposUserService.getMessageReceived("admin");
+    }
+
+
     @RequestMapping("/users/mock")
     public Result mockCompanyUser() {
-
 
         return  suposUserService.mockUser();
     }

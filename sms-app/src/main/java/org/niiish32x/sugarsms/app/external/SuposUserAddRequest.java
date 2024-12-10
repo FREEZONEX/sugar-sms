@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
 import java.util.TimeZone;
 
 /**
@@ -32,6 +33,9 @@ public class SuposUserAddRequest {
     private Integer accountType;
 
 
+    List<String> roloNameList;
+
+
     public SuposUserAddRequest(String username, String password) {
         this.username = username;
         this.password = password;
@@ -39,5 +43,15 @@ public class SuposUserAddRequest {
         this.personCode = username;
         this.companyCode = "default_org_company";
         this.accountType =  0;
+    }
+
+    public SuposUserAddRequest(String username, String password,List <String> list) {
+        this.username = username;
+        this.password = password;
+        this.timeZone = "GMT+0800";
+        this.personCode = username;
+        this.companyCode = "default_org_company";
+        this.accountType =  0;
+        this.roloNameList = list;
     }
 }
