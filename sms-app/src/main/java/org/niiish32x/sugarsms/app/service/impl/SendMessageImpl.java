@@ -5,17 +5,21 @@ import cn.hutool.http.HttpResponse;
 import com.alibaba.fastjson2.JSON;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import lombok.extern.slf4j.Slf4j;
+import org.checkerframework.checker.nullness.qual.EnsuresKeyFor;
 import org.niiish32x.sugarsms.app.dto.AlertInfoDTO;
 import org.niiish32x.sugarsms.app.dto.PersonCodesDTO;
 import org.niiish32x.sugarsms.app.dto.PersonDTO;
 import org.niiish32x.sugarsms.app.dto.SuposUserDTO;
 import org.niiish32x.sugarsms.app.external.SMSMessageRequest;
+import org.niiish32x.sugarsms.app.external.SMSMessageResponse;
 import org.niiish32x.sugarsms.app.service.AlertService;
 import org.niiish32x.sugarsms.app.service.PersonService;
 import org.niiish32x.sugarsms.app.service.SendMessageService;
 import org.niiish32x.sugarsms.app.service.UserService;
 import org.niiish32x.sugarsms.common.supos.result.Result;
 import org.niiish32x.sugarsms.common.supos.result.ResultCodeEnum;
+import org.niiish32x.sugarsms.common.supos.utils.Retrys;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -31,6 +35,7 @@ import java.util.concurrent.TimeUnit;
  */
 
 @Service
+@Slf4j
 public class SendMessageImpl implements SendMessageService {
 
     private static Cache<String,String> sugarSmsPersonPhoneCache = CacheBuilder.newBuilder()
@@ -63,6 +68,18 @@ public class SendMessageImpl implements SendMessageService {
     }
 
     @Override
+    public Result sendOneSmsMessage(String number, String text) {
+        SMSMessageRequest smsMessageRequest = new SMSMessageRequest();
+        smsMessageRequest.CreateSMSRequest(number,text);
+
+        Map<String, String> queryParam = buildQueryParam(smsMessageRequest);
+        HttpRequest request = HttpRequest.get("http://cloudsms.zubrixtechnologies.com/api/mt/GetBalance").formStr(queryParam);
+        HttpResponse response = request.execute();
+        SMSMessageResponse messageResponse = JSON.parseObject(response.body(), SMSMessageResponse.class);
+        return messageResponse.getErrorCode() == 0 ? Result.build(messageResponse,ResultCodeEnum.SUCCESS) : Result.build(messageResponse,ResultCodeEnum.FAIL);
+    }
+
+    @Override
     public void sendOne(String number, String text) {
         SMSMessageRequest smsMessageRequest = new SMSMessageRequest();
         smsMessageRequest.CreateSMSRequest(number,text);
@@ -89,21 +106,28 @@ public class SendMessageImpl implements SendMessageService {
 
         for (SuposUserDTO userDTO : sugasmsUsers) {
 
-            String phone = sugarSmsPersonPhoneCache.getIfPresent(userDTO.getPersonCode());
+            String phoneNumber = sugarSmsPersonPhoneCache.getIfPresent(userDTO.getPersonCode());
 
-            if(phone != null) {
-                sendOne(phone,"text");
-            } else {
+            if(phoneNumber == null) {
                 PersonDTO person = personService.getOnePersonByPersonCodes(
                         PersonCodesDTO.builder()
                                 .personCodes(Arrays.asList(userDTO.getPersonCode()))
                                 .build()
                 );
-
-                sendOne(person.getPhone(),"text");
+                phoneNumber = person.getPhone();
                 sugarSmsPersonPhoneCache.put(userDTO.getPersonCode(),person.getPhone());
             }
 
+            try {
+                String finalPhoneNumber = phoneNumber;
+                Retrys.doWithRetry(()-> sendOneSmsMessage(finalPhoneNumber,"text"), r -> r.isOk(),5,100);
+            }catch (Throwable e) {
+                String s = String.format("person: %s 未能成功通知到！！！", userDTO.getPersonCode());
+                throw new IllegalStateException(s, e);
+            }
+
+            log.info("person: {} phone:{} 通知成功",userDTO.getPersonName(),phoneNumber);
+//            sendOneSmsMessage(phoneNumber,"text");
         }
 
         return Result.build(sugasmsUsers,ResultCodeEnum.SUCCESS);
