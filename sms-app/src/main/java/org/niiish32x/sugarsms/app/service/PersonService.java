@@ -2,6 +2,8 @@ package org.niiish32x.sugarsms.app.service;
 
 import org.niiish32x.sugarsms.app.dto.PersonCodesDTO;
 import org.niiish32x.sugarsms.app.dto.PersonDTO;
+import org.niiish32x.sugarsms.app.external.PersonsResponse;
+import org.niiish32x.sugarsms.app.service.impl.PersonServiceImpl;
 import org.niiish32x.sugarsms.common.supos.result.Result;
 
 import java.util.List;
@@ -17,7 +19,9 @@ public interface PersonService {
     List <PersonDTO> getPersonsFromSuposByPage(Integer currentPageSize);
 
 
-    PersonDTO getOnePersonByPersonCodes(PersonCodesDTO personCodesDTO);
+    PersonDTO getOnePersonByPersonCode(PersonCodesDTO personCodesDTO);
+
+    Result <PersonsResponse>  getPersonsByPersonCodes(PersonCodesDTO personCodesDTOS);
 
     Result addPerson(String code);
 
