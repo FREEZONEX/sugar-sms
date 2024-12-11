@@ -38,13 +38,16 @@ public class UserPhoneCache implements InitializingBean {
     public static Cache<String,String> cache = CacheBuilder.newBuilder()
             .expireAfterAccess(300, TimeUnit.SECONDS)
             .build();
-
     /**
      * 缓存预热
      * @throws Exception
      */
     @Override
     public void afterPropertiesSet() throws Exception {
+        load();
+    }
+
+    public  void load() {
         List<SuposUserDTO> userDTOS = userService.getUsersFromSupos("default_org_company", "sugarsms").getData();
 
         List<String> personCodes = new ArrayList<>();
@@ -65,6 +68,5 @@ public class UserPhoneCache implements InitializingBean {
                 cache.put(personDTO.getName(),personDTO.getPhone());
             }
         }
-
     }
 }

@@ -9,8 +9,6 @@ import org.niiish32x.sugarsms.common.supos.result.Result;
  * @date 2024.12.09 9:42
  */
 public interface SendMessageService {
-    void sendOneToSms();
-
 
     Result sendOneZubrixSms(String number, String text);
 
