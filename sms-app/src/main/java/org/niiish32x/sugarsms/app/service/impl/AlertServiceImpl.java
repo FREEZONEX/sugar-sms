@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.niiish32x.sugarsms.app.dto.AlertInfoDTO;
 import org.niiish32x.sugarsms.app.enums.ApiEnum;
+import org.niiish32x.sugarsms.app.external.AlertResponse;
 import org.niiish32x.sugarsms.app.service.AlertService;
 import org.niiish32x.sugarsms.common.supos.request.SuposRequestManager;
 import org.niiish32x.sugarsms.common.supos.result.Result;
@@ -33,17 +34,6 @@ public class AlertServiceImpl implements AlertService {
 
     @Resource
     SuposRequestManager requestManager;
-
-    @Data
-    class AlertResponse implements Serializable {
-        private Integer code;
-        private String message;
-        @JSONField(name = "data")
-        private List<AlertInfoDTO> alerts;
-        private String detail;
-        private String context;
-        private String targetService;
-    }
 
 
     @Override
