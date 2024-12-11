@@ -17,7 +17,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class SendSMSMessageRequest {
+public class ZubrixSmsRequest {
 
     private String user;
 

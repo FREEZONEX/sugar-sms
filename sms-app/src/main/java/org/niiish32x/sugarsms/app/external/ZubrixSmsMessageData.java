@@ -13,7 +13,7 @@ import java.io.Serializable;
  */
 
 @Data
-public class SMSMessageData implements Serializable {
+public class ZubrixSmsMessageData implements Serializable {
     @JSONField(name = "Number")
     private String number;
     @JSONField(name = "MessageId")

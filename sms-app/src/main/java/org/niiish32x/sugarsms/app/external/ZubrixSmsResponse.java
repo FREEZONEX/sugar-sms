@@ -14,7 +14,7 @@ import java.util.List;
  */
 
 @Data
-public class SMSMessageResponse implements Serializable {
+public class ZubrixSmsResponse implements Serializable {
     @JSONField(name = "ErrorCode")
     private Integer errorCode;
     @JSONField(name = "ErrorMessage")
@@ -22,5 +22,5 @@ public class SMSMessageResponse implements Serializable {
     @JSONField(name = "JobId")
     private String jobId;
     @JSONField(name = "MessageData")
-    private List<SMSMessageData>  messageData;
+    private List<ZubrixSmsMessageData>  messageData;
 }

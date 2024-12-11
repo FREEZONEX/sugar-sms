@@ -12,7 +12,7 @@ public interface SendMessageService {
     void sendOneToSms();
 
 
-    Result sendOneSmsMessage(String number, String text);
+    Result sendOneZubrixSms(String number, String text);
 
     void sendOneToSms(String number, String text);
 
