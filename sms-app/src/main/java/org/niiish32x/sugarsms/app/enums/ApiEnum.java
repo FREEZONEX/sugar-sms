@@ -16,9 +16,8 @@ public enum ApiEnum {
 
     MESSAGE_POST_API("/open-api/p/notification/v2/topic/messages"),
 
-    ALERT_API("/open-api/supos/oodm/v2/alert/current"),
+    ALERT_API("/open-api/supos/oodm/v2/alert/current");
 
-    SENDSMS_API("http://cloudsms.zubrixtechnologies.com/api/mt/SendSMS");
 
     public final String value;
 
