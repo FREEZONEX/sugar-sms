@@ -38,11 +38,6 @@ public class SendMessageImpl implements SendMessageService {
     @Resource
     ZubrixSmsProxy zubrixSmsProxy;
 
-
-    private final String SMS_URL = "http://cloudsms.zubrixtechnologies.com/api/mt/SendSMS?user=%s&password=%s&senderid=%s&channel=%s&DCS=%s&flashsms=%s&number=%s&text=%s&route=%s&DLTTemplateId=%s&PEID=%s";
-
-    private final String SMS_TEXT_TEMPLATE = "KPI %s exceeded to %s Threshold/Limit value %s value Location sugarArea Date/Time%s Dhampur Sugar Mills";
-
     @Resource
     UserService userService;
 
@@ -52,21 +47,6 @@ public class SendMessageImpl implements SendMessageService {
     @Resource
     AlertService alertService;
 
-    @Override
-    public void sendOneToSms() {
-        String number = "+919747934655";
-        String text = "xx";
-        ZubrixSmsRequest zubrixSmsRequest = new ZubrixSmsRequest();
-        zubrixSmsRequest.CreateSMSRequest(number,text);
-
-        Map<String, String> queryParam = buildTestSendQueryParam(zubrixSmsRequest);
-        HttpRequest request = HttpRequest.get("http://cloudsms.zubrixtechnologies.com/api/mt/GetBalance");
-        request.formStr(queryParam);
-
-        HttpResponse response = request.execute();
-
-        System.out.println(response.body());
-    }
 
     @Override
     public Result sendOneZubrixSms(String number, String text) {
@@ -155,19 +135,5 @@ public class SendMessageImpl implements SendMessageService {
         return Result.build("发送完成",ResultCodeEnum.SUCCESS);
     }
 
-
-    private Map<String,String> buildTestSendQueryParam(ZubrixSmsRequest request) {
-        Map<String,String> queryParams = new HashMap<>();
-        queryParams.put("APIKey",request.getApiKey());
-        queryParams.put("senderid",request.getSenderId());
-        queryParams.put("channel",request.getChannel());
-        queryParams.put("DCS",request.getDcs());
-        queryParams.put("flashsms",request.getFlashSMS());
-        queryParams.put("number",request.getNumber());
-        queryParams.put("text",request.getText());
-        queryParams.put("route",request.getRoute());
-
-        return queryParams;
-    }
 
 }
