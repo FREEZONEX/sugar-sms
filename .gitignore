@@ -31,3 +31,6 @@ build/
 
 ### VS Code ###
 .vscode/
+
+/sms-app/src/main/resources/application.yml
+/sms-app/src/main/resources/bluetron-saidk-sdk.properties
