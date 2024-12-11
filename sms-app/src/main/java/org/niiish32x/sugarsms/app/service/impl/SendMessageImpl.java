@@ -36,6 +36,9 @@ import java.util.*;
 public class SendMessageImpl implements SendMessageService {
 
     @Resource
+    UserPhoneCache userPhoneCache;
+
+    @Resource
     ZubrixSmsProxy zubrixSmsProxy;
 
     @Resource
@@ -74,7 +77,7 @@ public class SendMessageImpl implements SendMessageService {
 
         for (SuposUserDTO userDTO : sugasmsUsers) {
 
-            String phoneNumber = UserPhoneCache.cache.getIfPresent(userDTO.getPersonCode());
+            String phoneNumber = userPhoneCache.cache.getIfPresent(userDTO.getPersonCode());
 
             if(phoneNumber == null) {
                 PersonDTO person = personService.getOnePersonByPersonCode(
@@ -83,7 +86,8 @@ public class SendMessageImpl implements SendMessageService {
                                 .build()
                 );
                 phoneNumber = person.getPhone();
-                UserPhoneCache.cache.put(userDTO.getPersonCode(),person.getPhone());
+                userPhoneCache.load();
+//                UserPhoneCache.cache.put(userDTO.getPersonCode(),person.getPhone());
             }
 
             try {
