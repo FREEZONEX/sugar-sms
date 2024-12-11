@@ -53,9 +53,4 @@ public class SendMessageImpl implements SendMessageService {
         ZubrixSmsResponse messageResponse = zubrixSmsProxy.send(url);
         return messageResponse.getErrorCode() == 0 ? Result.build(messageResponse,ResultCodeEnum.SUCCESS) : Result.build(messageResponse,ResultCodeEnum.FAIL);
     }
-
-    @Override
-    public void sendOneToSms(String number, String text) {
-
-    }
 }
