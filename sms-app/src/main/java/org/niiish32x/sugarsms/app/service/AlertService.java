@@ -15,4 +15,6 @@ public interface AlertService {
      Result<List<AlertInfoDTO>> getAlertsFromSupos();
 
      Result notifySugarSmsUser();
+
+     Result notifyTest();
 }

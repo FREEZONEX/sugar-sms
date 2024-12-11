@@ -19,21 +19,6 @@ public class SendMessageController {
     @Resource
     SendMessageService sendMessageService;
 
-    @RequestMapping("/send/test")
-    public Result test(){
-        return sendMessageService.sendMessageToSugarSmsUser();
-    }
-
-    @RequestMapping("/send/sugarsms")
-    public Result sendToSugarsmsUser(){
-        return sendMessageService.sendMessageToSugarSmsUser();
-    }
-
-    @RequestMapping("/send/alert/sugarsms")
-    public Result sendAlertToSugarsmsUser(){
-        return sendMessageService.sendMessageToSugarSmsUser();
-    }
-
     @RequestMapping("/send/sms/test")
     public Result sendSmsTest(){
         return sendMessageService.sendOneZubrixSms("919747934655","xx");

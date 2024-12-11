@@ -1,5 +1,6 @@
 package org.niiish32x.sugarsms.app.service;
 
+import org.niiish32x.sugarsms.app.external.ZubrixSmsResponse;
 import org.niiish32x.sugarsms.common.supos.result.Result;
 
 /**
@@ -10,13 +11,5 @@ import org.niiish32x.sugarsms.common.supos.result.Result;
  */
 public interface SendMessageService {
 
-    Result sendOneZubrixSms(String number, String text);
-
-    void sendOneToSms(String number, String text);
-
-    Result sendMessageToSugarSmsUser();
-
-    Result sendMessageToSugarSmsUser(String text);
-
-    Result sendAlertToSugarSmsUser();
+    Result <ZubrixSmsResponse> sendOneZubrixSms(String number, String text);
 }

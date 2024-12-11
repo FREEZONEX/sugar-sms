@@ -13,6 +13,7 @@ import org.niiish32x.sugarsms.app.dto.PersonDTO;
 import org.niiish32x.sugarsms.app.dto.SuposUserDTO;
 import org.niiish32x.sugarsms.app.enums.ApiEnum;
 import org.niiish32x.sugarsms.app.external.AlertResponse;
+import org.niiish32x.sugarsms.app.external.ZubrixSmsResponse;
 import org.niiish32x.sugarsms.app.proxy.ZubrixSmsProxy;
 import org.niiish32x.sugarsms.app.service.AlertService;
 import org.niiish32x.sugarsms.app.service.PersonService;
@@ -152,6 +153,57 @@ public class AlertServiceImpl implements AlertService {
 //        }
 
         return Result.build(sugasmsUsers,ResultCodeEnum.SUCCESS);
+    }
+
+    @Override
+    public Result <ZubrixSmsResponse> notifyTest() {
+        Result<List<AlertInfoDTO>> alertsResult = getAlertsFromSupos();
+
+        if(!alertsResult.isOk()) {
+            log.error("获取报警信息异常");
+            return Result.build(null,ResultCodeEnum.FAIL);
+        }
+
+        List<AlertInfoDTO> alertInfoDTOS = alertsResult.getData();
+
+        if(alertInfoDTOS == null || alertInfoDTOS.isEmpty()) {
+            log.info("不存在报警信息 不需要报警");
+            return Result.build(null,ResultCodeEnum.SUCCESS);
+        }
+
+
+        Result<List<SuposUserDTO>> res = userService.getUsersFromSupos("default_org_company", "sugarsms");
+
+        List<SuposUserDTO> sugasmsUsers = res.getData();
+
+        if(sugasmsUsers.isEmpty()) {
+            log.warn("不存在sugarsms 角色权限的报警对象");
+            return Result.build(null,ResultCodeEnum.SUCCESS);
+        }
+
+        AlertInfoDTO alertInfoDTO = alertInfoDTOS.get(0);
+        String text = zubrixSmsProxy.formatTextContent(alertInfoDTO);
+        SuposUserDTO userDTO = sugasmsUsers.get(0);
+        String phoneNumber = userPhoneCache.cache.getIfPresent(userDTO.getPersonCode());
+
+            if(phoneNumber == null) {
+                PersonDTO person = personService.getOnePersonByPersonCode(
+                        PersonCodesDTO.builder()
+                                .personCodes(Arrays.asList(userDTO.getPersonCode()))
+                                .build()
+                );
+                phoneNumber = person.getPhone();
+                userPhoneCache.load();
+            }
+
+
+        String finalPhoneNumber = phoneNumber;
+        ZubrixSmsResponse zubrixSmsResponse = sendMessageService.sendOneZubrixSms(finalPhoneNumber, text).getData();
+        log.info("通知内容 {} ",text);
+
+        log.info("person: {} phone:{} 通知成功",userDTO.getPersonName(),phoneNumber);
+
+        return zubrixSmsResponse.getErrorCode() == 0 ?  Result.build(zubrixSmsResponse,ResultCodeEnum.SUCCESS) : Result.build(zubrixSmsResponse,ResultCodeEnum.FAIL);
     }
 
     private String buildAlertContent(AlertInfoDTO alertInfoDTO) {

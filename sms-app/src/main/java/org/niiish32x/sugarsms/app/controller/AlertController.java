@@ -29,4 +29,9 @@ public class AlertController {
     public Result notifySugarsms(){
         return alertService.notifySugarSmsUser();
     }
+
+    @RequestMapping("/alert/notify/sugarsms/test")
+    public Result notifyTest(){
+        return alertService.notifyTest();
+    }
 }

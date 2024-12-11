@@ -1,7 +1,5 @@
 package org.niiish32x.sugarsms.app.service.impl;
 
-import cn.hutool.http.HttpRequest;
-import cn.hutool.http.HttpResponse;
 import com.alibaba.fastjson2.JSON;
 import lombok.extern.slf4j.Slf4j;
 import org.niiish32x.sugarsms.app.cache.UserPhoneCache;
@@ -47,12 +45,9 @@ public class SendMessageImpl implements SendMessageService {
     @Resource
     PersonService personService;
 
-    @Resource
-    AlertService alertService;
-
 
     @Override
-    public Result sendOneZubrixSms(String number, String text) {
+    public Result <ZubrixSmsResponse >sendOneZubrixSms(String number, String text) {
         ZubrixSmsRequest smsRequest = zubrixSmsProxy.buildRequest(number, text);
         String url = zubrixSmsProxy.buildUrl(smsRequest);
         ZubrixSmsResponse messageResponse = zubrixSmsProxy.send(url);
@@ -63,81 +58,4 @@ public class SendMessageImpl implements SendMessageService {
     public void sendOneToSms(String number, String text) {
 
     }
-
-    @Override
-    public Result sendMessageToSugarSmsUser() {
-
-        Result<List<SuposUserDTO>> res = userService.getUsersFromSupos("default_org_company", "sugarsms");
-
-        List<SuposUserDTO> sugasmsUsers = res.getData();
-
-        if(sugasmsUsers.isEmpty()) {
-            return Result.build(sugasmsUsers,ResultCodeEnum.SUCCESS);
-        }
-
-        for (SuposUserDTO userDTO : sugasmsUsers) {
-
-            String phoneNumber = userPhoneCache.cache.getIfPresent(userDTO.getPersonCode());
-
-            if(phoneNumber == null) {
-                PersonDTO person = personService.getOnePersonByPersonCode(
-                        PersonCodesDTO.builder()
-                                .personCodes(Arrays.asList(userDTO.getPersonCode()))
-                                .build()
-                );
-                phoneNumber = person.getPhone();
-                userPhoneCache.load();
-//                UserPhoneCache.cache.put(userDTO.getPersonCode(),person.getPhone());
-            }
-
-            try {
-                String finalPhoneNumber = phoneNumber;
-                Retrys.doWithRetry(()-> sendOneZubrixSms(finalPhoneNumber,"text"), r -> r.isOk(),5,100);
-            }catch (Throwable e) {
-                String s = String.format("person: %s 未能成功通知到！！！", userDTO.getPersonCode());
-                throw new IllegalStateException(s, e);
-            }
-
-            log.info("person: {} phone:{} 通知成功",userDTO.getPersonName(),phoneNumber);
-//            sendOneSmsMessage(phoneNumber,"text");
-        }
-
-        return Result.build(sugasmsUsers,ResultCodeEnum.SUCCESS);
-    }
-
-    @Override
-    public Result sendMessageToSugarSmsUser(String text) {
-        Result<List<SuposUserDTO>> res = userService.getUsersFromSupos("default_org_company", "sugarsms");
-
-        List<SuposUserDTO> sugasmsUsers = res.getData();
-
-        if(sugasmsUsers.isEmpty()) {
-            return Result.build(sugasmsUsers,ResultCodeEnum.SUCCESS);
-        }
-
-        for (SuposUserDTO userDTO : sugasmsUsers) {
-            PersonDTO person = personService.getOnePersonByPersonCode(
-                    PersonCodesDTO.builder()
-                            .personCodes(Arrays.asList(userDTO.getPersonCode()))
-                            .build()
-            );
-
-            sendOneToSms(person.getPhone(),text);
-        }
-
-        return Result.build(sugasmsUsers,ResultCodeEnum.SUCCESS);
-    }
-
-    @Override
-    public Result sendAlertToSugarSmsUser() {
-        List<AlertInfoDTO> alerts = alertService.getAlerts().getData();
-
-        for (AlertInfoDTO alert : alerts) {
-            sendMessageToSugarSmsUser(JSON.toJSONString(alert));
-        }
-
-        return Result.build("发送完成",ResultCodeEnum.SUCCESS);
-    }
-
-
 }
