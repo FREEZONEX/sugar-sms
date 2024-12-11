@@ -16,7 +16,8 @@ public class TimeUtil {
         Instant instant = Instant.ofEpochMilli(timestamp);
         ZoneId zoneId = ZoneId.systemDefault();
         LocalDateTime localDateTime = LocalDateTime.ofInstant(instant, zoneId);
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
+//        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         String formattedDateTime = localDateTime.format(formatter);
         return formattedDateTime;
     }
