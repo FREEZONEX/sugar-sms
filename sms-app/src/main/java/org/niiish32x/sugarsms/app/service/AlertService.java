@@ -12,5 +12,7 @@ import java.util.List;
  * @date 2024.12.10 9:56
  */
 public interface AlertService {
-     Result<List<AlertInfoDTO>> getAlerts();
+     Result<List<AlertInfoDTO>> getAlertsFromSupos();
+
+     Result notifySugarSmsUser();
 }

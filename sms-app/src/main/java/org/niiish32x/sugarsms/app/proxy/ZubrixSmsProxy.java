@@ -4,6 +4,7 @@ import cn.hutool.http.HttpRequest;
 import cn.hutool.http.HttpResponse;
 import com.alibaba.fastjson2.JSON;
 import lombok.extern.slf4j.Slf4j;
+import org.niiish32x.sugarsms.app.dto.AlertInfoDTO;
 import org.niiish32x.sugarsms.app.external.ZubrixSmsResponse;
 import org.niiish32x.sugarsms.app.external.ZubrixSmsRequest;
 import org.springframework.stereotype.Component;
@@ -36,6 +37,12 @@ public class ZubrixSmsProxy {
         HttpResponse response = HttpRequest.get(url).execute();
         ZubrixSmsResponse messageResponse = JSON.parseObject(response.body(), ZubrixSmsResponse.class);
         return messageResponse;
+    }
+
+
+    public String formatTextContent(AlertInfoDTO alertInfoDTO) {
+        String text = String.format(SMS_TEXT_TEMPLATE, alertInfoDTO.getSourcePropertyName(), alertInfoDTO.getNewValue(), "0", alertInfoDTO.getSource(), alertInfoDTO.getStartDataTimestamp());
+        return text;
     }
 
      public ZubrixSmsRequest buildRequest(String number,String text) {
