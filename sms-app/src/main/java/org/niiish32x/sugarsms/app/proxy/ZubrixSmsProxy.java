@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.niiish32x.sugarsms.app.dto.AlertInfoDTO;
 import org.niiish32x.sugarsms.app.external.ZubrixSmsResponse;
 import org.niiish32x.sugarsms.app.external.ZubrixSmsRequest;
+import org.niiish32x.sugarsms.common.supos.utils.TimeUtil;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
@@ -28,7 +29,7 @@ public class ZubrixSmsProxy {
 
     private final String zubrixSmsBaseUrl = "http://cloudsms.zubrixtechnologies.com/api/mt/SendSMS";
 
-    private final String SMS_TEXT_TEMPLATE = "KPI %s exceeded to %s Threshold/Limit value %s value Location sugarArea Date/Time%s Dhampur Sugar Mills";
+    private final String SMS_TEXT_TEMPLATE = "KPI %s exceeded to %s Threshold/Limit value %s value Location %s Date/Time%s Dhampur Sugar Mills";
 
 
     public ZubrixSmsResponse send(String url) {
@@ -41,13 +42,12 @@ public class ZubrixSmsProxy {
 
 
     public String formatTextContent(AlertInfoDTO alertInfoDTO) {
-        String text = String.format(SMS_TEXT_TEMPLATE, alertInfoDTO.getSourcePropertyName(), alertInfoDTO.getNewValue(), "0", alertInfoDTO.getSource(), alertInfoDTO.getStartDataTimestamp());
+        String time = TimeUtil.formatTimeStamp(alertInfoDTO.getStartDataTimestamp());
+        String text = String.format(SMS_TEXT_TEMPLATE, alertInfoDTO.getSourcePropertyName(), alertInfoDTO.getNewValue(), "0", alertInfoDTO.getSource(), time);
         return text;
     }
 
      public ZubrixSmsRequest buildRequest(String number,String text) {
-         Date date = new Date();
-         String content = String.format(SMS_TEXT_TEMPLATE, "x",date,"x",date);
          return ZubrixSmsRequest.builder()
                  .user("SUPINCO123")
                  .password("123456")
@@ -56,7 +56,7 @@ public class ZubrixSmsProxy {
                  .dcs("0")
                  .flashSMS("0")
                  .number(number)
-                 .text(content)
+                 .text(text)
                  .route("02")
                  .dltTemplateId("1607100000000331206")
                  .peid("1601100000000014322")
@@ -82,6 +82,8 @@ public class ZubrixSmsProxy {
 
         return url;
     }
+
+
 
 
     public static void main(String[] args) {
