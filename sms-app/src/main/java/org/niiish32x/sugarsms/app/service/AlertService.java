@@ -1,6 +1,7 @@
 package org.niiish32x.sugarsms.app.service;
 
 import org.niiish32x.sugarsms.app.dto.AlertInfoDTO;
+import org.niiish32x.sugarsms.app.external.ZubrixSmsResponse;
 import org.niiish32x.sugarsms.common.supos.result.Result;
 
 import java.util.List;
@@ -16,5 +17,5 @@ public interface AlertService {
 
      Result notifySugarSmsUser();
 
-     Result notifyTest();
+     Result  <ZubrixSmsResponse> notifyTest();
 }

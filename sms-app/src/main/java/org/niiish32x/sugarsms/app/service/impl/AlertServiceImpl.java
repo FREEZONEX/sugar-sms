@@ -206,8 +206,4 @@ public class AlertServiceImpl implements AlertService {
         return zubrixSmsResponse.getErrorCode() == 0 ?  Result.build(zubrixSmsResponse,ResultCodeEnum.SUCCESS) : Result.build(zubrixSmsResponse,ResultCodeEnum.FAIL);
     }
 
-    private String buildAlertContent(AlertInfoDTO alertInfoDTO) {
-        String content = zubrixSmsProxy.formatTextContent(alertInfoDTO);
-        return content;
-    }
 }
