@@ -9,12 +9,12 @@ import org.niiish32x.sugarsms.common.supos.result.Result;
  * @date 2024.12.09 9:42
  */
 public interface SendMessageService {
-    void sendOne();
+    void sendOneToSms();
 
 
     Result sendOneSmsMessage(String number, String text);
 
-    void sendOne(String number,String text);
+    void sendOneToSms(String number, String text);
 
     Result sendMessageToSugarSmsUser();
 

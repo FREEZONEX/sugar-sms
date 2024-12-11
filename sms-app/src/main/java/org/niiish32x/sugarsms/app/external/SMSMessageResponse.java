@@ -4,6 +4,7 @@ import com.alibaba.fastjson2.annotation.JSONField;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * SMSMessageResponse
@@ -21,5 +22,5 @@ public class SMSMessageResponse implements Serializable {
     @JSONField(name = "JobId")
     private String jobId;
     @JSONField(name = "MessageData")
-    private SMSMessageData messageData;
+    private List<SMSMessageData>  messageData;
 }
