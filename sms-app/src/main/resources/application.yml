@@ -1,13 +1,8 @@
 supos:
-  supos-address:
+  supos-address: {supos-address}
   app-id: 4d4384283dc193f39d6b95b5db1b8940
   app-secret: xxx
-  ak:
-  sk:
+  ak: {your-ak}
+  sk: {your-sk}
 
-#spring:
-#  datasource:
-#    url: localhost:3366
-#    password: 123456
-#    driver-class-name:
 
