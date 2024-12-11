@@ -22,6 +22,7 @@ import org.niiish32x.sugarsms.common.supos.utils.Retrys;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.sql.Time;
 import java.util.*;
 
 /**
@@ -34,6 +35,10 @@ import java.util.*;
 @Service
 @Slf4j
 public class SendMessageImpl implements SendMessageService {
+
+    private final String SMS_URL = "http://cloudsms.zubrixtechnologies.com/api/mt/SendSMS?user=%s&password=%s&senderid=%s&channel=%s&DCS=%s&flashsms=%s&number=%s&text=%s&route=%s&DLTTemplateId=%s&PEID=%s";
+
+    private final String SMS_TEXT_TEMPLATE = "KPI %s exceeded to %s Threshold/Limit value %s value Location sugarArea Date/Time%s Dhampur Sugar Mills";
 
     @Resource
     UserService userService;
@@ -62,12 +67,23 @@ public class SendMessageImpl implements SendMessageService {
 
     @Override
     public Result sendOneSmsMessage(String number, String text) {
-        SendSMSMessageRequest sendSmsMessageRequest = new SendSMSMessageRequest();
-        sendSmsMessageRequest.CreateSMSRequest(number,text);
+        SendSMSMessageRequest sendSMSMessageRequest = buildSendSMSMessageRequest(number, text);
 
-        Map<String, String> queryParam = buildTestSendQueryParam(sendSmsMessageRequest);
-        HttpRequest request = HttpRequest.get(ApiEnum.SENDSMS_API.value).formStr(queryParam);
+//        Map<String, String> queryParam = buildSmsSendQueryParam(sendSMSMessageRequest);
+
+        String url = buildSendSmsUrl(sendSMSMessageRequest);
+        System.out.println();
+//        HttpRequest request = HttpRequest.post(ApiEnum.SENDSMS_API.value).formStr(queryParam);
+
+        HttpRequest request = HttpRequest.get(url);
+
+//        request.body(JSON.toJSONString(request));
+        System.out.println(request);
         HttpResponse response = request.execute();
+
+        System.out.println(response.body());
+
+
         SMSMessageResponse messageResponse = JSON.parseObject(response.body(), SMSMessageResponse.class);
         return messageResponse.getErrorCode() == 0 ? Result.build(messageResponse,ResultCodeEnum.SUCCESS) : Result.build(messageResponse,ResultCodeEnum.FAIL);
     }
@@ -160,8 +176,22 @@ public class SendMessageImpl implements SendMessageService {
     }
 
 
+    private String  buildSendSmsUrl(SendSMSMessageRequest request) {
+        Date date = new Date();
+
+
+        String url = String.format(SMS_URL,request.getUser(),request.getPassword(),request.getSenderId(),request.getChannel(),request.getDcs(),request.getFlashSMS(),request.getNumber(),request.getText(),request.getRoute(),request.getDltTemplateId(),request.getPeid());
+
+        return url;
+    }
 
     private SendSMSMessageRequest buildSendSMSMessageRequest(String number,String text) {
+
+        Date date = new Date();
+
+        String content = String.format(SMS_TEXT_TEMPLATE, "x",date,"x",date);
+
+
         return SendSMSMessageRequest.builder()
                 .user("SUPINCO123")
                 .password("123456")
@@ -170,7 +200,7 @@ public class SendMessageImpl implements SendMessageService {
                 .dcs("0")
                 .flashSMS("0")
                 .number(number)
-                .text(text)
+                .text(content)
                 .route("02")
                 .dltTemplateId("1607100000000331206")
                 .peid("1601100000000014322")
@@ -192,6 +222,13 @@ public class SendMessageImpl implements SendMessageService {
     }
 
     private Map<String,String> buildSmsSendQueryParam(SendSMSMessageRequest request) {
+
+        Date date = new Date();
+
+        String content = String.format(SMS_TEXT_TEMPLATE, "x",date,"x",date);
+
+        System.out.println(content);
+
         Map<String,String> queryParams = new HashMap<>();
         queryParams.put("user",request.getUser());
         queryParams.put("password",request.getPassword());
@@ -199,6 +236,7 @@ public class SendMessageImpl implements SendMessageService {
         queryParams.put("channel",request.getChannel());
         queryParams.put("DCS",request.getDcs());
         queryParams.put("flashsms",request.getFlashSMS());
+        queryParams.put("text",content);
         queryParams.put("route",request.getRoute());
         queryParams.put("DLTTemplateId",request.getDltTemplateId());
         queryParams.put("PEID",request.getPeid());
