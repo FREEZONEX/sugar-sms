@@ -1,12 +1,9 @@
 package org.niiish32x.sugarsms.app.external;
 
 import com.alibaba.fastjson2.annotation.JSONField;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 import org.niiish32x.sugarsms.app.dto.SuposUserDTO;
-import org.niiish32x.sugarsms.common.supos.request.PageResponse;
+import org.niiish32x.sugarsms.common.request.PageResponse;
 
 import java.io.Serializable;
 import java.util.ArrayList;

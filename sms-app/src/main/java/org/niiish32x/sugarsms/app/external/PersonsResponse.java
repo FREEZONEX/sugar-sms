@@ -4,7 +4,7 @@ import com.alibaba.fastjson2.annotation.JSONField;
 import lombok.Data;
 import org.niiish32x.sugarsms.app.dto.PageDTO;
 import org.niiish32x.sugarsms.app.dto.PersonDTO;
-import org.niiish32x.sugarsms.common.supos.request.PageResponse;
+import org.niiish32x.sugarsms.common.request.PageResponse;
 
 import java.util.List;
 

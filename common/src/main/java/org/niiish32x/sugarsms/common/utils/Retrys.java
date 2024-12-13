@@ -1,4 +1,4 @@
-package org.niiish32x.sugarsms.common.supos.utils;
+package org.niiish32x.sugarsms.common.utils;
 
 import java.util.function.Predicate;
 import java.util.function.Supplier;

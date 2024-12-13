@@ -1,4 +1,4 @@
-package org.niiish32x.sugarsms.common.supos.result;
+package org.niiish32x.sugarsms.common.result;
 
 /**
  * ResultCodeEnum

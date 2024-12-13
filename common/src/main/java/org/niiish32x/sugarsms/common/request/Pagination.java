@@ -1,4 +1,4 @@
-package org.niiish32x.sugarsms.common.supos.request;
+package org.niiish32x.sugarsms.common.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

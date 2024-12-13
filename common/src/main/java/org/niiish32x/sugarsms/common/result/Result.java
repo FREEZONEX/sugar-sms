@@ -1,4 +1,4 @@
-package org.niiish32x.sugarsms.common.supos.result;
+package org.niiish32x.sugarsms.common.result;
 
 /**
  * Result
@@ -7,7 +7,6 @@ package org.niiish32x.sugarsms.common.supos.result;
  * @date 2024.12.09 10:26
  */
 
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import lombok.Data;
 
 /**
