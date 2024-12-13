@@ -4,8 +4,6 @@ import cn.hutool.http.HttpResponse;
 
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.annotation.JSONField;
-import com.google.common.cache.LoadingCache;
-import com.sun.org.apache.bcel.internal.generic.LUSHR;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.niiish32x.sugarsms.app.dto.MessageDTO;
@@ -17,10 +15,10 @@ import org.niiish32x.sugarsms.app.external.UsersResponse;
 import org.niiish32x.sugarsms.app.service.PersonService;
 import org.niiish32x.sugarsms.app.service.UserService;
 import org.niiish32x.sugarsms.app.tools.SuposUserMocker;
-import org.niiish32x.sugarsms.common.supos.request.PageResponse;
-import org.niiish32x.sugarsms.common.supos.request.SuposRequestManager;
-import org.niiish32x.sugarsms.common.supos.result.Result;
-import org.niiish32x.sugarsms.common.supos.result.ResultCodeEnum;
+import org.niiish32x.sugarsms.common.request.PageResponse;
+import org.niiish32x.sugarsms.common.request.SuposRequestManager;
+import org.niiish32x.sugarsms.common.result.Result;
+import org.niiish32x.sugarsms.common.result.ResultCodeEnum;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;

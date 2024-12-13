@@ -7,11 +7,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.niiish32x.sugarsms.app.dto.AlertInfoDTO;
 import org.niiish32x.sugarsms.app.external.ZubrixSmsResponse;
 import org.niiish32x.sugarsms.app.external.ZubrixSmsRequest;
-import org.niiish32x.sugarsms.common.supos.utils.TimeUtil;
+import org.niiish32x.sugarsms.common.utils.TimeUtil;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 
 /**

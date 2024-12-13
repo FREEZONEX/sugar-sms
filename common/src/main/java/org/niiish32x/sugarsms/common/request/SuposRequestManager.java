@@ -1,10 +1,8 @@
-package org.niiish32x.sugarsms.common.supos.request;
+package org.niiish32x.sugarsms.common.request;
 
 import cn.hutool.http.HttpRequest;
 import cn.hutool.http.HttpResponse;
 import cn.hutool.http.Method;
-import cn.hutool.json.JSONArray;
-import cn.hutool.json.JSONObject;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

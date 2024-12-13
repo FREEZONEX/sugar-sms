@@ -3,8 +3,7 @@ package org.niiish32x.sugarsms.app.service;
 import org.niiish32x.sugarsms.app.dto.PersonCodesDTO;
 import org.niiish32x.sugarsms.app.dto.PersonDTO;
 import org.niiish32x.sugarsms.app.external.PersonsResponse;
-import org.niiish32x.sugarsms.app.service.impl.PersonServiceImpl;
-import org.niiish32x.sugarsms.common.supos.result.Result;
+import org.niiish32x.sugarsms.common.result.Result;
 
 import java.util.List;
 

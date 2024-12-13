@@ -1,4 +1,4 @@
-package org.niiish32x.sugarsms.common.supos.utils;
+package org.niiish32x.sugarsms.common.utils;
 
 import java.time.Instant;
 import java.time.LocalDateTime;

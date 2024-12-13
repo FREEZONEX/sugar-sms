@@ -1,4 +1,4 @@
-package org.niiish32x.sugarsms.common.supos.request;
+package org.niiish32x.sugarsms.common.request;
 
 import com.alibaba.fastjson2.annotation.JSONField;
 import lombok.AllArgsConstructor;
@@ -7,7 +7,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
-import java.util.List;
 
 /**
  * PageResponse

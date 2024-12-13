@@ -1,12 +1,9 @@
 package org.niiish32x.sugarsms.app.mq.impl;
 
-import org.niiish32x.sugarsms.app.enums.ApiEnum;
 import org.niiish32x.sugarsms.app.mq.AlertMessageConsumer;
-import org.niiish32x.sugarsms.common.supos.request.SuposRequestManager;
+import org.niiish32x.sugarsms.common.request.SuposRequestManager;
 
 import javax.annotation.Resource;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * AlertMessageConsumerImpl
