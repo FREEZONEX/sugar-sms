@@ -1,6 +1,5 @@
 package org.niiish32x.sugarsms.app.service.impl;
 
-import io.github.biezhi.ome.SendMailException;
 import lombok.extern.slf4j.Slf4j;
 import org.niiish32x.sugarsms.app.external.ZubrixSmsResponse;
 import org.niiish32x.sugarsms.app.proxy.EmailSenderProxy;
