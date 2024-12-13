@@ -179,7 +179,7 @@ public class AlertServiceImpl implements AlertService {
                     userInfoCache.load();
                 }
 
-                sendMessageService.sendEmail(email,"alert",text);
+                sendMessageService.sendEmail(email,"sugar-plant-alert",text);
                 log.info("person: {} email:{} 通知成功",userDTO.getPersonName(),email);
             }
         }
