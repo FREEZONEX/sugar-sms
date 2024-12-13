@@ -42,6 +42,14 @@ import java.util.concurrent.*;
 @Slf4j
 public class AlertServiceImpl implements AlertService {
 
+    // 防止重复发送
+    ConcurrentHashMap <String,String> visited = new ConcurrentHashMap<>();
+    // sms + 消息ID + phone
+    private final String PHONE_KEY = "sms%s%s";
+
+    // sms + 消息ID + email
+    private final String EMAIL_KEY = "email%s%s";
+
     ThreadPoolExecutor threadPoolExecutor
             = new ThreadPoolExecutor(16, // 核心线程数
             32, // 最大线程数
@@ -122,6 +130,15 @@ public class AlertServiceImpl implements AlertService {
                     userInfoCache.load();
                 }
 
+                String key = String.format(PHONE_KEY,  alertInfoDTO.getId(),phoneNumber);
+
+                if(visited.contains(key)) {
+                    continue;
+                }
+
+                visited.put(key,"1");
+
+
                 try {
                     String finalPhoneNumber = phoneNumber;
                     Retrys.doWithRetry(()-> sendMessageService.sendOneZubrixSmsMessage(finalPhoneNumber,text), r -> r.isOk(),5,100);
@@ -180,6 +197,15 @@ public class AlertServiceImpl implements AlertService {
                     userInfoCache.load();
                 }
                 if(StringUtils.isNotBlank(email)) {
+
+                    String key = String.format(EMAIL_KEY, alertInfoDTO.getId(),email);
+
+                    if(visited.contains(key)) {
+                        continue;
+                    }
+
+                    visited.put(key,"1");
+
                     sendMessageService.sendEmail(email,"sugar-plant-alert",text);
                 }
 

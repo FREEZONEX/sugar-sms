@@ -90,11 +90,11 @@ public class ZubrixSmsProxy {
 
 
 
-    public static void main(String[] args) {
-        ZubrixSmsProxy smsProxy = new ZubrixSmsProxy();
-        ZubrixSmsRequest request = smsProxy.buildRequest("123", "xx");
-        String url = smsProxy.buildUrl(request);
-        System.out.println(url);
-
-    }
+//    public static void main(String[] args) {
+//        ZubrixSmsProxy smsProxy = new ZubrixSmsProxy();
+//        ZubrixSmsRequest request = smsProxy.buildRequest("123", "xx");
+//        String url = smsProxy.buildUrl(request);
+//        System.out.println(url);
+//
+//    }
 }
