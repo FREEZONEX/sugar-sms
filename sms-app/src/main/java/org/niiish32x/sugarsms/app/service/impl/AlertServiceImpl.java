@@ -3,6 +3,7 @@ package org.niiish32x.sugarsms.app.service.impl;
 import cn.hutool.http.HttpResponse;
 import com.alibaba.fastjson2.JSON;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.niiish32x.sugarsms.app.cache.UserInfoCache;
 import org.niiish32x.sugarsms.app.dto.AlertInfoDTO;
 import org.niiish32x.sugarsms.app.dto.PersonCodesDTO;
@@ -178,8 +179,10 @@ public class AlertServiceImpl implements AlertService {
                     email = person.getEmail();
                     userInfoCache.load();
                 }
+                if(StringUtils.isNotBlank(email)) {
+                    sendMessageService.sendEmail(email,"sugar-plant-alert",text);
+                }
 
-                sendMessageService.sendEmail(email,"sugar-plant-alert",text);
                 log.info("person: {} email:{} 通知成功",userDTO.getPersonName(),email);
             }
         }
