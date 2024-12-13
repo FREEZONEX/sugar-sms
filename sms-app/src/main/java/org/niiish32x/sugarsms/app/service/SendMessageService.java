@@ -1,6 +1,5 @@
 package org.niiish32x.sugarsms.app.service;
 
-import io.github.biezhi.ome.SendMailException;
 import org.niiish32x.sugarsms.app.external.ZubrixSmsResponse;
 import org.niiish32x.sugarsms.common.result.Result;
 

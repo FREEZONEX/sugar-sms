@@ -1,6 +1,5 @@
 package org.niiish32x.sugarsms.app.controller;
 
-import io.github.biezhi.ome.SendMailException;
 import org.niiish32x.sugarsms.app.service.SendMessageService;
 import org.niiish32x.sugarsms.common.result.Result;
 import org.springframework.web.bind.annotation.RequestMapping;
