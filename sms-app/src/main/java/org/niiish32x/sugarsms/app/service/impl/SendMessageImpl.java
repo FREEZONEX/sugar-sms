@@ -13,6 +13,9 @@ import org.niiish32x.sugarsms.common.result.ResultCodeEnum;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * SendMessageImpl
@@ -26,23 +29,14 @@ import javax.annotation.Resource;
 public class SendMessageImpl implements SendMessageService {
 
     @Resource
-    UserPhoneCache userPhoneCache;
-
-    @Resource
     ZubrixSmsProxy zubrixSmsProxy;
-
-    @Resource
-    UserService userService;
-
-    @Resource
-    PersonService personService;
 
 
     @Override
-    public Result <ZubrixSmsResponse >sendOneZubrixSms(String number, String text) {
-        ZubrixSmsRequest smsRequest = zubrixSmsProxy.buildRequest(number, text);
-        String url = zubrixSmsProxy.buildUrl(smsRequest);
-        ZubrixSmsResponse messageResponse = zubrixSmsProxy.send(url);
+    public Result <ZubrixSmsResponse > sendOneZubrixSmsMessage(String number, String text) {
+        ZubrixSmsResponse messageResponse = zubrixSmsProxy.send(number,text);
         return messageResponse.getErrorCode() == 0 ? Result.build(messageResponse,ResultCodeEnum.SUCCESS) : Result.build(messageResponse,ResultCodeEnum.FAIL);
     }
+
+
 }

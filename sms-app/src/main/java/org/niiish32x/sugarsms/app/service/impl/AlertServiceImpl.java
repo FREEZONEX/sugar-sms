@@ -103,6 +103,7 @@ public class AlertServiceImpl implements AlertService {
         }
 
 
+
         for (AlertInfoDTO alertInfoDTO : alertInfoDTOS) {
             String text = zubrixSmsProxy.formatTextContent(alertInfoDTO);
             for (SuposUserDTO userDTO : sugasmsUsers) {
@@ -121,7 +122,7 @@ public class AlertServiceImpl implements AlertService {
 
                 try {
                     String finalPhoneNumber = phoneNumber;
-                    Retrys.doWithRetry(()-> sendMessageService.sendOneZubrixSms(finalPhoneNumber,text), r -> r.isOk(),5,100);
+                    Retrys.doWithRetry(()-> sendMessageService.sendOneZubrixSmsMessage(finalPhoneNumber,text), r -> r.isOk(),5,100);
                 }catch (Throwable e) {
                     String s = String.format("person: %s 未能成功通知到！！！", userDTO.getPersonCode());
                     throw new IllegalStateException(s, e);
@@ -177,7 +178,7 @@ public class AlertServiceImpl implements AlertService {
 
 
         String finalPhoneNumber = phoneNumber;
-        ZubrixSmsResponse zubrixSmsResponse = sendMessageService.sendOneZubrixSms(finalPhoneNumber, text).getData();
+        ZubrixSmsResponse zubrixSmsResponse = sendMessageService.sendOneZubrixSmsMessage(finalPhoneNumber, text).getData();
         log.info("通知内容 {} ",text);
 
         log.info("person: {} phone:{} 通知成功",userDTO.getPersonName(),phoneNumber);
