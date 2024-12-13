@@ -1,0 +1,23 @@
+# -------------------------------------------- #
+#               APP定义                        #
+# -------------------------------------------- #
+# 安装包版本。必填。固定值
+apiVersion: v3alpha1
+# app名称。必填。英文小写名称。长度限制5~10
+name: sugar-sms
+# app显示名称。必填。
+showName: sugar-sms
+# app开始者名称。必填。英文小写名称。长度限制5~10
+vendorName: sugar-sms
+# app版本。必填。格式需要符合[SemVer 2](https://semver.org/)规范。如:1.0.0
+appVersion: 1.0.0
+# app简短描述。必填。用一句话描述app的功能。
+description: sugar-sms
+# app详细描述文档。非必填。如：帮助手册
+#doc: /static/help.doc
+# app图标。非必填。
+#icon: /static/icon.png
+# app主入口访问地址。非必填。
+#indexUrl: http://www.baidu.com
+# app类型。必填。取值：normal=通用，lcdp=LCDP低代码。默认值：normal
+type: normal

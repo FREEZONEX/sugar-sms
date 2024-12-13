@@ -1,0 +1,2 @@
+Manifest-Version: 1.0
+Main-Class: org.niiish32x.sugarsms.Bootstrap
