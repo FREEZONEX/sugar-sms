@@ -30,6 +30,11 @@ public class ZubrixSmsProxy {
 
     private final String SMS_TEXT_TEMPLATE = "KPI %s exceeded to %s Threshold/Limit value %s value Location %s Date/Time%s Dhampur Sugar Mills";
 
+    public ZubrixSmsResponse send(String number,String text) {
+        ZubrixSmsRequest request = buildRequest(number, text);
+        String url = buildUrl(request);
+        return send(url);
+    }
 
     public ZubrixSmsResponse send(String url) {
         log.info("开始发送短信");
@@ -85,11 +90,11 @@ public class ZubrixSmsProxy {
 
 
 
-    public static void main(String[] args) {
-        ZubrixSmsProxy smsProxy = new ZubrixSmsProxy();
-        ZubrixSmsRequest request = smsProxy.buildRequest("123", "xx");
-        String url = smsProxy.buildUrl(request);
-        System.out.println(url);
-
-    }
+//    public static void main(String[] args) {
+//        ZubrixSmsProxy smsProxy = new ZubrixSmsProxy();
+//        ZubrixSmsRequest request = smsProxy.buildRequest("123", "xx");
+//        String url = smsProxy.buildUrl(request);
+//        System.out.println(url);
+//
+//    }
 }

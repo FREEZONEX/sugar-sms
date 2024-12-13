@@ -21,6 +21,11 @@ public class SendMessageController {
 
     @RequestMapping("/send/sms/test")
     public Result sendSmsTest(){
-        return sendMessageService.sendOneZubrixSms("919747934655","xx");
+        return sendMessageService.sendOneZubrixSmsMessage("919747934655","xx");
+    }
+
+    @RequestMapping("/send/email")
+    public void sendEmail()  {
+        sendMessageService.sendEmail();
     }
 }

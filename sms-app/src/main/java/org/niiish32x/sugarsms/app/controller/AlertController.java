@@ -28,11 +28,13 @@ public class AlertController {
 
     @RequestMapping("/alert/notify/sugarsms")
     public Result notifySugarsms(){
-        return alertService.notifySugarSmsUser();
+        return alertService.notifySugarUserBySms();
     }
 
     @RequestMapping("/alert/notify/sugarsms/test")
     public Result  <ZubrixSmsResponse>  notifyTest(){
         return alertService.notifyTest();
     }
+
+
 }

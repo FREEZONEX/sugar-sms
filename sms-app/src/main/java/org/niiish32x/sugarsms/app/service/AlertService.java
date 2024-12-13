@@ -15,7 +15,9 @@ import java.util.List;
 public interface AlertService {
      Result<List<AlertInfoDTO>> getAlertsFromSupos();
 
-     Result notifySugarSmsUser();
+     Result notifySugarUserBySms();
+
+     Result notifySugarUserByEmail();
 
      Result  <ZubrixSmsResponse> notifyTest();
 }
