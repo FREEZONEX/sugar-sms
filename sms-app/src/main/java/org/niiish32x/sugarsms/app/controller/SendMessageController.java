@@ -1,5 +1,6 @@
 package org.niiish32x.sugarsms.app.controller;
 
+import io.github.biezhi.ome.SendMailException;
 import org.niiish32x.sugarsms.app.service.SendMessageService;
 import org.niiish32x.sugarsms.common.result.Result;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -22,5 +23,10 @@ public class SendMessageController {
     @RequestMapping("/send/sms/test")
     public Result sendSmsTest(){
         return sendMessageService.sendOneZubrixSmsMessage("919747934655","xx");
+    }
+
+    @RequestMapping("/send/email")
+    public void sendEmail()  {
+        sendMessageService.sendEmail();
     }
 }

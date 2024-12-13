@@ -25,7 +25,7 @@ import java.util.concurrent.TimeUnit;
  */
 
 @Component
-public class UserPhoneCache implements InitializingBean {
+public class UserInfoCache implements InitializingBean {
 
     @Resource
     UserService userService;
@@ -33,9 +33,14 @@ public class UserPhoneCache implements InitializingBean {
     @Resource
     PersonService personService;
 
-    public static Cache<String,String> cache = CacheBuilder.newBuilder()
+    public static Cache<String,String> nameToEmail = CacheBuilder.newBuilder()
             .expireAfterAccess(300, TimeUnit.SECONDS)
             .build();
+
+    public static Cache<String,String> nameToPhone = CacheBuilder.newBuilder()
+            .expireAfterAccess(300, TimeUnit.SECONDS)
+            .build();
+
     /**
      * 缓存预热
      * @throws Exception
@@ -63,7 +68,8 @@ public class UserPhoneCache implements InitializingBean {
             List<PersonDTO> personDTOS = personsResponse.getList();
 
             for (PersonDTO personDTO : personDTOS) {
-                cache.put(personDTO.getName(),personDTO.getPhone());
+                nameToPhone.put(personDTO.getName(),personDTO.getPhone());
+                nameToEmail.put(personDTO.getName(),personDTO.getEmail());
             }
         }
     }

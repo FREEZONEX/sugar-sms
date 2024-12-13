@@ -3,7 +3,7 @@ package org.niiish32x.sugarsms.app.service.impl;
 import cn.hutool.http.HttpResponse;
 import com.alibaba.fastjson2.JSON;
 import lombok.extern.slf4j.Slf4j;
-import org.niiish32x.sugarsms.app.cache.UserPhoneCache;
+import org.niiish32x.sugarsms.app.cache.UserInfoCache;
 import org.niiish32x.sugarsms.app.dto.AlertInfoDTO;
 import org.niiish32x.sugarsms.app.dto.PersonCodesDTO;
 import org.niiish32x.sugarsms.app.dto.PersonDTO;
@@ -11,6 +11,7 @@ import org.niiish32x.sugarsms.app.dto.SuposUserDTO;
 import org.niiish32x.sugarsms.app.enums.ApiEnum;
 import org.niiish32x.sugarsms.app.external.AlertResponse;
 import org.niiish32x.sugarsms.app.external.ZubrixSmsResponse;
+import org.niiish32x.sugarsms.app.proxy.EmailSenderProxy;
 import org.niiish32x.sugarsms.app.proxy.ZubrixSmsProxy;
 import org.niiish32x.sugarsms.app.service.AlertService;
 import org.niiish32x.sugarsms.app.service.PersonService;
@@ -56,7 +57,7 @@ public class AlertServiceImpl implements AlertService {
     UserService userService;
 
     @Resource
-    UserPhoneCache userPhoneCache;
+    UserInfoCache userInfoCache;
 
     @Resource
     PersonService personService;
@@ -78,7 +79,7 @@ public class AlertServiceImpl implements AlertService {
     }
 
     @Override
-    public Result notifySugarSmsUser() {
+    public Result notifySugarUserBySms() {
 
         Result<List<AlertInfoDTO>> alertsResult = getAlertsFromSupos();
 
@@ -108,7 +109,7 @@ public class AlertServiceImpl implements AlertService {
             String text = zubrixSmsProxy.formatTextContent(alertInfoDTO);
             for (SuposUserDTO userDTO : sugasmsUsers) {
 
-                String phoneNumber = userPhoneCache.cache.getIfPresent(userDTO.getPersonCode());
+                String phoneNumber = userInfoCache.nameToPhone.getIfPresent(userDTO.getPersonCode());
 
                 if(phoneNumber == null) {
                     PersonDTO person = personService.getOnePersonByPersonCode(
@@ -117,7 +118,7 @@ public class AlertServiceImpl implements AlertService {
                                     .build()
                     );
                     phoneNumber = person.getPhone();
-                    userPhoneCache.load();
+                    userInfoCache.load();
                 }
 
                 try {
@@ -129,6 +130,57 @@ public class AlertServiceImpl implements AlertService {
                 }
 
                 log.info("person: {} phone:{} 通知成功",userDTO.getPersonName(),phoneNumber);
+            }
+        }
+
+        return Result.build(sugasmsUsers,ResultCodeEnum.SUCCESS);
+    }
+
+    @Override
+    public Result notifySugarUserByEmail() {
+
+        Result<List<AlertInfoDTO>> alertsResult = getAlertsFromSupos();
+
+        if(!alertsResult.isOk()) {
+            log.error("获取报警信息异常");
+            return Result.build(ResultCodeEnum.FAIL,null);
+        }
+
+        List<AlertInfoDTO> alertInfoDTOS = alertsResult.getData();
+
+        if(alertInfoDTOS == null || alertInfoDTOS.isEmpty()) {
+            return Result.build(ResultCodeEnum.SUCCESS,null);
+        }
+
+
+        Result<List<SuposUserDTO>> res = userService.getUsersFromSupos("default_org_company", "sugarsms");
+
+        List<SuposUserDTO> sugasmsUsers = res.getData();
+
+        if(sugasmsUsers.isEmpty()) {
+            return Result.build(sugasmsUsers,ResultCodeEnum.SUCCESS);
+        }
+
+
+
+        for (AlertInfoDTO alertInfoDTO : alertInfoDTOS) {
+            String text = zubrixSmsProxy.formatTextContent(alertInfoDTO);
+            for (SuposUserDTO userDTO : sugasmsUsers) {
+
+                String email = UserInfoCache.nameToEmail.getIfPresent(userDTO.getPersonCode());
+
+                if(email == null) {
+                    PersonDTO person = personService.getOnePersonByPersonCode(
+                            PersonCodesDTO.builder()
+                                    .personCodes(Arrays.asList(userDTO.getPersonCode()))
+                                    .build()
+                    );
+                    email = person.getEmail();
+                    userInfoCache.load();
+                }
+
+                sendMessageService.sendEmail(email,"alert",text);
+                log.info("person: {} email:{} 通知成功",userDTO.getPersonName(),email);
             }
         }
 
@@ -164,7 +216,7 @@ public class AlertServiceImpl implements AlertService {
         AlertInfoDTO alertInfoDTO = alertInfoDTOS.get(0);
         String text = zubrixSmsProxy.formatTextContent(alertInfoDTO);
         SuposUserDTO userDTO = sugasmsUsers.get(0);
-        String phoneNumber = userPhoneCache.cache.getIfPresent(userDTO.getPersonCode());
+        String phoneNumber = userInfoCache.nameToPhone.getIfPresent(userDTO.getPersonCode());
 
             if(phoneNumber == null) {
                 PersonDTO person = personService.getOnePersonByPersonCode(
@@ -173,7 +225,7 @@ public class AlertServiceImpl implements AlertService {
                                 .build()
                 );
                 phoneNumber = person.getPhone();
-                userPhoneCache.load();
+                userInfoCache.load();
             }
 
 
