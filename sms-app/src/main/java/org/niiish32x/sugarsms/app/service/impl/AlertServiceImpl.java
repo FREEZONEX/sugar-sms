@@ -43,12 +43,12 @@ import java.util.concurrent.*;
 public class AlertServiceImpl implements AlertService {
 
     // 防止重复发送
-    ConcurrentHashMap <String,String> visited = new ConcurrentHashMap<>();
-    // sms + 消息ID + phone
-    private final String PHONE_KEY = "sms%s%s";
+    static  ConcurrentHashMap <String,String> visited = new ConcurrentHashMap<>();
+    // sms + 消息ID
+    private final String PHONE_KEY = "sms%s";
 
-    // sms + 消息ID + email
-    private final String EMAIL_KEY = "email%s%s";
+    // email + 消息ID
+    private final String EMAIL_KEY = "email%s";
 
     ThreadPoolExecutor threadPoolExecutor
             = new ThreadPoolExecutor(16, // 核心线程数
@@ -115,6 +115,15 @@ public class AlertServiceImpl implements AlertService {
 
 
         for (AlertInfoDTO alertInfoDTO : alertInfoDTOS) {
+
+            String key = String.format(PHONE_KEY,alertInfoDTO.getId());
+
+            if (visited.containsKey(key)) {
+                continue;
+            }
+
+            visited.put(key,"1");
+
             String text = zubrixSmsProxy.formatTextContent(alertInfoDTO);
             for (SuposUserDTO userDTO : sugasmsUsers) {
 
@@ -130,18 +139,19 @@ public class AlertServiceImpl implements AlertService {
                     userInfoCache.load();
                 }
 
-                String key = String.format(PHONE_KEY,  alertInfoDTO.getId(),phoneNumber);
-
-                if(visited.contains(key)) {
-                    continue;
-                }
-
-                visited.put(key,"1");
 
 
                 try {
                     String finalPhoneNumber = phoneNumber;
-                    Retrys.doWithRetry(()-> sendMessageService.sendOneZubrixSmsMessage(finalPhoneNumber,text), r -> r.isOk(),5,100);
+
+                    CompletableFuture.supplyAsync(() -> {
+                        try {
+                            return Retrys.doWithRetry(()-> sendMessageService.sendOneZubrixSmsMessage(finalPhoneNumber,text), r -> r.isOk(),3,100);
+                        } catch (Throwable e) {
+                            throw new RuntimeException(e);
+                        }
+                    });
+
                 }catch (Throwable e) {
                     String s = String.format("person: %s 未能成功通知到！！！", userDTO.getPersonCode());
                     throw new IllegalStateException(s, e);
@@ -182,6 +192,15 @@ public class AlertServiceImpl implements AlertService {
 
 
         for (AlertInfoDTO alertInfoDTO : alertInfoDTOS) {
+
+            String key = String.format(EMAIL_KEY,alertInfoDTO.getId());
+
+            if (visited.containsKey(key)) {
+                continue;
+            }
+
+            visited.put(key,"1");
+
             String text = zubrixSmsProxy.formatTextContent(alertInfoDTO);
             for (SuposUserDTO userDTO : sugasmsUsers) {
 
@@ -197,19 +216,11 @@ public class AlertServiceImpl implements AlertService {
                     userInfoCache.load();
                 }
                 if(StringUtils.isNotBlank(email)) {
-
-                    String key = String.format(EMAIL_KEY, alertInfoDTO.getId(),email);
-
-                    if(visited.contains(key)) {
-                        continue;
-                    }
-
-                    visited.put(key,"1");
-
-                    sendMessageService.sendEmail(email,"sugar-plant-alert",text);
+                    String finalEmail = email;
+                    sendMessageService.sendEmail(finalEmail,"sugar-plant-alert",text);
+                    log.info("person: {} email:{} 通知成功",userDTO.getPersonName(),email);
                 }
 
-                log.info("person: {} email:{} 通知成功",userDTO.getPersonName(),email);
             }
         }
 
