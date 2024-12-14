@@ -32,23 +32,11 @@
         </dependency>
 
 
-<!--        <dependency>-->
-<!--            <groupId>com.bluetron.eco</groupId>-->
-<!--            <artifactId>mule-sdk</artifactId>-->
-<!--            <version>3.2.8</version>-->
-<!--        </dependency>-->
-
-<!--        <dependency>-->
-<!--            <groupId>com.supcon.supfusion.notification</groupId>-->
-<!--            <artifactId>notification-protocol</artifactId>-->
-<!--            <version>1.1.2.5-RELEASE</version>-->
-<!--        </dependency>-->
-
-<!--        <dependency>-->
-<!--            <groupId>com.supcon.supfusion.notification</groupId>-->
-<!--            <artifactId>admin-openapi</artifactId>-->
-<!--            <version>4.2.1.1</version>-->
-<!--        </dependency>-->
+        <dependency>
+            <groupId>com.bluetron.eco</groupId>
+            <artifactId>mule-sdk</artifactId>
+            <version>3.2.8</version>
+        </dependency>
 
         <!-- https://mvnrepository.com/artifact/io.swagger.core.v3/swagger-annotations -->
         <dependency>
