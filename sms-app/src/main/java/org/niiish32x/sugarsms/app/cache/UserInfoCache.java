@@ -63,7 +63,7 @@ public class UserInfoCache implements InitializingBean {
                 .personCodes(personCodes)
                 .build());
 
-        if (result.isOk()) {
+        if (result.isSuccess()) {
             PersonsResponse personsResponse = result.getData();
             List<PersonDTO> personDTOS = personsResponse.getList();
 
