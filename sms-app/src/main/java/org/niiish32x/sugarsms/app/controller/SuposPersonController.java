@@ -21,13 +21,18 @@ public class SuposPersonController {
     PersonService personService;
 
     @RequestMapping("/persons/page")
-    public List<PersonDTO> getAllPerson(@RequestParam Integer currentPageSize) {
+    public Result<List<PersonDTO>>  getAllPerson(@RequestParam Integer currentPageSize) {
        return  personService.getPersonsFromSuposByPage(currentPageSize);
     }
 
     @RequestMapping("/persons/personCodes")
-    public PersonDTO getOnePersonByPersonCode(@RequestBody PersonCodesDTO personCodesDTO){
+    public Result<PersonDTO>  getOnePersonByPersonCode(@RequestBody PersonCodesDTO personCodesDTO){
         return personService.getOnePersonByPersonCode(personCodesDTO);
+    }
+
+    @RequestMapping("/persons/add")
+    public Result  addPersonByPersonCode(@RequestParam String code) {
+       return personService.addPerson(code);
     }
 
     @RequestMapping("/persons/mock")

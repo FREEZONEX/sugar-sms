@@ -12,7 +12,7 @@ import org.niiish32x.sugarsms.app.service.PersonService;
 import org.niiish32x.sugarsms.app.tools.SuposUserMocker;
 import org.niiish32x.sugarsms.common.request.SuposRequestManager;
 import org.niiish32x.sugarsms.common.result.Result;
-import org.niiish32x.sugarsms.common.result.ResultCodeEnum;
+import org.niiish32x.sugarsms.common.result.ResultCode;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -34,30 +34,30 @@ public class PersonServiceImpl implements PersonService {
 
 
     @Override
-    public List<PersonDTO> getPersonsFromSuposByPage(Integer currentPageSize) {
+    public Result <List<PersonDTO>>  getPersonsFromSuposByPage(Integer currentPageSize) {
         Map<String, String> headerMap = new HashMap<>();
         Map<String, String> queryMap = new HashMap<>();
         queryMap.put("current", String.valueOf(currentPageSize));
-        HttpResponse response = requestManager.suposApiGet(ApiEnum.PESRON_GET_API.value, headerMap, queryMap);
+        HttpResponse response = requestManager.suposApiGet(ApiEnum.PESRON_QUERY_API.value, headerMap, queryMap);
 
         PersonsResponse personsResponse = JSON.parseObject(response.body(),PersonsResponse.class);
 
-        return personsResponse.getList();
+        return Result.success(personsResponse.getList()) ;
     }
 
     @Override
-    public PersonDTO getOnePersonByPersonCode(PersonCodesDTO personCodesDTO) {
+    public Result<PersonDTO>  getOnePersonByPersonCode(PersonCodesDTO personCodesDTO) {
 
         Map<String, String> headerMap = new HashMap<>();
         Map<String, String> queryMap = new HashMap<>();
         String join = String.join(",", personCodesDTO.getPersonCodes());
         queryMap.put("personCodes", join);
         queryMap.put("current","1");
-        HttpResponse response = requestManager.suposApiGet(ApiEnum.PESRON_GET_API.value, headerMap, queryMap);
+        HttpResponse response = requestManager.suposApiGet(ApiEnum.PESRON_QUERY_API.value, headerMap, queryMap);
 
         PersonsResponse dto = JSON.parseObject(response.body(), PersonsResponse.class);
 
-        return dto.getList().get(0);
+        return Result.success(dto.getList().get(0)) ;
     }
 
     @Override
@@ -70,10 +70,10 @@ public class PersonServiceImpl implements PersonService {
         queryMap.put("current","1");
         queryMap.put("pageSize","500");
 
-        HttpResponse response = requestManager.suposApiGet(ApiEnum.PESRON_GET_API.value, headerMap, queryMap);
+        HttpResponse response = requestManager.suposApiGet(ApiEnum.PESRON_QUERY_API.value, headerMap, queryMap);
 
         PersonsResponse dto = JSON.parseObject(response.body(), PersonsResponse.class);
-        return  response.isOk() ? Result.success(dto) : Result.fail(dto);
+        return  response.isOk() ? Result.success(dto) : Result.error("获取person信息异常");
     }
 
     @Override
@@ -90,11 +90,9 @@ public class PersonServiceImpl implements PersonService {
 
         jsonMap.put("addPersons" , list);
 
-        HttpResponse response = requestManager.suposApiPost(ApiEnum.PESRON_POST_API.value, headerMap, queryMap,JSON.toJSONString(jsonMap));
+        HttpResponse response = requestManager.suposApiPost(ApiEnum.PESRON_ADD_API.value, headerMap, queryMap,JSON.toJSONString(jsonMap));
 
-        log.info(response.body());
-
-        return response.isOk() ? Result.build(response.body(), ResultCodeEnum.SUCCESS) : Result.build(response.body(),ResultCodeEnum.FAIL);
+        return response.isOk() ? Result.success(JSON.toJSONString(response.body())) : Result.error(JSON.toJSONString(response.body()));
     }
 
     @Override
@@ -102,12 +100,12 @@ public class PersonServiceImpl implements PersonService {
         for (int i = 0 ; i < 10 ; i++) {
             String username = SuposUserMocker.generateUsername();
             Result res = addPerson(username);
-            if(Objects.equals(res.getCode(), ResultCodeEnum.CODE_ERROR.getCode())) {
+            if(!Objects.equals(res.getCode(),200)) {
                 return res;
             }
         }
 
-        return Result.build("mock完成",ResultCodeEnum.SUCCESS);
+        return Result.success("mock完成");
     }
 
 

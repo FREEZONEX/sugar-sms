@@ -15,15 +15,17 @@ import java.util.List;
  */
 public interface PersonService {
 
-    List <PersonDTO> getPersonsFromSuposByPage(Integer currentPageSize);
+    Result<List <PersonDTO>>  getPersonsFromSuposByPage(Integer currentPageSize);
 
 
-    PersonDTO getOnePersonByPersonCode(PersonCodesDTO personCodesDTO);
+    Result<PersonDTO>  getOnePersonByPersonCode(PersonCodesDTO personCodesDTO);
 
     Result <PersonsResponse>  getPersonsByPersonCodes(PersonCodesDTO personCodesDTOS);
 
     Result addPerson(String code);
 
     Result mockPerson();
+
+
 
 }
