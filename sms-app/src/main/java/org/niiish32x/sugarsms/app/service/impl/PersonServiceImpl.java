@@ -158,10 +158,14 @@ public class PersonServiceImpl implements PersonService {
 
         for (PersonDTO personDTO : personDTOS) {
 
-            if(StringUtils.equals(personDTO.getPhone(),"919747934655")){
+            if (personDTO.getName().equals("virtual_person")) {
+                continue;
+            }
+
+            if(StringUtils.equals(personDTO.getPhone(),"919747934600")){
                 log.info("person: {} {}",personDTO.getName(),personDTO.getPhone());
                 Result updatedRes = updatePerson(SuposPersonUpdateRequest.builder()
-                        .phone("919747934600")
+                        .phone("xxx74xx34xxx")
                         .name(personDTO.getName())
                         .mainPositionCode(personDTO.getMainPosition().getCode())
                         .status(personDTO.getStatus().getCode())
@@ -170,7 +174,7 @@ public class PersonServiceImpl implements PersonService {
                         .build());
 
                 if (!updatedRes.isSuccess()) {
-                    Result.error(JSON.toJSONString(personDTO));
+                    log.error("{} : {}",JSON.toJSONString(personDTO),JSON.toJSONString(updatedRes));
                 }
             }
         }

@@ -2,6 +2,7 @@ package org.niiish32x.sugarsms.app.service.impl;
 
 import cn.hutool.http.HttpResponse;
 import com.alibaba.fastjson2.JSON;
+import com.google.common.util.concurrent.RateLimiter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.niiish32x.sugarsms.app.cache.UserInfoCache;
@@ -111,6 +112,7 @@ public class AlertServiceImpl implements AlertService {
             return Result.success("无需报警信息");
         }
 
+        RateLimiter limiter = RateLimiter.create(3);
 
 
         for (AlertInfoDTO alertInfoDTO : alertInfoDTOS) {
@@ -123,11 +125,11 @@ public class AlertServiceImpl implements AlertService {
 
             visited.put(key,"1");
 
+
             String text = zubrixSmsProxy.formatTextContent(alertInfoDTO);
+
             for (SuposUserDTO userDTO : sugasmsUsers) {
-
                 String phoneNumber = userInfoCache.nameToPhone.getIfPresent(userDTO.getPersonCode());
-
                 if(phoneNumber == null) {
                     PersonDTO person = personService.getOnePersonByPersonCode(
                             PersonCodesDTO.builder()
@@ -138,25 +140,29 @@ public class AlertServiceImpl implements AlertService {
                     userInfoCache.load();
                 }
 
+                limiter.acquire(1);
 
 
-                try {
-                    String finalPhoneNumber = phoneNumber;
+                String finalPhoneNumber1 = phoneNumber;
+                CompletableFuture.runAsync(() -> {
+                    try {
+                        String finalPhoneNumber = finalPhoneNumber1;
+                        CompletableFuture.supplyAsync(() -> {
+                            try {
+                                boolean b = limiter.tryAcquire(1);
+                                return Retrys.doWithRetry(()-> sendMessageService.sendOneZubrixSmsMessage(finalPhoneNumber,text), r -> r.isSuccess(),3,100);
+                            } catch (Throwable e) {
+                                throw new RuntimeException(e);
+                            }
+                        });
+                    }catch (Throwable e) {
+                        String s = String.format("person: %s 未能成功通知到！！！", userDTO.getPersonCode());
+                        log.info(s);
+                        throw new IllegalStateException(s, e);
+                    }
+                    log.info("person: {} phone:{} 通知成功",userDTO.getPersonName(), finalPhoneNumber1);
+                }) ;
 
-                    CompletableFuture.supplyAsync(() -> {
-                        try {
-                            return Retrys.doWithRetry(()-> sendMessageService.sendOneZubrixSmsMessage(finalPhoneNumber,text), r -> r.isSuccess(),3,100);
-                        } catch (Throwable e) {
-                            throw new RuntimeException(e);
-                        }
-                    });
-
-                }catch (Throwable e) {
-                    String s = String.format("person: %s 未能成功通知到！！！", userDTO.getPersonCode());
-                    throw new IllegalStateException(s, e);
-                }
-
-                log.info("person: {} phone:{} 通知成功",userDTO.getPersonName(),phoneNumber);
             }
         }
 
@@ -188,8 +194,12 @@ public class AlertServiceImpl implements AlertService {
         }
 
 
+        RateLimiter limiter = RateLimiter.create(3);
+
+
 
         for (AlertInfoDTO alertInfoDTO : alertInfoDTOS) {
+
 
             String key = String.format(EMAIL_KEY,alertInfoDTO.getId());
 
@@ -200,27 +210,43 @@ public class AlertServiceImpl implements AlertService {
             visited.put(key,"1");
 
             String text = zubrixSmsProxy.formatTextContent(alertInfoDTO);
-            for (SuposUserDTO userDTO : sugasmsUsers) {
 
-                String email = UserInfoCache.nameToEmail.getIfPresent(userDTO.getPersonCode());
 
-                if(email == null) {
-                    PersonDTO person = personService.getOnePersonByPersonCode(
-                            PersonCodesDTO.builder()
-                                    .personCodes(Arrays.asList(userDTO.getPersonCode()))
-                                    .build()
-                    ).getData();
-                    email = person.getEmail();
-                    userInfoCache.load();
-                }
-                if(StringUtils.isNotBlank(email)) {
-                    String finalEmail = email;
-                    sendMessageService.sendEmail(finalEmail,"sugar-plant-alert",text);
-                    log.info("person: {} email:{} 通知成功",userDTO.getPersonName(),email);
-                }
+          for (SuposUserDTO userDTO : sugasmsUsers) {
 
-            }
+              String email = UserInfoCache.nameToEmail.getIfPresent(userDTO.getPersonCode());
+
+              if(email == null) {
+                  PersonDTO person = personService.getOnePersonByPersonCode(
+                          PersonCodesDTO.builder()
+                                  .personCodes(Arrays.asList(userDTO.getPersonCode()))
+                                  .build()
+                  ).getData();
+                  email = person.getEmail();
+                  userInfoCache.load();
+              }
+
+
+
+              if(StringUtils.isNotBlank(email)) {
+                  limiter.acquire(1);
+
+                  String finalEmail1 = email;
+                  CompletableFuture.runAsync(()->{
+                      String finalEmail = finalEmail1;
+                      limiter.acquire(1);
+                      sendMessageService.sendEmail(finalEmail,"sugar-plant-alert",text);
+                      log.info("person: {} email:{} 通知成功",userDTO.getPersonName(), finalEmail1);
+                  });
+
+
+              }
+
+          }
         }
+
+
+        CompletableFuture.allOf();
 
         return Result.success(sugasmsUsers);
     }
