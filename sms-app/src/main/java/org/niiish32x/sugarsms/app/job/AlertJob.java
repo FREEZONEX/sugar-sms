@@ -20,7 +20,7 @@ public class AlertJob {
     @Autowired
     AlertService alertService;
 
-    @Scheduled(cron = "0/10 * * * * ?")
+//    @Scheduled(cron = "0/10 * * * * ?")
     void alert() {
         alertService.notifySugarUserByEmail();
         alertService.notifySugarUserBySms();

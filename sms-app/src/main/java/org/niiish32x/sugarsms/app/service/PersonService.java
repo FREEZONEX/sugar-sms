@@ -3,6 +3,7 @@ package org.niiish32x.sugarsms.app.service;
 import org.niiish32x.sugarsms.app.dto.PersonCodesDTO;
 import org.niiish32x.sugarsms.app.dto.PersonDTO;
 import org.niiish32x.sugarsms.app.external.PersonsResponse;
+import org.niiish32x.sugarsms.app.external.SuposPersonUpdateRequest;
 import org.niiish32x.sugarsms.common.result.Result;
 
 import java.util.List;
@@ -17,6 +18,7 @@ public interface PersonService {
 
     Result<List <PersonDTO>>  getPersonsFromSuposByPage(Integer currentPageSize);
 
+    Result<List<PersonDTO>> getTotalPersons();
 
     Result<PersonDTO>  getOnePersonByPersonCode(PersonCodesDTO personCodesDTO);
 
@@ -24,8 +26,16 @@ public interface PersonService {
 
     Result addPerson(String code);
 
+    Result updatePerson(SuposPersonUpdateRequest request);
+
     Result mockPerson();
 
+
+    /**
+     * 测试专用方法
+     * @return
+     */
+    Result test() ;
 
 
 }
