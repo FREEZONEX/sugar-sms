@@ -119,7 +119,7 @@ public class UserServiceImpl implements UserService {
 
             UsersResponse usersResponse = JSON.parseObject(response.body(), UsersResponse.class);
 
-            if( usersResponse.getList() == null  || usersResponse.getList().isEmpty()){
+            if(usersResponse == null || usersResponse.getList() == null  || usersResponse.getList().isEmpty()){
                 break;
             }
             res.getList().addAll(usersResponse.getList());

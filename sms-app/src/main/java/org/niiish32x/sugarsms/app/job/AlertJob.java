@@ -22,6 +22,8 @@ public class AlertJob {
 
     @Scheduled(cron = "0/10 * * * * ?")
     void alert() {
+        System.out.println("预警定时任务开始");
+
         alertService.notifySugarUserByEmail();
         alertService.notifySugarUserBySms();
     }

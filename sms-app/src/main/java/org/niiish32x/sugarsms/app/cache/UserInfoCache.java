@@ -53,6 +53,10 @@ public class UserInfoCache implements InitializingBean {
     public  void load() {
         List<SuposUserDTO> userDTOS = userService.getUsersFromSupos("default_org_company", "sugarsms").getData();
 
+        if (userDTOS == null || userDTOS.isEmpty()) {
+            return;
+        }
+
         List<String> personCodes = new ArrayList<>();
 
         for (SuposUserDTO userDTO : userDTOS) {
