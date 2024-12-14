@@ -32,16 +32,16 @@
         </dependency>
 
 
-        <dependency>
-            <groupId>com.bluetron.eco</groupId>
-            <artifactId>mule-sdk</artifactId>
-            <version>3.2.8</version>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>com.bluetron.eco</groupId>-->
+<!--            <artifactId>mule-sdk</artifactId>-->
+<!--            <version>3.2.8</version>-->
+<!--        </dependency>-->
 
 <!--        <dependency>-->
 <!--            <groupId>com.supcon.supfusion.notification</groupId>-->
 <!--            <artifactId>notification-protocol</artifactId>-->
-<!--            <version>1.0.3</version>-->
+<!--            <version>1.1.2.5-RELEASE</version>-->
 <!--        </dependency>-->
 
 <!--        <dependency>-->
@@ -78,6 +78,15 @@
             <groupId>cn.hutool</groupId>
             <artifactId>hutool-all</artifactId>
             <version>${hutool-all.version}</version>
+        </dependency>
+
+
+        <!-- https://mvnrepository.com/artifact/org.projectlombok/lombok -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.18.36</version>
+<!--            <scope>provided</scope>-->
         </dependency>
 
 
@@ -124,6 +133,31 @@
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>3.3.0</version>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <mainClass>org.niiish32x.sugarsms.Bootstrap</mainClass>
+                        </manifest>
+                    </archive>
+                    <descriptorRefs>
+                        <descriptorRef>jar-with-dependencies</descriptorRef>
+                    </descriptorRefs>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>make-assembly</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.8.1</version>
                 <configuration>
@@ -138,7 +172,7 @@
                 <version>${spring-boot.version}</version>
                 <configuration>
                     <mainClass>org.niiish32x.sugarsms.Bootstrap</mainClass>
-                    <skip>true</skip>
+<!--                    <skip>true</skip>-->
                 </configuration>
                 <executions>
                     <execution>

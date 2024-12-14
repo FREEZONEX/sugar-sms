@@ -37,8 +37,8 @@ public class ZubrixSmsProxy {
     }
 
     public ZubrixSmsResponse send(String url) {
-        log.info("开始发送短信");
-        log.info("Zubrix url: {}",url);
+//        log.info("开始发送短信");
+//        log.info("Zubrix url: {}",url);
         HttpResponse response = HttpRequest.get(url).execute();
         ZubrixSmsResponse messageResponse = JSON.parseObject(response.body(), ZubrixSmsResponse.class);
         return messageResponse;

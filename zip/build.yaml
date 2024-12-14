@@ -1,0 +1,5 @@
+apiVersion: v3alpha1
+images:
+  -  name: dname
+     dockerPath: bin/
+     tag: 1.0.0
