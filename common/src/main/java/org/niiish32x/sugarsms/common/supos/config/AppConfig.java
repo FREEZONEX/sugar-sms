@@ -23,8 +23,8 @@ public class AppConfig {
     /**
      * supOS地址
      */
-    @Value("${supos.supos-address}")
-    private String suposWebAddress;
+//    @Value("${supos.supos-address}")
+    private String suposWebAddress = "http://192.168.2.171:8080";
 
     /**
      * supOS appId

@@ -3,10 +3,12 @@ package org.niiish32x.sugarsms.common.request;
 import cn.hutool.http.HttpRequest;
 import cn.hutool.http.HttpResponse;
 import cn.hutool.http.Method;
+import com.alibaba.fastjson2.JSON;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.niiish32x.sugarsms.common.supos.aksk.SignUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,6 +32,7 @@ import java.util.Map;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@Slf4j
 public class SuposRequestManager implements Serializable {
 
 
@@ -40,8 +43,8 @@ public class SuposRequestManager implements Serializable {
     private String ak;
     @Value("${supos.sk}")
     private String sk;
-    @Value("${supos.supos-address}")
-    private String baseUrl;
+//    @Value("${supos.supos-address}")
+    private final String baseUrl = "http://192.168.2.171:8080";
 
     private String url;
     private Map<String, String> headerMap;
@@ -58,6 +61,9 @@ public class SuposRequestManager implements Serializable {
                 .setMethod(Method.POST);
 
         HttpResponse response = request.execute();
+
+        log.info("url : {}",suposRequest.getUrl());
+//        log.info("resp body {}", response.body());
 
         return response;
     }
@@ -85,6 +91,10 @@ public class SuposRequestManager implements Serializable {
                 .formStr(queryMap);
 
         HttpResponse response = request.execute();
+
+        log.info("url : {}",suposRequest.getUrl());
+//        log.info("resp body {}", response.body());
+
         return response;
     }
 
@@ -98,6 +108,9 @@ public class SuposRequestManager implements Serializable {
                 .setMethod(Method.POST);
 
         HttpResponse response = request.execute();
+
+        log.info("url : {}",suposRequest.getUrl());
+//        log.info("resp body {}", response.body());
 
         return response;
     }

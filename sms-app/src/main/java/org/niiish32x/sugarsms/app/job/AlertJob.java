@@ -7,6 +7,8 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import java.util.concurrent.CompletableFuture;
+
 /**
  * AlertJob
  *
@@ -24,7 +26,10 @@ public class AlertJob {
     void alert() {
         System.out.println("预警定时任务开始");
 
-        alertService.notifySugarUserByEmail();
-        alertService.notifySugarUserBySms();
+        CompletableFuture.runAsync(() -> alertService.notifySugarUserByEmail());
+        CompletableFuture.runAsync(() ->  alertService.notifySugarUserBySms());
+
+        CompletableFuture.allOf();
+
     }
 }
