@@ -11,9 +11,11 @@ import org.niiish32x.sugarsms.app.dto.PersonCodesDTO;
 import org.niiish32x.sugarsms.app.dto.PersonDTO;
 import org.niiish32x.sugarsms.app.dto.SuposUserDTO;
 import org.niiish32x.sugarsms.app.enums.ApiEnum;
+import org.niiish32x.sugarsms.app.event.AlertEvent;
 import org.niiish32x.sugarsms.app.external.AlertResponse;
 import org.niiish32x.sugarsms.app.external.ZubrixSmsResponse;
 import org.niiish32x.sugarsms.app.proxy.ZubrixSmsProxy;
+import org.niiish32x.sugarsms.app.queue.AlertMessageQueue;
 import org.niiish32x.sugarsms.app.service.AlertService;
 import org.niiish32x.sugarsms.app.service.PersonService;
 import org.niiish32x.sugarsms.app.service.SendMessageService;
@@ -22,6 +24,8 @@ import org.niiish32x.sugarsms.common.request.SuposRequestManager;
 import org.niiish32x.sugarsms.common.result.Result;
 import org.niiish32x.sugarsms.common.result.ResultCode;
 import org.niiish32x.sugarsms.common.utils.Retrys;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -44,19 +48,19 @@ public class AlertServiceImpl implements AlertService {
 
     // 防止重复发送
     static  ConcurrentHashMap <String,String> visited = new ConcurrentHashMap<>();
-    // sms + 消息ID
-    private final String PHONE_KEY = "sms%s";
+    // sms + 消息ID + phone
+    private final String PHONE_KEY = "sms%s%s";
 
-    // email + 消息ID
-    private final String EMAIL_KEY = "email%s";
+    // email + 消息ID + email
+    private final String EMAIL_KEY = "email%s%s";
 
-    ThreadPoolExecutor threadPoolExecutor
-            = new ThreadPoolExecutor(16, // 核心线程数
-            32, // 最大线程数
-            5, TimeUnit.MINUTES,// 当线程数大于核心线程数时，多余的空闲线程存活的最长时间
-            new ArrayBlockingQueue<>(10),
-            new ThreadPoolExecutor.CallerRunsPolicy()  // 告警消息为重要任务 不能丢弃
-    );
+
+    @Autowired
+    AlertMessageQueue alertMessageQueue;
+
+
+    @Autowired
+    ApplicationEventPublisher publisher;
 
     @Resource
     ZubrixSmsProxy zubrixSmsProxy;
@@ -302,4 +306,108 @@ public class AlertServiceImpl implements AlertService {
         return zubrixSmsResponse.getErrorCode() == 0 ?  Result.success(zubrixSmsResponse) : Result.error("通知异常");
     }
 
+    @Override
+    public void publishAlertEvent() {
+        AlertEvent event = new AlertEvent(this);
+        publisher.publishEvent(event);
+        log.info("发布 报警消息事件");
+    }
+
+    @Override
+    public Result <String> notifyUserByEmail(SuposUserDTO userDTO,AlertInfoDTO alertInfoDTO ) {
+
+        String email = UserInfoCache.nameToEmail.getIfPresent(userDTO.getPersonCode());
+
+        if (email == null) {
+            PersonDTO person = personService.getOnePersonByPersonCode(
+                    PersonCodesDTO.builder()
+                            .personCodes(Arrays.asList(userDTO.getPersonCode()))
+                            .build()
+            ).getData();
+            email = person.getEmail();
+            userInfoCache.load();
+        }
+
+
+        String key = String.format(EMAIL_KEY, alertInfoDTO.getId(),email);
+
+        String text = zubrixSmsProxy.formatTextContent(alertInfoDTO);
+
+        if (visited.containsKey(key)) {
+            log.info("alertInfoDTO {} 已发送成功不再重新发送  {}",alertInfoDTO.getId() , email);
+            return Result.success();
+        }
+
+
+        if (StringUtils.isNotBlank(email)) {
+            boolean res = sendMessageService.sendEmail(email, "sugar-plant-alert", text);
+
+            if(res) {
+                // 本次发送成功后 进行标记 不再进行二次发送
+                visited.put(key, "1");
+            }
+
+            log.info("alert: {} 通知成功 -> email:  {}",alertInfoDTO.getId() , email);
+
+            return res ? Result.success(email) : Result.error(email);
+        }
+
+        return Result.success();
+    }
+
+    @Override
+    public Result<String> notifyUserBySms(SuposUserDTO userDTO, AlertInfoDTO alertInfoDTO) {
+
+        String text = zubrixSmsProxy.formatTextContent(alertInfoDTO);
+
+        String phoneNumber = userInfoCache.nameToPhone.getIfPresent(userDTO.getPersonCode());
+
+        if(phoneNumber == null) {
+            PersonDTO person = personService.getOnePersonByPersonCode(
+                    PersonCodesDTO.builder()
+                            .personCodes(Arrays.asList(userDTO.getPersonCode()))
+                            .build()
+            ).getData();
+            phoneNumber = person.getPhone();
+            userInfoCache.load();
+        }
+
+        String key = String.format(PHONE_KEY,alertInfoDTO.getId(),phoneNumber);
+
+        if (visited.containsKey(key)) {
+            log.info("alert 已经sms发送过无需再次通知 {} -> {}",alertInfoDTO.getId(),phoneNumber);
+            return Result.success(phoneNumber);
+        }
+
+        Result<ZubrixSmsResponse> smsResp = sendMessageService.sendOneZubrixSmsMessage(phoneNumber, text);
+
+        if (smsResp.isSuccess()) {
+            visited.put(key,"1");
+            log.info("alert {} sms 通知成功 -> {}",alertInfoDTO.getId(),phoneNumber);
+        }
+
+        return smsResp.isSuccess() ? Result.success(phoneNumber) : Result.error(phoneNumber);
+    }
+
+    @Override
+    public void consumeAlertEvent() {
+        Result<List<SuposUserDTO>> res = userService.getUsersFromSupos("default_org_company", "sugarsms");
+
+        List<SuposUserDTO> sugasmsUsers = res.getData();
+
+        RateLimiter limiter = RateLimiter.create(10);
+
+        while (!alertMessageQueue.isEmpty()) {
+            AlertInfoDTO alertInfoDTO = alertMessageQueue.poll();
+            for (SuposUserDTO suposUserDTO : sugasmsUsers) {
+                limiter.acquire();
+                CompletableFuture.runAsync(() ->{
+                    notifyUserByEmail(suposUserDTO,alertInfoDTO);
+                    notifyUserBySms(suposUserDTO,alertInfoDTO);
+                });
+            }
+        }
+
+        CompletableFuture.allOf();
+    }
 }
