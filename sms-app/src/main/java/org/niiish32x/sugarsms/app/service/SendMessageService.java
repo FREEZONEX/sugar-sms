@@ -18,7 +18,7 @@ public interface SendMessageService {
 
 
 
-    void sendEmail() ;
+    boolean sendEmail() ;
 
-    void sendEmail(String toMail,String subject,String text) ;
+    boolean sendEmail(String toMail,String subject,String text) ;
 }

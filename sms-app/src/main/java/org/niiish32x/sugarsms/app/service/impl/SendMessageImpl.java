@@ -37,13 +37,13 @@ public class SendMessageImpl implements SendMessageService {
 
 
     @Override
-    public void sendEmail() {
-        EmailSenderProxy.sendTextEmail(EmailSenderProxy.PUBLIC_EMAIL_SUGAR,"niiish32x@gmail.com","test","测试");
+    public boolean sendEmail() {
+        return EmailSenderProxy.sendTextEmail(EmailSenderProxy.PUBLIC_EMAIL_SUGAR,"niiish32x@gmail.com","test","测试");
     }
 
     @Override
-    public void sendEmail(String toMail, String subject, String text) {
-        EmailSenderProxy.sendTextEmail(EmailSenderProxy.PUBLIC_EMAIL_SUGAR,toMail,subject,text);
+    public boolean sendEmail(String toMail, String subject, String text) {
+        return EmailSenderProxy.sendTextEmail(EmailSenderProxy.PUBLIC_EMAIL_SUGAR,toMail,subject,text);
     }
 
 

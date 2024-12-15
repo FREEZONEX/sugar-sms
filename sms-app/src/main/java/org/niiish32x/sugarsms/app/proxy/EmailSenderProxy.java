@@ -73,7 +73,7 @@ public class EmailSenderProxy {
         }
     }
 
-    public static void sendTextEmail(String from, String to, String subject, String content) {
+    public static boolean sendTextEmail(String from, String to, String subject, String content) {
 
         String password = "L*112832568463od";
 
@@ -108,9 +108,12 @@ public class EmailSenderProxy {
             // 发送邮件
             Transport.send(message);
             log.info("邮件发送成功! 通知邮箱 {}",to);
+
+            return true;
         } catch (MessagingException e) {
             e.printStackTrace();
-            System.out.println("邮件发送失败：" + e.getMessage());
+            log.error("{} 邮件发送失败 {}",to,e.getMessage());
+            return false;
         }
     }
 }
