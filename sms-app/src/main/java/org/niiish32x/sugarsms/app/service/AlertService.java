@@ -1,5 +1,6 @@
 package org.niiish32x.sugarsms.app.service;
 
+import org.niiish32x.sugarsms.alert.domain.entity.AlertRecordEO;
 import org.niiish32x.sugarsms.app.dto.AlertInfoDTO;
 import org.niiish32x.sugarsms.app.dto.SuposUserDTO;
 import org.niiish32x.sugarsms.app.external.ZubrixSmsResponse;
@@ -14,6 +15,10 @@ import java.util.List;
  * @date 2024.12.10 9:56
  */
 public interface AlertService {
+
+     List<AlertRecordEO> getAllAlerts();
+
+
      Result<List<AlertInfoDTO>> getAlertsFromSupos();
 
      Result notifySugarUserBySms();

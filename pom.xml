@@ -11,6 +11,8 @@
     <modules>
         <module>common</module>
         <module>sms-app</module>
+        <module>domain</module>
+        <module>dao</module>
     </modules>
     <properties>
         <java.version>1.8</java.version>
@@ -21,14 +23,41 @@
         <fastjson2.version>2.0.53</fastjson2.version>
         <hutool-all.version>5.8.16</hutool-all.version>
         <commons-lang3.version>3.17.0</commons-lang3.version>
+        <mybatis-plus.version>3.5.9</mybatis-plus.version>
+        <org.mapstruct.version>1.6.3</org.mapstruct.version>
+        <org.projectlombok.version>1.18.16</org.projectlombok.version>
     </properties>
     <dependencies>
+
+
+            <dependency>
+                <groupId>org.mapstruct</groupId>
+                <artifactId>mapstruct</artifactId>
+                <version>${org.mapstruct.version}</version>
+            </dependency>
+
 
         <!-- https://mvnrepository.com/artifact/com.google.guava/guava -->
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
             <version>${guava.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-jdbc</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.baomidou</groupId>
+            <artifactId>mybatis-plus-boot-starter</artifactId>
+            <version>${mybatis-plus.version}</version>
         </dependency>
 
 
@@ -73,10 +102,15 @@
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>1.18.36</version>
-<!--            <scope>provided</scope>-->
+            <version>${org.projectlombok.version}</version>
+            <scope>provided</scope>
         </dependency>
 
+        <dependency>
+            <groupId>org.mapstruct</groupId>
+            <artifactId>mapstruct-processor</artifactId>
+            <version>1.6.3</version>
+        </dependency>
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -108,30 +142,6 @@
 
     <build>
         <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-assembly-plugin</artifactId>
-                <version>3.3.0</version>
-                <configuration>
-                    <archive>
-                        <manifest>
-                            <mainClass>org.niiish32x.sugarsms.Bootstrap</mainClass>
-                        </manifest>
-                    </archive>
-                    <descriptorRefs>
-                        <descriptorRef>jar-with-dependencies</descriptorRef>
-                    </descriptorRefs>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>make-assembly</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>single</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -141,6 +151,7 @@
                     <source>1.8</source>
                     <target>1.8</target>
                     <encoding>UTF-8</encoding>
+
                 </configuration>
             </plugin>
             <plugin>
@@ -149,7 +160,7 @@
                 <version>${spring-boot.version}</version>
                 <configuration>
                     <mainClass>org.niiish32x.sugarsms.Bootstrap</mainClass>
-<!--                    <skip>true</skip>-->
+                    <skip>true</skip>
                 </configuration>
                 <executions>
                     <execution>

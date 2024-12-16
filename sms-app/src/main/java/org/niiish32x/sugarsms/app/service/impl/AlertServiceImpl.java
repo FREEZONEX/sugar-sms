@@ -5,6 +5,8 @@ import com.alibaba.fastjson2.JSON;
 import com.google.common.util.concurrent.RateLimiter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.niiish32x.sugarsms.alert.domain.entity.AlertRecordEO;
+import org.niiish32x.sugarsms.alert.domain.repo.AlertRecordRepo;
 import org.niiish32x.sugarsms.app.cache.UserInfoCache;
 import org.niiish32x.sugarsms.app.dto.AlertInfoDTO;
 import org.niiish32x.sugarsms.app.dto.PersonCodesDTO;
@@ -55,6 +57,9 @@ public class AlertServiceImpl implements AlertService {
     private final String EMAIL_KEY = "email%s%s";
 
 
+    @Resource
+    AlertRecordRepo alertRecordRepo;
+
     @Autowired
     AlertMessageQueue alertMessageQueue;
 
@@ -81,6 +86,11 @@ public class AlertServiceImpl implements AlertService {
 
     @Resource
     SendMessageService sendMessageService;
+
+    @Override
+    public List<AlertRecordEO> getAllAlerts() {
+        return alertRecordRepo.find();
+    }
 
     @Override
     public Result <List<AlertInfoDTO>> getAlertsFromSupos() {
