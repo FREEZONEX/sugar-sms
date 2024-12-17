@@ -32,7 +32,7 @@ public class AlertJob {
     /**
      * fixedDelay 本次任务执行完后 10秒后 再执行下一次
      */
-//    @Scheduled(fixedDelay =  1000 * 10)
+    @Scheduled(fixedDelay =  1000 * 10)
     void alertJob() {
 
         Result<List<AlertInfoDTO>> alertsResp  = alertService.getAlertsFromSupos();

@@ -2,11 +2,13 @@ package org.niiish32x.sugarsms.alert.persistence.converter;
 
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.TypeReference;
+import org.apache.commons.lang3.StringUtils;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
 import org.niiish32x.sugarsms.alert.AlertRecordDO;
 import org.niiish32x.sugarsms.alert.domain.entity.AlertRecordEO;
+import org.niiish32x.sugarsms.alert.domain.entity.MessageType;
 
 import java.util.Map;
 
@@ -20,13 +22,24 @@ import java.util.Map;
 public interface AlertRecordConverter {
     AlertRecordConverter INSTANCE = Mappers.getMapper(AlertRecordConverter.class);
 
-    @Mapping(target = "smsSendStatus", expression = "java(alertRecordEO.getSmsSendStatus() ? 1 : 0)")
-    @Mapping(target = "emailSendStatus" , expression = "java(alertRecordEO.getEmailSendStatus() ? 1 : 0)")
+    @Mapping(target = "type",expression = "java(alertRecordEO.getType().name())")
     @Mapping(target = "status" , expression = "java(alertRecordEO.getStatus() ? 1 : 0)")
     AlertRecordDO toDO(AlertRecordEO alertRecordEO);
 
-    @Mapping(target = "smsSendStatus", expression = "java(alertRecordDO.getSmsSendStatus() == 1 ? true : false)")
-    @Mapping(target = "emailSendStatus", expression = "java(alertRecordDO.getEmailSendStatus() == 1 ? true : false)")
+    @Mapping(target = "type",expression = "java(parseMessageTypeTDO(alertRecordDO))")
     @Mapping(target = "status", expression = "java(alertRecordDO.getStatus() == 1 ? true : false)")
     AlertRecordEO toEO(AlertRecordDO alertRecordDO);
+
+    default MessageType parseMessageTypeTDO (AlertRecordDO alertRecordDO) {
+        if (StringUtils.equals(alertRecordDO.getType(), "sms")) {
+            return MessageType.SMS;
+        }
+
+        if (StringUtils.equals(alertRecordDO.getType(),"email")){
+            return MessageType.EMAIL;
+        }
+
+        return null;
+    }
+
 }

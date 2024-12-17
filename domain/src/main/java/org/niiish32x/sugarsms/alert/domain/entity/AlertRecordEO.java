@@ -28,21 +28,23 @@ public class AlertRecordEO implements Serializable {
     private Long id;
     // 报警消息ID
     private Long alertId;
-    // 短信发送状态，0表示未完成，1表示已完成
-    private Boolean smsSendStatus;
-    // 短信全部通知到的时间
-    private Date smsSendTime;
-    // 邮件发送状态，0表示未完成，1表示已完成
-    private Boolean emailSendStatus;
-    // 邮件成功发送的时间
-    private Date emailSendTime;
-    // 是否全部发送成功状态
+
+    private MessageType type;
+
+    private Date sendTime;
+
+    private String username;
+
     private Boolean status;
-    // 通知的具体内容
+
+    private String phone;
+
+    private String email;
+
     private String content;
-    // 创建时间
-    private LocalDateTime createTime;
-    // 更新时间
-    private LocalDateTime updateTime;
+
+    private Date createTime;
+
+    private Date updateTime;
 
 }

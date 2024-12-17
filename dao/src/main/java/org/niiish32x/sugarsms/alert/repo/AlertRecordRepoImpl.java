@@ -2,6 +2,7 @@ package org.niiish32x.sugarsms.alert.repo;
 
 import org.niiish32x.sugarsms.alert.AlertRecordDO;
 import org.niiish32x.sugarsms.alert.domain.entity.AlertRecordEO;
+import org.niiish32x.sugarsms.alert.domain.entity.MessageType;
 import org.niiish32x.sugarsms.alert.domain.repo.AlertRecordRepo;
 import org.niiish32x.sugarsms.alert.persistence.converter.AlertRecordConverter;
 import org.niiish32x.sugarsms.alert.persistence.dao.AlertRecordDAO;
@@ -34,5 +35,11 @@ public class AlertRecordRepoImpl implements AlertRecordRepo {
     public List<AlertRecordEO> find() {
         List<AlertRecordDO> list = alertRecordDAO.lambdaQuery().list();
         return list.stream().map(converter::toEO).collect(Collectors.toList());
+    }
+
+    @Override
+    public boolean save(AlertRecordEO alertRecordEO) {
+
+        return alertRecordDAO.saveOrUpdate(converter.toDO(alertRecordEO));
     }
 }

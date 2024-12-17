@@ -6,6 +6,7 @@ import com.google.common.util.concurrent.RateLimiter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.niiish32x.sugarsms.alert.domain.entity.AlertRecordEO;
+import org.niiish32x.sugarsms.alert.domain.entity.MessageType;
 import org.niiish32x.sugarsms.alert.domain.repo.AlertRecordRepo;
 import org.niiish32x.sugarsms.app.cache.UserInfoCache;
 import org.niiish32x.sugarsms.app.dto.AlertInfoDTO;
@@ -31,10 +32,9 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.*;
 import java.util.concurrent.*;
 
 /**
@@ -88,7 +88,7 @@ public class AlertServiceImpl implements AlertService {
     SendMessageService sendMessageService;
 
     @Override
-    public List<AlertRecordEO> getAllAlerts() {
+    public List<AlertRecordEO> getAllAlertRecords() {
         return alertRecordRepo.find();
     }
 
@@ -241,7 +241,6 @@ public class AlertServiceImpl implements AlertService {
               }
 
 
-
               if(StringUtils.isNotBlank(email)) {
                   limiter.acquire(1);
 
@@ -252,10 +251,7 @@ public class AlertServiceImpl implements AlertService {
                       sendMessageService.sendEmail(finalEmail,"sugar-plant-alert",text);
                       log.info("person: {} email:{} 通知成功",userDTO.getPersonName(), finalEmail1);
                   });
-
-
               }
-
           }
         }
 
@@ -324,7 +320,7 @@ public class AlertServiceImpl implements AlertService {
     }
 
     @Override
-    public Result <String> notifyUserByEmail(SuposUserDTO userDTO,AlertInfoDTO alertInfoDTO ) {
+    public Result <Boolean> notifyUserByEmail(SuposUserDTO userDTO,AlertInfoDTO alertInfoDTO ) {
 
         String email = UserInfoCache.nameToEmail.getIfPresent(userDTO.getPersonCode());
 
@@ -345,28 +341,33 @@ public class AlertServiceImpl implements AlertService {
 
         if (visited.containsKey(key)) {
             log.info("alertInfoDTO {} 已发送成功不再重新发送  {}",alertInfoDTO.getId() , email);
-            return Result.success();
+            return Result.success(true);
         }
 
-
+        boolean saveRes = false;
         if (StringUtils.isNotBlank(email)) {
             boolean res = sendMessageService.sendEmail(email, "sugar-plant-alert", text);
 
             if(res) {
                 // 本次发送成功后 进行标记 不再进行二次发送
                 visited.put(key, "1");
+
+                AlertRecordEO recordEO = buildAlertRecordEO(alertInfoDTO, userDTO.getUsername(), null, email, MessageType.EMAIL, text, true);
+                saveRes =  alertRecordRepo.save(recordEO);
+            }else {
+                AlertRecordEO recordEO = buildAlertRecordEO(alertInfoDTO, userDTO.getUsername(), null, email, MessageType.EMAIL, text, false);
+                saveRes =  alertRecordRepo.save(recordEO);
             }
 
             log.info("alert: {} 通知成功 -> email:  {}",alertInfoDTO.getId() , email);
 
-            return res ? Result.success(email) : Result.error(email);
         }
 
-        return Result.success();
+        return saveRes ?  Result.success(saveRes) : Result.error("记录保存失败");
     }
 
     @Override
-    public Result<String> notifyUserBySms(SuposUserDTO userDTO, AlertInfoDTO alertInfoDTO) {
+    public Result<Boolean> notifyUserBySms(SuposUserDTO userDTO, AlertInfoDTO alertInfoDTO) {
 
         String text = zubrixSmsProxy.formatTextContent(alertInfoDTO);
 
@@ -386,7 +387,7 @@ public class AlertServiceImpl implements AlertService {
 
         if (visited.containsKey(key)) {
             log.info("alert 已经sms发送过无需再次通知 {} -> {}",alertInfoDTO.getId(),phoneNumber);
-            return Result.success(phoneNumber);
+            return Result.success(true);
         }
 
         Result<ZubrixSmsResponse> smsResp = sendMessageService.sendOneZubrixSmsMessage(phoneNumber, text);
@@ -396,7 +397,20 @@ public class AlertServiceImpl implements AlertService {
             log.info("alert {} sms 通知成功 -> {}",alertInfoDTO.getId(),phoneNumber);
         }
 
-        return smsResp.isSuccess() ? Result.success(phoneNumber) : Result.error(phoneNumber);
+
+        boolean saveRes;
+
+        if (smsResp.isSuccess()) {
+            AlertRecordEO recordEO = buildAlertRecordEO(alertInfoDTO, userDTO.getUsername(), phoneNumber, null, MessageType.SMS, text, true);
+            saveRes = alertRecordRepo.save(recordEO);
+        }else {
+            AlertRecordEO recordEO = buildAlertRecordEO(alertInfoDTO, userDTO.getUsername(), phoneNumber, null, MessageType.SMS, text, false);
+            saveRes =  alertRecordRepo.save(recordEO);
+        }
+
+
+
+        return saveRes ? Result.success(saveRes) : Result.error("记录保存失败");
     }
 
     @Override
@@ -405,19 +419,46 @@ public class AlertServiceImpl implements AlertService {
 
         List<SuposUserDTO> sugasmsUsers = res.getData();
 
-        RateLimiter limiter = RateLimiter.create(10);
+        RateLimiter limiter = RateLimiter.create(5);
 
         while (!alertMessageQueue.isEmpty()) {
             AlertInfoDTO alertInfoDTO = alertMessageQueue.poll();
-            for (SuposUserDTO suposUserDTO : sugasmsUsers) {
+            int n = sugasmsUsers.size();
+
+            for (int i = 0 ; i < n ; i++) {
                 limiter.acquire();
-                CompletableFuture.runAsync(() ->{
-                    notifyUserByEmail(suposUserDTO,alertInfoDTO);
-                    notifyUserBySms(suposUserDTO,alertInfoDTO);
-                });
+                SuposUserDTO userDTO = sugasmsUsers.get(i);
+                CompletableFuture.supplyAsync(() -> notifyUserBySms(userDTO,alertInfoDTO));
+                CompletableFuture.supplyAsync(()->notifyUserByEmail(userDTO,alertInfoDTO)) ;
             }
+
+            CompletableFuture.allOf();
+
         }
 
-        CompletableFuture.allOf();
+    }
+
+    private AlertRecordEO buildAlertRecordEO(AlertInfoDTO alertInfoDTO,String username,String phone,String email,MessageType type,String text,Boolean status) {
+        if (StringUtils.equals(type.name(),"sms")) {
+            return AlertRecordEO.builder()
+                    .type(MessageType.SMS)
+                    .alertId(alertInfoDTO.getId())
+                    .username(username)
+                    .content(text)
+                    .sendTime(new Date())
+                    .phone(phone)
+                    .status(status)
+                    .build();
+        }else {
+            return AlertRecordEO.builder()
+                    .type(MessageType.EMAIL)
+                    .alertId(alertInfoDTO.getId())
+                    .username(username)
+                    .content(text)
+                    .sendTime(new Date())
+                    .email(email)
+                    .status(status)
+                    .build();
+        }
     }
 }

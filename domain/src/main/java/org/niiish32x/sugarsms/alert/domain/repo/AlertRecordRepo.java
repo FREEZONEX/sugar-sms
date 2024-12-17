@@ -13,4 +13,6 @@ import java.util.List;
 
 public interface AlertRecordRepo {
     List<AlertRecordEO>  find();
+
+    boolean save(AlertRecordEO alertRecordEO);
 }
