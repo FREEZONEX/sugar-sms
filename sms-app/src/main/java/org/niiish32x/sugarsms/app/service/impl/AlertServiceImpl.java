@@ -405,19 +405,32 @@ public class AlertServiceImpl implements AlertService {
 
         List<SuposUserDTO> sugasmsUsers = res.getData();
 
-        RateLimiter limiter = RateLimiter.create(10);
+        RateLimiter limiter = RateLimiter.create(5);
 
         while (!alertMessageQueue.isEmpty()) {
             AlertInfoDTO alertInfoDTO = alertMessageQueue.poll();
-            for (SuposUserDTO suposUserDTO : sugasmsUsers) {
+            int n = sugasmsUsers.size();
+            CompletableFuture<Result> [] futures = new CompletableFuture[n];
+
+            for (int i = 0 ; i < n ; i++) {
                 limiter.acquire();
-                CompletableFuture.runAsync(() ->{
-                    notifyUserByEmail(suposUserDTO,alertInfoDTO);
-                    notifyUserBySms(suposUserDTO,alertInfoDTO);
-                });
+                SuposUserDTO userDTO = sugasmsUsers.get(i);
+                futures[i] = CompletableFuture.supplyAsync(() -> notifyUserBySms(userDTO,alertInfoDTO));
             }
+
+//            for (SuposUserDTO suposUserDTO : sugasmsUsers) {
+//                limiter.acquire();
+//                futures[]
+//                CompletableFuture.runAsync(() ->{
+//                    notifyUserByEmail(suposUserDTO,alertInfoDTO);
+//                    notifyUserBySms(suposUserDTO,alertInfoDTO);
+//                });
+//            }
+//
+            CompletableFuture.allOf();
+
         }
 
-        CompletableFuture.allOf();
+
     }
 }

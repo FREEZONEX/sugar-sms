@@ -35,21 +35,24 @@ public class AlertRecordDO implements Serializable {
     @TableField(value = "alert_id")
     private Long alertId;
 
+    @TableField(value = "type")
+    private String type;
 
-    @TableField(value = "sms_send_status")
-    private Integer smsSendStatus;
+    @TableField(value = "send_time")
+    private LocalDateTime sendTime;
 
-    @TableField(value = "sms_send_time")
-    private Date smsSendTime;
-
-    @TableField(value = "email_send_status")
-    private Integer emailSendStatus;
-
-    @TableField(value = "email_send_time")
-    private Date emailSendTime;
-
+    /**
+     * 0 表示发送失败
+     * 1 表示发送成功
+     */
     @TableField(value = "status")
     private Integer status;
+
+    @TableField(value = "phone")
+    private String phone;
+
+    @TableField(value = "email")
+    private String email;
 
     @TableField(value = "content")
     private String content;
