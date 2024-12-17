@@ -31,7 +31,9 @@ public class AlertRecordEO implements Serializable {
 
     private MessageType type;
 
-    private LocalDateTime sendTime;
+    private Date sendTime;
+
+    private String username;
 
     private Boolean status;
 
@@ -41,8 +43,8 @@ public class AlertRecordEO implements Serializable {
 
     private String content;
 
-    private LocalDateTime createTime;
+    private Date createTime;
 
-    private LocalDateTime updateTime;
+    private Date updateTime;
 
 }

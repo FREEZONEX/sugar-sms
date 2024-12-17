@@ -40,6 +40,6 @@ public class AlertRecordRepoImpl implements AlertRecordRepo {
     @Override
     public boolean save(AlertRecordEO alertRecordEO) {
 
-        return alertRecordDAO.save(converter.toDO(alertRecordEO));
+        return alertRecordDAO.saveOrUpdate(converter.toDO(alertRecordEO));
     }
 }

@@ -39,7 +39,10 @@ public class AlertRecordDO implements Serializable {
     private String type;
 
     @TableField(value = "send_time")
-    private LocalDateTime sendTime;
+    private Date sendTime;
+
+    @TableField(value = "username")
+    private String username;
 
     /**
      * 0 表示发送失败
@@ -58,9 +61,9 @@ public class AlertRecordDO implements Serializable {
     private String content;
 
     @TableField(value = "create_time")
-    private LocalDateTime createTime;
+    private Date createTime;
 
     @TableField(value = "update_time")
-    private LocalDateTime updateTime;
+    private Date updateTime;
 
 }

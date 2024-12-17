@@ -16,8 +16,7 @@ import java.util.List;
  */
 public interface AlertService {
 
-     List<AlertRecordEO> getAllAlerts();
-
+     List<AlertRecordEO> getAllAlertRecords();
 
      Result<List<AlertInfoDTO>> getAlertsFromSupos();
 
@@ -35,7 +34,7 @@ public interface AlertService {
       * @return
       * 发送失败 则返回 发送失败邮箱
       */
-     Result <String> notifyUserByEmail(SuposUserDTO userDTO,AlertInfoDTO alertInfoDTO);
+     Result <Boolean> notifyUserByEmail(SuposUserDTO userDTO,AlertInfoDTO alertInfoDTO);
 
      /**
       *
@@ -45,7 +44,7 @@ public interface AlertService {
       *
       * 发送失败则返回 发送失败的电话号码
       */
-     Result <String> notifyUserBySms(SuposUserDTO userDTO,AlertInfoDTO alertInfoDTO);
+     Result <Boolean> notifyUserBySms(SuposUserDTO userDTO,AlertInfoDTO alertInfoDTO);
 
      void consumeAlertEvent();
 }

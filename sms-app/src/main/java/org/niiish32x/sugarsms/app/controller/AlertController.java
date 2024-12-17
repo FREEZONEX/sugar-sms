@@ -41,7 +41,7 @@ public class AlertController {
 
     @RequestMapping("/alert/record/test")
     public List<AlertRecordEO> testAlert() {
-        return alertService.getAllAlerts();
+        return alertService.getAllAlertRecords();
     }
 
 }

@@ -7,6 +7,7 @@ CREATE TABLE `alert_record` (   `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 
                                 `alert_id` bigint(20) NOT NULL ,
                                 `type` VARCHAR(255) COMMENT '通知类型',
                                 `status` tinyint(1)   COMMENT '0 表示 sms 发送未完成 1 表示 sms 发送已完成 即全部通知到位' ,
+                                `username` VARCHAR(255),
                                 `send_time` datetime COMMENT  '通知成功的时间',
                                 `phone` VARCHAR(255),
                                 `email` VARCHAR(255),
@@ -16,6 +17,7 @@ CREATE TABLE `alert_record` (   `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 
                                 index idx_status(status),
                                 index idx_alert_id(alert_id),
                                 index idx_type(type),
+                                unique idx_uni_alert_id_type_username(alert_id,type,username),
                                 PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='报警消息记录表';
 
