@@ -1,7 +1,9 @@
 package org.niiish32x.sugarsms.alert.domain.repo;
 
 import org.niiish32x.sugarsms.alert.domain.entity.AlertRecordEO;
+import org.niiish32x.sugarsms.alert.domain.entity.MessageType;
 
+import java.sql.Time;
 import java.util.List;
 
 /**
@@ -21,4 +23,19 @@ public interface AlertRecordRepo {
      * @return
      */
     List<AlertRecordEO> findFailRecords();
+
+    /**
+     * 找到 alert消息 第一条发送 和 最后一条发送的时间间隔
+     * @return
+     */
+    Long findDurationFromStatToEnd(long alertId);
+
+    Long findDurationFromStatToEnd(long alertId, MessageType type);
+
+    /**
+     * 测试使用
+     * 找当前库 发送时间最早的消息 到 发送时间最迟的消息之间的间隔
+     * @return
+     */
+    Long findDurationFromStatToEnd(MessageType type);
 }

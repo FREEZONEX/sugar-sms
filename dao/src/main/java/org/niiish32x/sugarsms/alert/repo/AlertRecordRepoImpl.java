@@ -1,5 +1,6 @@
 package org.niiish32x.sugarsms.alert.repo;
 
+import cn.hutool.cron.timingwheel.SystemTimer;
 import org.niiish32x.sugarsms.alert.AlertRecordDO;
 import org.niiish32x.sugarsms.alert.domain.entity.AlertRecordEO;
 import org.niiish32x.sugarsms.alert.domain.entity.MessageType;
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Resource;
+import java.sql.Time;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -48,4 +50,55 @@ public class AlertRecordRepoImpl implements AlertRecordRepo {
         List<AlertRecordDO> list = alertRecordDAO.lambdaQuery().eq(AlertRecordDO::getStatus, false).list();
         return list.stream().map(converter::toEO).collect(Collectors.toList());
     }
+
+    @Override
+    public Long findDurationFromStatToEnd(long alertId) {
+        List<AlertRecordDO> list = alertRecordDAO.lambdaQuery().eq(AlertRecordDO::getAlertId, alertId).list();
+
+        long start = Long.MAX_VALUE;
+        long end = Long.MIN_VALUE;
+
+        for (AlertRecordDO alertRecordDO : list) {
+            start = Math.min(alertRecordDO.getSendTime().getTime(),start);
+            end = Math.max(alertRecordDO.getSendTime().getTime(),end);
+        }
+
+        return end - start;
+    }
+
+    @Override
+    public Long findDurationFromStatToEnd(long alertId, MessageType type) {
+        List<AlertRecordDO> list = alertRecordDAO.lambdaQuery()
+                .eq(AlertRecordDO::getAlertId, alertId)
+                .eq(AlertRecordDO::getType,type)
+                .list();
+
+        long start = Long.MAX_VALUE;
+        long end = Long.MIN_VALUE;
+
+        for (AlertRecordDO alertRecordDO : list) {
+            start = Math.min(alertRecordDO.getSendTime().getTime(),start);
+            end = Math.max(alertRecordDO.getSendTime().getTime(),end);
+        }
+
+        return end - start;
+    }
+
+    @Override
+    public Long findDurationFromStatToEnd(MessageType type) {
+        List<AlertRecordDO> list = alertRecordDAO.lambdaQuery()
+                .eq(AlertRecordDO::getType,type)
+                .list();
+
+        long start = Long.MAX_VALUE;
+        long end = Long.MIN_VALUE;
+
+        for (AlertRecordDO alertRecordDO : list) {
+            start = Math.min(alertRecordDO.getSendTime().getTime(),start);
+            end = Math.max(alertRecordDO.getSendTime().getTime(),end);
+        }
+
+        return end - start;
+    }
+
 }
