@@ -40,6 +40,12 @@ public class AlertRecordRepoImpl implements AlertRecordRepo {
     @Override
     public boolean save(AlertRecordEO alertRecordEO) {
 
-        return alertRecordDAO.saveOrUpdate(converter.toDO(alertRecordEO));
+        return alertRecordDAO.save(converter.toDO(alertRecordEO));
+    }
+
+    @Override
+    public List<AlertRecordEO> findFailRecords() {
+        List<AlertRecordDO> list = alertRecordDAO.lambdaQuery().eq(AlertRecordDO::getStatus, false).list();
+        return list.stream().map(converter::toEO).collect(Collectors.toList());
     }
 }
