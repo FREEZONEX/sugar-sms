@@ -142,7 +142,6 @@
 
     <build>
         <plugins>
-
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-assembly-plugin</artifactId>
@@ -176,7 +175,6 @@
                     <source>1.8</source>
                     <target>1.8</target>
                     <encoding>UTF-8</encoding>
-
                 </configuration>
             </plugin>
             <plugin>
@@ -185,7 +183,7 @@
                 <version>${spring-boot.version}</version>
                 <configuration>
                     <mainClass>org.niiish32x.sugarsms.Bootstrap</mainClass>
-                    <skip>true</skip>
+                    <!--                    <skip>true</skip>-->
                 </configuration>
                 <executions>
                     <execution>
@@ -198,5 +196,6 @@
             </plugin>
         </plugins>
     </build>
+
 
 </project>
