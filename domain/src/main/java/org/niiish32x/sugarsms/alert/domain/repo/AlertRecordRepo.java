@@ -14,6 +14,9 @@ import java.util.List;
  */
 
 public interface AlertRecordRepo {
+
+    List<AlertRecordEO> findAlertsBeforeDays(Integer days);
+
     List<AlertRecordEO>  find();
 
     /**

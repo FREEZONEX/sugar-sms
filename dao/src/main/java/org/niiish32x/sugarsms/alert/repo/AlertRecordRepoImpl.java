@@ -34,6 +34,12 @@ public class AlertRecordRepoImpl implements AlertRecordRepo {
 
 
     @Override
+    public List<AlertRecordEO> findAlertsBeforeDays(Integer days) {
+        List<AlertRecordDO> list = alertRecordDAO.findAlertBeforeDays(days);
+        return list.stream().map(converter::toEO).collect(Collectors.toList());
+    }
+
+    @Override
     public List<AlertRecordEO> find() {
         List<AlertRecordDO> list = alertRecordDAO.lambdaQuery().list();
         return list.stream().map(converter::toEO).collect(Collectors.toList());
