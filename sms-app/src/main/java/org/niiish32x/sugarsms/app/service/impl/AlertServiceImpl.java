@@ -37,6 +37,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.stream.Collectors;
 
 /**
  * AlertServiceImpl
@@ -414,6 +415,19 @@ public class AlertServiceImpl implements AlertService {
 
 
         return saveRes ? Result.success(saveRes) : Result.error("记录保存失败");
+    }
+
+    @Override
+    public Boolean cleanAlertPastDays(Integer days) {
+        List<AlertRecordEO> alertsBeforeDays = alertRecordRepo.findAlertsBeforeDays(days);
+
+        List<Long> ids = new ArrayList<>();
+
+        for (AlertRecordEO alertRecordEO : alertsBeforeDays) {
+            ids.add(alertRecordEO.getId());
+        }
+
+        return alertRecordRepo.remove(ids);
     }
 
     @Override

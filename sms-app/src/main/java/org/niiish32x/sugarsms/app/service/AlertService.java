@@ -46,5 +46,7 @@ public interface AlertService {
       */
      Result <Boolean> notifyUserBySms(SuposUserDTO userDTO,AlertInfoDTO alertInfoDTO);
 
+     Boolean cleanAlertPastDays(Integer days);
+
      void consumeAlertEvent();
 }
