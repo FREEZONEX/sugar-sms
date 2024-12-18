@@ -73,7 +73,7 @@ public class AlertJob {
 
 
     /**
-     * 每周日 凌晨 3点
+     * 每周六 凌晨 3点
      */
     @Scheduled(cron = "0 0 3 ? * SAT")
     void cleanJob() {
