@@ -142,6 +142,30 @@
 
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>3.3.0</version>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <mainClass>org.niiish32x.sugarsms.Bootstrap</mainClass>
+                        </manifest>
+                    </archive>
+                    <descriptorRefs>
+                        <descriptorRef>jar-with-dependencies</descriptorRef>
+                    </descriptorRefs>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>make-assembly</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -151,7 +175,6 @@
                     <source>1.8</source>
                     <target>1.8</target>
                     <encoding>UTF-8</encoding>
-
                 </configuration>
             </plugin>
             <plugin>
@@ -160,7 +183,7 @@
                 <version>${spring-boot.version}</version>
                 <configuration>
                     <mainClass>org.niiish32x.sugarsms.Bootstrap</mainClass>
-                    <skip>true</skip>
+                    <!--                    <skip>true</skip>-->
                 </configuration>
                 <executions>
                     <execution>
@@ -173,5 +196,6 @@
             </plugin>
         </plugins>
     </build>
+
 
 </project>
