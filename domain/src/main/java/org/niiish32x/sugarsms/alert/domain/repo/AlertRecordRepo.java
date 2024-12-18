@@ -21,7 +21,13 @@ public interface AlertRecordRepo {
      * @param alertId
      * @return
      */
-    AlertRecordEO find(Long alertId);
+    List<AlertRecordEO>  find(Long alertId);
+
+    /**
+     * 找到所有发送失败记录
+     * @return
+     */
+    List<AlertRecordEO> find(MessageType type,boolean status);
 
     boolean save(AlertRecordEO alertRecordEO);
 

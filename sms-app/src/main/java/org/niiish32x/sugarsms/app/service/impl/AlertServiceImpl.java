@@ -436,6 +436,24 @@ public class AlertServiceImpl implements AlertService {
 
         }
 
+
+         for (AlertRecordEO alertRecordEO :  alertRecordRepo.find(MessageType.SMS, false)) {
+             Result<ZubrixSmsResponse> smsResponseResult = sendMessageService.sendOneZubrixSmsMessage(alertRecordEO.getPhone(), alertRecordEO.getContent());
+             if (smsResponseResult.isSuccess()) {
+                 alertRecordEO.setSendTime(new Date());
+                 alertRecordEO.setStatus(true);
+                 alertRecordRepo.save(alertRecordEO);
+             }
+         }
+
+         for (AlertRecordEO alertRecordEO :  alertRecordRepo.find(MessageType.EMAIL, false)) {
+             boolean sendRes = sendMessageService.sendEmail(alertRecordEO.getEmail(), "sugar-plant-alert", alertRecordEO.getContent());
+             if (sendRes) {
+                 alertRecordEO.setSendTime(new Date());
+                 alertRecordEO.setStatus(true);
+                 alertRecordRepo.save(alertRecordEO);
+             }
+         }
     }
 
     private AlertRecordEO buildAlertRecordEO(AlertInfoDTO alertInfoDTO,String username,String phone,String email,MessageType type,String text,Boolean status) {
