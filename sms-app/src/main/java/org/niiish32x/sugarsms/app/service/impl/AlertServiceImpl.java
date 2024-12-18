@@ -457,7 +457,7 @@ public class AlertServiceImpl implements AlertService {
     }
 
     private AlertRecordEO buildAlertRecordEO(AlertInfoDTO alertInfoDTO,String username,String phone,String email,MessageType type,String text,Boolean status) {
-        if (StringUtils.equals(type.name(),"sms")) {
+        if (type == MessageType.SMS) {
             return AlertRecordEO.builder()
                     .type(MessageType.SMS)
                     .alertId(alertInfoDTO.getId())

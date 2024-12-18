@@ -48,12 +48,15 @@ public class AlertJob {
 
         List<AlertInfoDTO> alertInfoDTOS = alertsResp.getData();
 
+
         if(alertInfoDTOS.isEmpty()) {
             return;
         }
 
         for (AlertInfoDTO alertInfoDTO : alertInfoDTOS) {
-            if (alertRecordRepo.find(alertInfoDTO.getId()) != null) {
+            log.info("alert massage id {}",alertInfoDTO.getId());
+
+            if (!alertRecordRepo.find(alertInfoDTO.getId()).isEmpty()) {
                 continue;
             };
             alertMessageQueue.offer(alertInfoDTO);
