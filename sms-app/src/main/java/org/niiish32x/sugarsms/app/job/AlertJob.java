@@ -36,7 +36,7 @@ public class AlertJob {
     /**
      * fixedDelay 本次任务执行完后 10秒后 再执行下一次
      */
-    @Scheduled(fixedDelay =  1000 * 10)
+//    @Scheduled(fixedDelay =  1000 * 10)
     void alertJob() {
 
         Result<List<AlertInfoDTO>> alertsResp  = alertService.getAlertsFromSupos();
@@ -69,5 +69,15 @@ public class AlertJob {
 //        alertService.notifySugarUserByEmail();
 //        alertService.notifySugarUserBySms();
 
+    }
+
+
+    /**
+     * 每周六 凌晨 3点
+     */
+    @Scheduled(cron = "0 0 3 ? * SAT")
+    void cleanJob() {
+        // 清理过去两周的消息
+        alertService.cleanAlertPastDays(14);
     }
 }
