@@ -124,4 +124,9 @@ public class AlertRecordRepoImpl implements AlertRecordRepo {
         return end - start;
     }
 
+    @Override
+    public Boolean remove(List<Long> ids) {
+        return alertRecordDAO.removeBatchByIds(ids);
+    }
+
 }

@@ -54,4 +54,11 @@ public interface AlertRecordRepo {
      * @return
      */
     Long findDurationFromStatToEnd(MessageType type);
+
+    /**
+     * 根据id 批量删除记录
+     * @param ids
+     * @return
+     */
+    Boolean remove(List <Long> ids);
 }
