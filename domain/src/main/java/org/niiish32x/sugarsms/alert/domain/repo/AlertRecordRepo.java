@@ -16,6 +16,19 @@ import java.util.List;
 public interface AlertRecordRepo {
     List<AlertRecordEO>  find();
 
+    /**
+     * 根据消息Id 进行查找
+     * @param alertId
+     * @return
+     */
+    List<AlertRecordEO>  find(Long alertId);
+
+    /**
+     * 找到所有发送失败记录
+     * @return
+     */
+    List<AlertRecordEO> find(MessageType type,boolean status);
+
     boolean save(AlertRecordEO alertRecordEO);
 
     /**
