@@ -1,6 +1,7 @@
 package org.niiish32x.sugarsms.app.job;
 
 import lombok.extern.slf4j.Slf4j;
+import org.niiish32x.sugarsms.alert.domain.repo.AlertRecordRepo;
 import org.niiish32x.sugarsms.app.dto.AlertInfoDTO;
 import org.niiish32x.sugarsms.app.queue.AlertMessageQueue;
 import org.niiish32x.sugarsms.app.service.AlertService;
@@ -28,6 +29,9 @@ public class AlertJob {
     @Autowired
     AlertMessageQueue alertMessageQueue;
 
+    @Autowired
+    AlertRecordRepo alertRecordRepo;
+
 
     /**
      * fixedDelay 本次任务执行完后 10秒后 再执行下一次
@@ -49,6 +53,9 @@ public class AlertJob {
         }
 
         for (AlertInfoDTO alertInfoDTO : alertInfoDTOS) {
+            if (alertRecordRepo.find(alertInfoDTO.getId()) != null) {
+                continue;
+            };
             alertMessageQueue.offer(alertInfoDTO);
         }
 

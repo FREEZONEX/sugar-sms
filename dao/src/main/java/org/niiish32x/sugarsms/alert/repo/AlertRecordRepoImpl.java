@@ -40,6 +40,12 @@ public class AlertRecordRepoImpl implements AlertRecordRepo {
     }
 
     @Override
+    public AlertRecordEO find(Long alertId) {
+        AlertRecordDO one = alertRecordDAO.lambdaQuery().eq(AlertRecordDO::getAlertId, alertId).one();
+        return converter.toEO(one);
+    }
+
+    @Override
     public boolean save(AlertRecordEO alertRecordEO) {
 
         return alertRecordDAO.save(converter.toDO(alertRecordEO));

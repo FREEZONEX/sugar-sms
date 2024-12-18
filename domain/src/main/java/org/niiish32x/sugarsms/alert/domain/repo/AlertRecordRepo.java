@@ -16,6 +16,13 @@ import java.util.List;
 public interface AlertRecordRepo {
     List<AlertRecordEO>  find();
 
+    /**
+     * 根据消息Id 进行查找
+     * @param alertId
+     * @return
+     */
+    AlertRecordEO find(Long alertId);
+
     boolean save(AlertRecordEO alertRecordEO);
 
     /**
