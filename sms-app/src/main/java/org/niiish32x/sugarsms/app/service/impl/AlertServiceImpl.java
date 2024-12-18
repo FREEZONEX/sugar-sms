@@ -3,6 +3,7 @@ package org.niiish32x.sugarsms.app.service.impl;
 import cn.hutool.http.HttpResponse;
 import com.alibaba.fastjson2.JSON;
 import com.google.common.util.concurrent.RateLimiter;
+import com.sun.corba.se.spi.orbutil.threadpool.ThreadPoolManager;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.niiish32x.sugarsms.alert.domain.entity.AlertRecordEO;
@@ -47,6 +48,8 @@ import java.util.concurrent.*;
 @Service
 @Slf4j
 public class AlertServiceImpl implements AlertService {
+
+
 
     // 防止重复发送
     static  ConcurrentHashMap <String,String> visited = new ConcurrentHashMap<>();
