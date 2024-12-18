@@ -20,6 +20,6 @@ public interface AlertRecordMapper extends BaseMapper<AlertRecordDO> {
      * 获取距离当前时间 days 所有 alert数据
      * @return
      */
-    @Select("select * from sugar_sms.alert_record where send_time < DATE_SUB(CURRENT_TIMESTAMP,interval #{days} DAY )")
+    @Select("select * from sugar_sms.alert_record where TIMESTAMPDIFF(DAY, send_time, CURRENT_TIMESTAMP) <= #{days}")
     List<AlertRecordDO> findAlertBeforeDays(@Param("days") Integer days);
 }
