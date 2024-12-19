@@ -56,7 +56,8 @@ public class AlertJob {
         for (AlertInfoDTO alertInfoDTO : alertInfoDTOS) {
             log.info("alert massage id {}",alertInfoDTO.getId());
 
-            if (!alertRecordRepo.find(alertInfoDTO.getId()).isEmpty()) {
+            if (alertRecordRepo.findWithLimitByAlertId(alertInfoDTO.getId(),1) != null) {
+//                log.info("alertId {} 已经发送过",alertInfoDTO.getId());
                 continue;
             };
             alertMessageQueue.offer(alertInfoDTO);
