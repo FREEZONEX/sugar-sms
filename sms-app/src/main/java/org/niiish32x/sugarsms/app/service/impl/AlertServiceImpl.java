@@ -50,6 +50,13 @@ import java.util.stream.Collectors;
 @Slf4j
 public class AlertServiceImpl implements AlertService {
 
+    static ThreadPoolExecutor poolExecutor = new ThreadPoolExecutor(
+            100,
+            200,
+            100,TimeUnit.SECONDS,
+            new ArrayBlockingQueue<>(500),
+            new ThreadPoolExecutor.AbortPolicy() // AbortPolicy 任务满后 会拒绝执行
+    );
 
 
     // 防止重复发送
@@ -436,17 +443,17 @@ public class AlertServiceImpl implements AlertService {
 
         List<SuposUserDTO> sugasmsUsers = res.getData();
 
-        RateLimiter limiter = RateLimiter.create(5);
+//        RateLimiter limiter = RateLimiter.create(5);
 
         while (!alertMessageQueue.isEmpty()) {
             AlertInfoDTO alertInfoDTO = alertMessageQueue.poll();
             int n = sugasmsUsers.size();
 
             for (int i = 0 ; i < n ; i++) {
-                limiter.acquire();
+//                limiter.acquire();
                 SuposUserDTO userDTO = sugasmsUsers.get(i);
-                CompletableFuture.supplyAsync(() -> notifyUserBySms(userDTO,alertInfoDTO));
-                CompletableFuture.supplyAsync(()->notifyUserByEmail(userDTO,alertInfoDTO)) ;
+                CompletableFuture.supplyAsync(() -> notifyUserBySms(userDTO,alertInfoDTO) , poolExecutor);
+                CompletableFuture.supplyAsync(()->notifyUserByEmail(userDTO,alertInfoDTO) , poolExecutor) ;
             }
 
             CompletableFuture.allOf();
