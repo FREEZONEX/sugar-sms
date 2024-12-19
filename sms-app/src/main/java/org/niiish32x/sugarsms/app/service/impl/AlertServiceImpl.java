@@ -356,6 +356,7 @@ public class AlertServiceImpl implements AlertService {
         }
 
         boolean saveRes = false;
+        AlertRecordEO recordEO = null;
         if (StringUtils.isNotBlank(email)) {
             boolean res = sendMessageService.sendEmail(email, "sugar-plant-alert", text);
 
@@ -363,15 +364,20 @@ public class AlertServiceImpl implements AlertService {
                 // 本次发送成功后 进行标记 不再进行二次发送
                 visited.put(key, "1");
 
-                AlertRecordEO recordEO = buildAlertRecordEO(alertInfoDTO, userDTO.getUsername(), null, email, MessageType.EMAIL, text, true);
+                recordEO = buildAlertRecordEO(alertInfoDTO, userDTO.getUsername(), null, email, MessageType.EMAIL, text, true);
                 saveRes =  alertRecordRepo.save(recordEO);
             }else {
-                AlertRecordEO recordEO = buildAlertRecordEO(alertInfoDTO, userDTO.getUsername(), null, email, MessageType.EMAIL, text, false);
+                recordEO = buildAlertRecordEO(alertInfoDTO, userDTO.getUsername(), null, email, MessageType.EMAIL, text, false);
                 saveRes =  alertRecordRepo.save(recordEO);
             }
 
             log.info("alert: {} 通知成功 -> email:  {}",alertInfoDTO.getId() , email);
 
+        }
+
+        if (!saveRes) {
+            assert recordEO != null;
+            log.error("email alert: {} {} 数据库 落盘失败",recordEO.getAlertId(),recordEO.getEmail());
         }
 
         return saveRes ?  Result.success(saveRes) : Result.error("记录保存失败");
@@ -410,16 +416,18 @@ public class AlertServiceImpl implements AlertService {
 
 
         boolean saveRes;
-
+        AlertRecordEO recordEO = null;
         if (smsResp.isSuccess()) {
-            AlertRecordEO recordEO = buildAlertRecordEO(alertInfoDTO, userDTO.getUsername(), phoneNumber, null, MessageType.SMS, text, true);
+            recordEO = buildAlertRecordEO(alertInfoDTO, userDTO.getUsername(), phoneNumber, null, MessageType.SMS, text, true);
             saveRes = alertRecordRepo.save(recordEO);
         }else {
-            AlertRecordEO recordEO = buildAlertRecordEO(alertInfoDTO, userDTO.getUsername(), phoneNumber, null, MessageType.SMS, text, false);
+            recordEO = buildAlertRecordEO(alertInfoDTO, userDTO.getUsername(), phoneNumber, null, MessageType.SMS, text, false);
             saveRes =  alertRecordRepo.save(recordEO);
         }
 
-
+        if(!saveRes) {
+            log.error("sms alert {} {} 数据库 落盘失败",recordEO.getAlertId(),recordEO.getPhone());
+        }
 
         return saveRes ? Result.success(saveRes) : Result.error("记录保存失败");
     }
