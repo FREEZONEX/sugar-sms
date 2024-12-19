@@ -61,4 +61,6 @@ public interface AlertRecordRepo {
      * @return
      */
     Boolean remove(List <Long> ids);
+
+    AlertRecordEO findWithLimitByAlertId(Long alertId,Integer limit);
 }

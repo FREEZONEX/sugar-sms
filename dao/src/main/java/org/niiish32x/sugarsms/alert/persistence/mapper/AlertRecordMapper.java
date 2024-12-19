@@ -22,4 +22,13 @@ public interface AlertRecordMapper extends BaseMapper<AlertRecordDO> {
      */
     @Select("select * from sugar_sms.alert_record where TIMESTAMPDIFF(DAY, send_time, CURRENT_TIMESTAMP) <= #{days}")
     List<AlertRecordDO> findAlertBeforeDays(@Param("days") Integer days);
+
+    /**
+     * limit查找  判断的时候用减少全表扫描
+     * @param alertId
+     * @param limit
+     * @return
+     */
+    @Select("select * from sugar_sms.alert_record where alert_id=#{alertId} limit #{limit}")
+    AlertRecordDO findWithLimitByAlertId(@Param("alertId") Long alertId,@Param("limit") Integer limit);
 }

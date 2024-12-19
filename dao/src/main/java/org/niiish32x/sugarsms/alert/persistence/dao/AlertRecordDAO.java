@@ -15,4 +15,5 @@ import java.util.List;
  */
 public interface AlertRecordDAO extends IService<AlertRecordDO> {
     List<AlertRecordDO> findAlertBeforeDays(@Param("days") Integer days);
+    AlertRecordDO findWithLimitByAlertId(@Param("alertId") Long alertId,@Param("limit") Integer limit);
 }

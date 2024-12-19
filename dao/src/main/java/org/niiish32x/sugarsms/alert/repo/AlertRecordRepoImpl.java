@@ -129,4 +129,9 @@ public class AlertRecordRepoImpl implements AlertRecordRepo {
         return alertRecordDAO.removeBatchByIds(ids);
     }
 
+    @Override
+    public AlertRecordEO findWithLimitByAlertId(Long alertId, Integer limit) {
+        return converter.toEO(alertRecordDAO.findWithLimitByAlertId(alertId,limit));
+    }
+
 }
