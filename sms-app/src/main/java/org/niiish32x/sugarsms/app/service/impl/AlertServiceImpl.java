@@ -50,6 +50,13 @@ import java.util.stream.Collectors;
 @Slf4j
 public class AlertServiceImpl implements AlertService {
 
+    static ThreadPoolExecutor poolExecutor = new ThreadPoolExecutor(
+            100,
+            200,
+            100,TimeUnit.SECONDS,
+            new ArrayBlockingQueue<>(500),
+            new ThreadPoolExecutor.AbortPolicy() // AbortPolicy 任务满后 会拒绝执行
+    );
 
 
     // 防止重复发送
@@ -349,6 +356,7 @@ public class AlertServiceImpl implements AlertService {
         }
 
         boolean saveRes = false;
+        AlertRecordEO recordEO = null;
         if (StringUtils.isNotBlank(email)) {
             boolean res = sendMessageService.sendEmail(email, "sugar-plant-alert", text);
 
@@ -356,15 +364,20 @@ public class AlertServiceImpl implements AlertService {
                 // 本次发送成功后 进行标记 不再进行二次发送
                 visited.put(key, "1");
 
-                AlertRecordEO recordEO = buildAlertRecordEO(alertInfoDTO, userDTO.getUsername(), null, email, MessageType.EMAIL, text, true);
+                recordEO = buildAlertRecordEO(alertInfoDTO, userDTO.getUsername(), null, email, MessageType.EMAIL, text, true);
                 saveRes =  alertRecordRepo.save(recordEO);
             }else {
-                AlertRecordEO recordEO = buildAlertRecordEO(alertInfoDTO, userDTO.getUsername(), null, email, MessageType.EMAIL, text, false);
+                recordEO = buildAlertRecordEO(alertInfoDTO, userDTO.getUsername(), null, email, MessageType.EMAIL, text, false);
                 saveRes =  alertRecordRepo.save(recordEO);
             }
 
             log.info("alert: {} 通知成功 -> email:  {}",alertInfoDTO.getId() , email);
 
+        }
+
+        if (!saveRes) {
+            assert recordEO != null;
+            log.error("email alert: {} {} 数据库 落盘失败",recordEO.getAlertId(),recordEO.getEmail());
         }
 
         return saveRes ?  Result.success(saveRes) : Result.error("记录保存失败");
@@ -403,16 +416,18 @@ public class AlertServiceImpl implements AlertService {
 
 
         boolean saveRes;
-
+        AlertRecordEO recordEO = null;
         if (smsResp.isSuccess()) {
-            AlertRecordEO recordEO = buildAlertRecordEO(alertInfoDTO, userDTO.getUsername(), phoneNumber, null, MessageType.SMS, text, true);
+            recordEO = buildAlertRecordEO(alertInfoDTO, userDTO.getUsername(), phoneNumber, null, MessageType.SMS, text, true);
             saveRes = alertRecordRepo.save(recordEO);
         }else {
-            AlertRecordEO recordEO = buildAlertRecordEO(alertInfoDTO, userDTO.getUsername(), phoneNumber, null, MessageType.SMS, text, false);
+            recordEO = buildAlertRecordEO(alertInfoDTO, userDTO.getUsername(), phoneNumber, null, MessageType.SMS, text, false);
             saveRes =  alertRecordRepo.save(recordEO);
         }
 
-
+        if(!saveRes) {
+            log.error("sms alert {} {} 数据库 落盘失败",recordEO.getAlertId(),recordEO.getPhone());
+        }
 
         return saveRes ? Result.success(saveRes) : Result.error("记录保存失败");
     }
@@ -436,17 +451,17 @@ public class AlertServiceImpl implements AlertService {
 
         List<SuposUserDTO> sugasmsUsers = res.getData();
 
-        RateLimiter limiter = RateLimiter.create(5);
+//        RateLimiter limiter = RateLimiter.create(5);
 
         while (!alertMessageQueue.isEmpty()) {
             AlertInfoDTO alertInfoDTO = alertMessageQueue.poll();
             int n = sugasmsUsers.size();
 
             for (int i = 0 ; i < n ; i++) {
-                limiter.acquire();
+//                limiter.acquire();
                 SuposUserDTO userDTO = sugasmsUsers.get(i);
-                CompletableFuture.supplyAsync(() -> notifyUserBySms(userDTO,alertInfoDTO));
-                CompletableFuture.supplyAsync(()->notifyUserByEmail(userDTO,alertInfoDTO)) ;
+                CompletableFuture.supplyAsync(() -> notifyUserBySms(userDTO,alertInfoDTO) , poolExecutor);
+                CompletableFuture.supplyAsync(()->notifyUserByEmail(userDTO,alertInfoDTO) , poolExecutor) ;
             }
 
             CompletableFuture.allOf();
