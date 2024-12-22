@@ -20,9 +20,6 @@ public interface AlertService {
 
      Result<List<AlertInfoDTO>> getAlertsFromSupos();
 
-     Result notifySugarUserBySms();
-
-     Result notifySugarUserByEmail();
 
      Result  <ZubrixSmsResponse> notifyTest();
 
