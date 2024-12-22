@@ -31,6 +31,7 @@ import org.niiish32x.sugarsms.common.utils.Retrys;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.time.LocalDate;
@@ -173,57 +174,75 @@ public class AlertServiceImpl implements AlertService {
     }
 
     @Override
-    public Result <Boolean> notifyUserByEmail(SuposUserDTO userDTO,AlertInfoDTO alertInfoDTO ) {
-
+    @Transactional
+    public Result<Boolean> notifyUserByEmail(SuposUserDTO userDTO, AlertInfoDTO alertInfoDTO) {
         String email = UserInfoCache.nameToEmail.getIfPresent(userDTO.getPersonCode());
 
         if (email == null) {
             PersonDTO person = personService.getOnePersonByPersonCode(
                     PersonCodesDTO.builder()
-                            .personCodes(Arrays.asList(userDTO.getPersonCode()))
+                            .personCodes(Collections.singletonList(userDTO.getPersonCode()))
                             .build()
             ).getData();
-            email = person.getEmail();
-            userInfoCache.load();
+
+            if (person != null && StringUtils.isNotBlank(person.getEmail())) {
+                email = person.getEmail();
+                UserInfoCache.nameToEmail.put(userDTO.getPersonCode(), email);
+            } else {
+                log.error("无法获取用户 {} 的邮箱信息", userDTO.getPersonCode());
+                return Result.error("无法获取用户邮箱信息");
+            }
         }
 
+        if (StringUtils.isBlank(email)) {
+            log.warn("用户 {} 的邮箱为空", userDTO.getPersonCode());
+            return Result.error("用户邮箱为空");
+        }
 
-        String key = String.format(EMAIL_KEY, alertInfoDTO.getId(),email);
+        String key = String.format(EMAIL_KEY, alertInfoDTO.getId(), email);
 
-        String text = zubrixSmsProxy.formatTextContent(alertInfoDTO);
-
-        if (visited.containsKey(key)) {
-            log.info("alertInfoDTO {} 已发送成功不再重新发送  {}",alertInfoDTO.getId() , email);
+        // 使用 putIfAbsent 原子方法 来确保线程安全
+        if (visited.putIfAbsent(key, "1") != null) {
+            log.info("alertInfoDTO {} 已发送成功不再重新发送  {}", alertInfoDTO.getId(), email);
             return Result.success(true);
         }
 
-        boolean saveRes = false;
+        String text = zubrixSmsProxy.formatTextContent(alertInfoDTO);
+        boolean sendRes = false;
         AlertRecordEO recordEO = null;
-        if (StringUtils.isNotBlank(email)) {
-            boolean res = sendMessageService.sendEmail(email, "sugar-plant-alert", text);
 
-            if(res) {
-                // 本次发送成功后 进行标记 不再进行二次发送
-                visited.put(key, "1");
-
-                recordEO = buildAlertRecordEO(alertInfoDTO, userDTO.getUsername(), null, email, MessageType.EMAIL, text, true);
-                saveRes =  alertRecordRepo.save(recordEO);
-            }else {
-                recordEO = buildAlertRecordEO(alertInfoDTO, userDTO.getUsername(), null, email, MessageType.EMAIL, text, false);
-                saveRes =  alertRecordRepo.save(recordEO);
+        try {
+            sendRes = sendMessageService.sendEmail(email, "sugar-plant-alert", text);
+        } catch (Exception e) {
+            log.error("发送邮件失败: {}", e.getMessage(), e);
+            recordEO = buildAlertRecordEO(alertInfoDTO, userDTO.getUsername(), null, email, MessageType.EMAIL, text, false);
+            boolean saveRes = alertRecordRepo.save(recordEO);
+            if (!saveRes) {
+                throw new RuntimeException("记录保存失败");
             }
-
-            log.info("alert: {} 通知成功 -> email:  {}",alertInfoDTO.getId() , email);
-
+            return Result.error("邮件发送失败");
         }
 
-        if (!saveRes) {
-            assert recordEO != null;
-            log.error("email alert: {} {} 数据库 落盘失败",recordEO.getAlertId(),recordEO.getEmail());
+        if (sendRes) {
+            visited.put(key, "1");
+            recordEO = buildAlertRecordEO(alertInfoDTO, userDTO.getUsername(), null, email, MessageType.EMAIL, text, true);
+            boolean saveRes = alertRecordRepo.save(recordEO);
+            if (!saveRes) {
+                throw new RuntimeException("记录保存失败");
+            }
+            log.info("alert: {} 通知成功 -> email: {}", alertInfoDTO.getId(), email);
+        } else {
+            recordEO = buildAlertRecordEO(alertInfoDTO, userDTO.getUsername(), null, email, MessageType.EMAIL, text, false);
+            boolean saveRes = alertRecordRepo.save(recordEO);
+            if (!saveRes) {
+                throw new RuntimeException("记录保存失败");
+            }
+            log.warn("邮件发送失败: alertId={}, email={}", alertInfoDTO.getId(), email);
         }
 
-        return saveRes ?  Result.success(saveRes) : Result.error("记录保存失败");
+        return Result.success(sendRes);
     }
+
 
     @Override
     public Result<Boolean> notifyUserBySms(SuposUserDTO userDTO, AlertInfoDTO alertInfoDTO) {
