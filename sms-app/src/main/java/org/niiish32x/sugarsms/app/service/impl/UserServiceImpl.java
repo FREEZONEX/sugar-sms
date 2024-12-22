@@ -37,6 +37,13 @@ import java.util.*;
 @Slf4j
 public class UserServiceImpl implements UserService {
 
+
+    private static final String COMPANY_CODE_KEY = "companyCode";
+    private static final String USER_API_PATH = ApiEnum.USER_API.value;
+
+
+
+
     @Resource
     PersonService personService;
 
@@ -93,15 +100,28 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Result getUsersFromSupos(String company) {
+        if (company == null || company.trim().isEmpty()) {
+            return Result.error("Company code cannot be null or empty");
+        }
+
         Map<String, String> headerMap = new HashMap<>();
         Map<String, String> queryMap = new HashMap<>();
-        // default_org_company
-        queryMap.put("companyCode",company);
-        HttpResponse response = suposRequestManager.suposApiGet(ApiEnum.USER_API.value, headerMap, queryMap);
+        queryMap.put(COMPANY_CODE_KEY, company);
 
-        UsersResponse usersResponse = JSON.parseObject(response.body(), UsersResponse.class);
+        try {
+            HttpResponse response = suposRequestManager.suposApiGet(USER_API_PATH, headerMap, queryMap);
+            UsersResponse usersResponse = JSON.parseObject(response.body(), UsersResponse.class);
 
-        return response.isOk() ? Result.success(usersResponse) : Result.error(JSON.toJSONString(usersResponse));
+            if (response.isOk()) {
+                return Result.success(usersResponse);
+            } else {
+                log.error("Failed to fetch users from Supos: {}", response.body());
+                return Result.error(JSON.toJSONString(usersResponse));
+            }
+        } catch (Exception e) {
+            log.error("Error occurred while fetching users from Supos", e);
+            return Result.error("An error occurred while fetching users from Supos");
+        }
     }
 
     @Override
