@@ -1,5 +1,6 @@
 package org.niiish32x.sugarsms.app.controller;
 
+import org.niiish32x.sugarsms.alert.domain.entity.AlertRecordEO;
 import org.niiish32x.sugarsms.app.external.ZubrixSmsResponse;
 import org.niiish32x.sugarsms.app.service.AlertService;
 import org.niiish32x.sugarsms.common.result.Result;
@@ -7,6 +8,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
+import java.util.List;
 
 /**
  * AlertController
@@ -36,5 +38,10 @@ public class AlertController {
         return alertService.notifyTest();
     }
 
+
+    @RequestMapping("/alert/record/test")
+    public List<AlertRecordEO> testAlert() {
+        return alertService.getAllAlertRecords();
+    }
 
 }

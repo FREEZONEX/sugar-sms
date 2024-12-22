@@ -1,6 +1,8 @@
 package org.niiish32x.sugarsms.app.service;
 
+import org.niiish32x.sugarsms.alert.domain.entity.AlertRecordEO;
 import org.niiish32x.sugarsms.app.dto.AlertInfoDTO;
+import org.niiish32x.sugarsms.app.dto.SuposUserDTO;
 import org.niiish32x.sugarsms.app.external.ZubrixSmsResponse;
 import org.niiish32x.sugarsms.common.result.Result;
 
@@ -13,6 +15,9 @@ import java.util.List;
  * @date 2024.12.10 9:56
  */
 public interface AlertService {
+
+     List<AlertRecordEO> getAllAlertRecords();
+
      Result<List<AlertInfoDTO>> getAlertsFromSupos();
 
      Result notifySugarUserBySms();
@@ -20,4 +25,28 @@ public interface AlertService {
      Result notifySugarUserByEmail();
 
      Result  <ZubrixSmsResponse> notifyTest();
+
+     void publishAlertEvent();
+
+     /**
+      * @param userDTO
+      * @param alertInfoDTO
+      * @return
+      * 发送失败 则返回 发送失败邮箱
+      */
+     Result <Boolean> notifyUserByEmail(SuposUserDTO userDTO,AlertInfoDTO alertInfoDTO);
+
+     /**
+      *
+      * @param userDTO
+      * @param alertInfoDTO
+      * @return
+      *
+      * 发送失败则返回 发送失败的电话号码
+      */
+     Result <Boolean> notifyUserBySms(SuposUserDTO userDTO,AlertInfoDTO alertInfoDTO);
+
+     Boolean cleanAlertPastDays(Integer days);
+
+     void consumeAlertEvent();
 }

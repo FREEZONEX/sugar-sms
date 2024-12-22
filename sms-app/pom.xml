@@ -17,6 +17,17 @@
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.niiish32x.sugar-sms</groupId>
+            <artifactId>dao</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.niiish32x.sugar-sms</groupId>
+            <artifactId>domain</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
 
         <dependency>
             <groupId>com.sun.mail</groupId>
@@ -25,4 +36,6 @@
         </dependency>
 
     </dependencies>
+
+
 </project>

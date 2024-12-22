@@ -2,7 +2,7 @@ package org.niiish32x.sugarsms.common.supos.aksk;
 
 
 import com.alibaba.fastjson2.JSONObject;
-import com.bluetron.eco.sdk.dto.common.SuposConfig;
+//import com.bluetron.eco.sdk.dto.common.SuposConfig;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.HmacAlgorithms;

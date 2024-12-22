@@ -12,7 +12,7 @@ import lombok.Data;
 
 @Data
 public class AlertInfoDTO {
-    private int id;
+    private long id;
     private String fullName;
     private int status;
     @JSONField(name = "startDatatimestamp")

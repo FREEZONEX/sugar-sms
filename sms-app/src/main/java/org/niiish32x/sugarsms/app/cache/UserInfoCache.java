@@ -16,6 +16,7 @@ import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * UserPhoneCache
@@ -26,6 +27,11 @@ import java.util.concurrent.TimeUnit;
 
 @Component
 public class UserInfoCache implements InitializingBean {
+
+
+    private final String DEFAULT_ORG_COMPANY = "default_org_company";
+    private final String SUGAR_SMS = "sugarsms";
+
 
     @Resource
     UserService userService;
@@ -50,27 +56,35 @@ public class UserInfoCache implements InitializingBean {
         load();
     }
 
-    public  void load() {
-        List<SuposUserDTO> userDTOS = userService.getUsersFromSupos("default_org_company", "sugarsms").getData();
 
-        List<String> personCodes = new ArrayList<>();
+    public void load() {
+        try {
+            List<SuposUserDTO> userDTOS = userService.getUsersFromSupos(DEFAULT_ORG_COMPANY, SUGAR_SMS).getData();
 
-        for (SuposUserDTO userDTO : userDTOS) {
-            personCodes.add(userDTO.getPersonCode());
-        }
-
-        Result<PersonsResponse> result = personService.getPersonsByPersonCodes(PersonCodesDTO.builder()
-                .personCodes(personCodes)
-                .build());
-
-        if (result.isOk()) {
-            PersonsResponse personsResponse = result.getData();
-            List<PersonDTO> personDTOS = personsResponse.getList();
-
-            for (PersonDTO personDTO : personDTOS) {
-                nameToPhone.put(personDTO.getName(),personDTO.getPhone());
-                nameToEmail.put(personDTO.getName(),personDTO.getEmail());
+            if (userDTOS == null || userDTOS.isEmpty()) {
+                return;
             }
+
+            List<String> personCodes = userDTOS.stream()
+                    .map(SuposUserDTO::getPersonCode)
+                    .collect(Collectors.toList());
+
+            Result<PersonsResponse> result = personService.getPersonsByPersonCodes(
+                    PersonCodesDTO.builder().personCodes(personCodes).build());
+
+            if (result.isSuccess()) {
+                PersonsResponse personsResponse = result.getData();
+                if (personsResponse != null && personsResponse.getList() != null) {
+                    for (PersonDTO personDTO : personsResponse.getList()) {
+                        nameToPhone.put(personDTO.getName(), personDTO.getPhone());
+                        nameToEmail.put(personDTO.getName(), personDTO.getEmail());
+                    }
+                }
+            }
+        } catch (Exception e) {
+            // 记录异常日志
+            e.printStackTrace();
+            // 或者进行其他异常处理逻辑
         }
     }
 }

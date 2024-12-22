@@ -18,7 +18,7 @@ import org.niiish32x.sugarsms.app.tools.SuposUserMocker;
 import org.niiish32x.sugarsms.common.request.PageResponse;
 import org.niiish32x.sugarsms.common.request.SuposRequestManager;
 import org.niiish32x.sugarsms.common.result.Result;
-import org.niiish32x.sugarsms.common.result.ResultCodeEnum;
+import org.niiish32x.sugarsms.common.result.ResultCode;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -54,7 +54,7 @@ public class UserServiceImpl implements UserService {
 
         HttpResponse response = suposRequestManager.suposApiPost(ApiEnum.USER_API.value, headerMap, queryMap, JSON.toJSONString(request));
 
-        return response.isOk() ?  Result.build(response.body(), ResultCodeEnum.SUCCESS) : Result.build(JSON.toJSONString(response.body()),ResultCodeEnum.FAIL);
+        return response.isOk() ? Result.success(response) : Result.error(JSON.toJSONString(response));
     }
 
     @Override
@@ -66,13 +66,13 @@ public class UserServiceImpl implements UserService {
 
         HttpResponse response = suposRequestManager.suposApiPost(ApiEnum.USER_API.value, headerMap, queryMap, JSON.toJSONString(request));
 
-        return response.isOk() ?  Result.build(response.body(), ResultCodeEnum.SUCCESS) : Result.build(JSON.toJSONString(response.body()),ResultCodeEnum.FAIL);
+        return response.isOk() ?  Result.success(response) : Result.error(JSON.toJSONString(response));
     }
 
     @Override
     public Result mockUser() {
         for (int i = 1 ;  i <= 10 ;  i++){
-            List<PersonDTO> persons = personService.getPersonsFromSuposByPage(i);
+            List<PersonDTO> persons = personService.getPersonsFromSuposByPage(i).getData();
 
             List<String> roleNameList = new ArrayList<>();
             roleNameList.add("sugarsms");
@@ -81,7 +81,7 @@ public class UserServiceImpl implements UserService {
                 String password = SuposUserMocker.generatePassword();
                 Result res = addSuposUser(personDTO.getName(), password, roleNameList);
 
-                if(Objects.equals(res.getCode(), ResultCodeEnum.CODE_ERROR.getCode())) {
+                if(!Objects.equals(res.getCode(), 200)) {
                     return res;
                 }
             }
@@ -101,7 +101,7 @@ public class UserServiceImpl implements UserService {
 
         UsersResponse usersResponse = JSON.parseObject(response.body(), UsersResponse.class);
 
-        return response.isOk() ? Result.build(usersResponse,ResultCodeEnum.SUCCESS) : Result.build(JSON.toJSONString(response),ResultCodeEnum.FAIL);
+        return response.isOk() ? Result.success(usersResponse) : Result.error(JSON.toJSONString(usersResponse));
     }
 
     @Override
@@ -127,7 +127,7 @@ public class UserServiceImpl implements UserService {
         }
 
 
-        return Result.build(res.getList(),ResultCodeEnum.SUCCESS);
+        return Result.success(res.getList());
     }
 
     @Override
@@ -157,7 +157,9 @@ public class UserServiceImpl implements UserService {
         UserMessagesResponse userMessagesResponse = JSON.parseObject(response.body(), UserMessagesResponse.class);
 
         System.out.println(JSON.toJSONString(response));
-        return Result.build(userMessagesResponse.getList(),ResultCodeEnum.SUCCESS);
+
+        return Result.success(userMessagesResponse.getList());
+
     }
 
     private String getTime() {

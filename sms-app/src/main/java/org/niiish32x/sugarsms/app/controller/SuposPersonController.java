@@ -2,6 +2,7 @@ package org.niiish32x.sugarsms.app.controller;
 
 import org.niiish32x.sugarsms.app.dto.PersonCodesDTO;
 import org.niiish32x.sugarsms.app.dto.PersonDTO;
+import org.niiish32x.sugarsms.app.external.SuposPersonUpdateRequest;
 import org.niiish32x.sugarsms.app.service.PersonService;
 import org.niiish32x.sugarsms.common.result.Result;
 import org.springframework.web.bind.annotation.*;
@@ -21,17 +22,34 @@ public class SuposPersonController {
     PersonService personService;
 
     @RequestMapping("/persons/page")
-    public List<PersonDTO> getAllPerson(@RequestParam Integer currentPageSize) {
+    public Result<List<PersonDTO>>  getAllPerson(@RequestParam Integer currentPageSize) {
        return  personService.getPersonsFromSuposByPage(currentPageSize);
     }
 
     @RequestMapping("/persons/personCodes")
-    public PersonDTO getOnePersonByPersonCode(@RequestBody PersonCodesDTO personCodesDTO){
+    public Result<PersonDTO>  getOnePersonByPersonCode(@RequestBody PersonCodesDTO personCodesDTO){
         return personService.getOnePersonByPersonCode(personCodesDTO);
     }
+
+    @RequestMapping("/persons/add")
+    public Result  addPersonByPersonCode(@RequestParam String code) {
+       return personService.addPerson(code);
+    }
+
+
+    @RequestMapping("/persons/update")
+    public Result  addPersonByPersonCode(@RequestBody SuposPersonUpdateRequest req) {
+        return personService.updatePerson(req);
+    }
+
 
     @RequestMapping("/persons/mock")
     public Result mockPerson(){
         return personService.mockPerson();
+    }
+
+    @RequestMapping("/persons/test")
+    public Result test(){
+        return personService.test();
     }
 }
