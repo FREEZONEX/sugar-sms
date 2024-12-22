@@ -18,6 +18,8 @@ public interface PersonService {
 
     Result<List <PersonDTO>>  getPersonsFromSuposByPage(Integer currentPageSize);
 
+    Result<List<PersonDTO>> getPersonsFromSuposByPage(Integer currentPage, Integer pageSize);
+
     Result<List<PersonDTO>> getTotalPersons();
 
     Result<PersonDTO>  getOnePersonByPersonCode(PersonCodesDTO personCodesDTO);

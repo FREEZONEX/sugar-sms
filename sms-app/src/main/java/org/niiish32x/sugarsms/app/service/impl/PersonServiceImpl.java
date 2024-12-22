@@ -47,6 +47,39 @@ public class PersonServiceImpl implements PersonService {
     }
 
     @Override
+    public Result<List<PersonDTO>> getPersonsFromSuposByPage(Integer currentPage, Integer pageSize) {
+        // 输入验证
+        if (currentPage == null || currentPage < 1 || pageSize == null || pageSize < 1) {
+            return Result.error("Invalid page parameters");
+        }
+
+        Map<String, String> headerMap = new HashMap<>();
+        Map<String, String> queryMap = new HashMap<>();
+        queryMap.put("current", String.valueOf(currentPage));
+        // 默认20 最大值为500
+        queryMap.put("pageSize", String.valueOf(pageSize));
+
+        try {
+            HttpResponse response = requestManager.suposApiGet(ApiEnum.PERSON_GET_API.value, headerMap, queryMap);
+
+            // 检查 HTTP 响应状态码
+            if (!response.isOk() ) {
+                return Result.error("API request failed with status code: " );
+            }
+
+            PersonsResponse personsResponse = JSON.parseObject(response.body(), PersonsResponse.class);
+            return Result.success(personsResponse.getList());
+
+        } catch (Exception e) {
+            // 记录日志
+            log.error("Error occurred while fetching persons from Supos API", e);
+            return Result.error("Failed to fetch persons from Supos API");
+        }
+    }
+
+
+
+    @Override
     public Result<List<PersonDTO>> getTotalPersons() {
 
         List<PersonDTO> res = new ArrayList<>();
