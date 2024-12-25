@@ -51,6 +51,28 @@ public class ZubrixSmsProxy {
         return text;
     }
 
+
+    public String formatTextContent(AlertInfoDTO alertInfoDTO, String limitValue) {
+        if (alertInfoDTO == null) {
+            throw new IllegalArgumentException("alertInfoDTO cannot be null");
+        }
+
+        String sourcePropertyName = alertInfoDTO.getSourcePropertyName() != null ? alertInfoDTO.getSourcePropertyName() : "未知属性";
+        Object newValue = alertInfoDTO.getNewValue() != null ? alertInfoDTO.getNewValue() : "未知值";
+        String source = alertInfoDTO.getSource() != null ? alertInfoDTO.getSource() : "未知来源";
+        Long startDataTimestamp = alertInfoDTO.getStartDataTimestamp();
+
+        String time;
+        try {
+            time = startDataTimestamp != null ? TimeUtil.formatTimeStamp(startDataTimestamp) : "未知时间";
+        } catch (Exception e) {
+            // 记录日志或采取其他措施
+            time = "时间格式化失败";
+        }
+
+        return String.format(SMS_TEXT_TEMPLATE, sourcePropertyName, newValue, limitValue, source, time);
+    }
+
      public ZubrixSmsRequest buildRequest(String number,String text) {
          return ZubrixSmsRequest.builder()
                  .user("SUPINCO123")
