@@ -67,9 +67,6 @@ public class AlertJob {
             alertService.publishAlertEvent();
         }
 
-//        alertService.notifySugarUserByEmail();
-//        alertService.notifySugarUserBySms();
-
     }
 
 

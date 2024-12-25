@@ -26,8 +26,6 @@ public interface AlertService {
 
      Result<List<AlertSpecDTO>> getAlertsSpecFromSupos();
 
-     Result notifySugarUserBySms();
-
      Result notifySugarUserByEmail();
 
      Result  <ZubrixSmsResponse> notifyTest();
