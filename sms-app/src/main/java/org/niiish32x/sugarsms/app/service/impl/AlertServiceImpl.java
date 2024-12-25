@@ -56,8 +56,8 @@ public class AlertServiceImpl implements AlertService {
             100,
             200,
             100,TimeUnit.SECONDS,
-            new ArrayBlockingQueue<>(500),
-            new ThreadPoolExecutor.AbortPolicy() // AbortPolicy 任务满后 会拒绝执行
+            new ArrayBlockingQueue<>(1000),
+            new ThreadPoolExecutor.CallerRunsPolicy() // 任务满后不拒绝执行 每次 预警短信 争取全部送达
     );
 
 
