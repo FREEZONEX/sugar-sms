@@ -10,13 +10,11 @@ import org.niiish32x.sugarsms.alert.domain.entity.AlertRecordEO;
 import org.niiish32x.sugarsms.alert.domain.entity.MessageType;
 import org.niiish32x.sugarsms.alert.domain.repo.AlertRecordRepo;
 import org.niiish32x.sugarsms.app.cache.UserInfoCache;
-import org.niiish32x.sugarsms.app.dto.AlertInfoDTO;
-import org.niiish32x.sugarsms.app.dto.PersonCodesDTO;
-import org.niiish32x.sugarsms.app.dto.PersonDTO;
-import org.niiish32x.sugarsms.app.dto.SuposUserDTO;
+import org.niiish32x.sugarsms.app.dto.*;
 import org.niiish32x.sugarsms.app.enums.ApiEnum;
 import org.niiish32x.sugarsms.app.event.AlertEvent;
 import org.niiish32x.sugarsms.app.external.AlertResponse;
+import org.niiish32x.sugarsms.app.external.AlertSpecResponse;
 import org.niiish32x.sugarsms.app.external.ZubrixSmsResponse;
 import org.niiish32x.sugarsms.app.proxy.ZubrixSmsProxy;
 import org.niiish32x.sugarsms.app.queue.AlertMessageQueue;
@@ -110,6 +108,85 @@ public class AlertServiceImpl implements AlertService {
         HttpResponse response = requestManager.suposApiGet(ApiEnum.ALERT_API.value, headerMap, queryMap);
         AlertResponse alertResponse = JSON.parseObject(response.body(), AlertResponse.class);
         return alertResponse.getCode() == 200 ? Result.success(alertResponse.getAlerts())  : Result.error("查询报警信息失败") ;
+    }
+
+    @Override
+    public Result<List<AlertSpecDTO>> getAlertsSpecFromSupos(String attributeEnName) {
+        Map<String, String> headerMap = new HashMap<>();
+        Map<String, String> queryMap = new HashMap<>();
+        queryMap.put("attributeEnName",attributeEnName);
+
+        try {
+            HttpResponse response = requestManager.suposApiGet(ApiEnum.ALERT_SPEC_API.value, headerMap, queryMap);
+
+            if (!response.isOk()) {
+                log.error("请求失败，状态码: {}", response.getStatus());
+                return Result.error("请求异常");
+            }
+
+            if (response.body() == null || response.body().trim().isEmpty()) {
+                log.error("响应体为空");
+                return Result.error("响应体为空");
+            }
+
+
+            AlertSpecResponse alertSpecResponse = JSON.parseObject(response.body(), AlertSpecResponse.class);
+
+            if (alertSpecResponse == null) {
+                log.error("解析响应体失败");
+                return Result.error("解析响应体失败");
+            }
+
+            System.out.println(JSON.toJSONString(alertSpecResponse));
+
+
+            List<AlertSpecDTO> alertList = alertSpecResponse.getList();
+
+            return Result.success(alertList);
+
+        } catch (Exception e) {
+            log.error("请求过程中发生异常", e);
+            return Result.error("请求过程中发生异常");
+        }
+    }
+
+    @Override
+    public Result<List<AlertSpecDTO>> getAlertsSpecFromSupos() {
+        Map<String, String> headerMap = new HashMap<>();
+        Map<String, String> queryMap = new HashMap<>();
+
+        try {
+            HttpResponse response = requestManager.suposApiGet(ApiEnum.ALERT_SPEC_API.value, headerMap, queryMap);
+
+            if (!response.isOk()) {
+                log.error("请求失败，状态码: {}", response.getStatus());
+                return Result.error("请求异常");
+            }
+
+            if (response.body() == null || response.body().trim().isEmpty()) {
+                log.error("响应体为空");
+                return Result.error("响应体为空");
+            }
+
+
+            AlertSpecResponse alertSpecResponse = JSON.parseObject(response.body(), AlertSpecResponse.class);
+
+            if (alertSpecResponse == null) {
+                log.error("解析响应体失败");
+                return Result.error("解析响应体失败");
+            }
+
+            System.out.println(JSON.toJSONString(alertSpecResponse));
+
+
+            List<AlertSpecDTO> alertList = alertSpecResponse.getList();
+
+            return Result.success(alertList);
+
+        } catch (Exception e) {
+            log.error("请求过程中发生异常", e);
+            return Result.error("请求过程中发生异常");
+        }
     }
 
     @Override
