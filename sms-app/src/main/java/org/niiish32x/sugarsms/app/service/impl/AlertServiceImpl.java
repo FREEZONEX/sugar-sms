@@ -10,13 +10,11 @@ import org.niiish32x.sugarsms.alert.domain.entity.AlertRecordEO;
 import org.niiish32x.sugarsms.alert.domain.entity.MessageType;
 import org.niiish32x.sugarsms.alert.domain.repo.AlertRecordRepo;
 import org.niiish32x.sugarsms.app.cache.UserInfoCache;
-import org.niiish32x.sugarsms.app.dto.AlertInfoDTO;
-import org.niiish32x.sugarsms.app.dto.PersonCodesDTO;
-import org.niiish32x.sugarsms.app.dto.PersonDTO;
-import org.niiish32x.sugarsms.app.dto.SuposUserDTO;
+import org.niiish32x.sugarsms.app.dto.*;
 import org.niiish32x.sugarsms.app.enums.ApiEnum;
 import org.niiish32x.sugarsms.app.event.AlertEvent;
 import org.niiish32x.sugarsms.app.external.AlertResponse;
+import org.niiish32x.sugarsms.app.external.AlertSpecResponse;
 import org.niiish32x.sugarsms.app.external.ZubrixSmsResponse;
 import org.niiish32x.sugarsms.app.proxy.ZubrixSmsProxy;
 import org.niiish32x.sugarsms.app.queue.AlertMessageQueue;
@@ -31,7 +29,6 @@ import org.niiish32x.sugarsms.common.utils.Retrys;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.time.LocalDate;
@@ -113,7 +110,244 @@ public class AlertServiceImpl implements AlertService {
         return alertResponse.getCode() == 200 ? Result.success(alertResponse.getAlerts())  : Result.error("查询报警信息失败") ;
     }
 
+    @Override
+    public Result<List<AlertSpecDTO>> getAlertsSpecFromSupos(String attributeEnName) {
+        Map<String, String> headerMap = new HashMap<>();
+        Map<String, String> queryMap = new HashMap<>();
+        queryMap.put("attributeEnName",attributeEnName);
 
+        try {
+            HttpResponse response = requestManager.suposApiGet(ApiEnum.ALERT_SPEC_API.value, headerMap, queryMap);
+
+            if (!response.isOk()) {
+                log.error("请求失败，状态码: {}", response.getStatus());
+                return Result.error("请求异常");
+            }
+
+            if (response.body() == null || response.body().trim().isEmpty()) {
+                log.error("响应体为空");
+                return Result.error("响应体为空");
+            }
+
+
+            AlertSpecResponse alertSpecResponse = JSON.parseObject(response.body(), AlertSpecResponse.class);
+
+            if (alertSpecResponse == null) {
+                log.error("解析响应体失败");
+                return Result.error("解析响应体失败");
+            }
+
+            System.out.println(JSON.toJSONString(alertSpecResponse));
+
+
+            List<AlertSpecDTO> alertList = alertSpecResponse.getList();
+
+            return Result.success(alertList);
+
+        } catch (Exception e) {
+            log.error("请求过程中发生异常", e);
+            return Result.error("请求过程中发生异常");
+        }
+    }
+
+    @Override
+    public Result<List<AlertSpecDTO>> getAlertsSpecFromSupos() {
+        Map<String, String> headerMap = new HashMap<>();
+        Map<String, String> queryMap = new HashMap<>();
+
+        try {
+            HttpResponse response = requestManager.suposApiGet(ApiEnum.ALERT_SPEC_API.value, headerMap, queryMap);
+
+            if (!response.isOk()) {
+                log.error("请求失败，状态码: {}", response.getStatus());
+                return Result.error("请求异常");
+            }
+
+            if (response.body() == null || response.body().trim().isEmpty()) {
+                log.error("响应体为空");
+                return Result.error("响应体为空");
+            }
+
+
+            AlertSpecResponse alertSpecResponse = JSON.parseObject(response.body(), AlertSpecResponse.class);
+
+            if (alertSpecResponse == null) {
+                log.error("解析响应体失败");
+                return Result.error("解析响应体失败");
+            }
+
+            System.out.println(JSON.toJSONString(alertSpecResponse));
+
+
+            List<AlertSpecDTO> alertList = alertSpecResponse.getList();
+
+            return Result.success(alertList);
+
+        } catch (Exception e) {
+            log.error("请求过程中发生异常", e);
+            return Result.error("请求过程中发生异常");
+        }
+    }
+
+    @Override
+    public Result notifySugarUserBySms() {
+
+        Result<List<AlertInfoDTO>> alertsResult = getAlertsFromSupos();
+
+        if(!alertsResult.isSuccess()) {
+            log.error("获取报警信息异常");
+            return Result.error("获取报警信息异常");
+        }
+
+        List<AlertInfoDTO> alertInfoDTOS = alertsResult.getData();
+
+        if(alertInfoDTOS == null || alertInfoDTOS.isEmpty()) {
+            return Result.success("无需报警信息");
+        }
+
+
+        Result<List<SuposUserDTO>> res = userService.getUsersFromSupos("default_org_company", "sugarsms");
+
+        List<SuposUserDTO> sugasmsUsers = res.getData();
+
+        if(sugasmsUsers.isEmpty()) {
+            return Result.success("无需报警信息");
+        }
+
+        RateLimiter limiter = RateLimiter.create(3);
+
+
+        for (AlertInfoDTO alertInfoDTO : alertInfoDTOS) {
+
+            String key = String.format(PHONE_KEY,alertInfoDTO.getId());
+
+            if (visited.containsKey(key)) {
+                continue;
+            }
+
+            visited.put(key,"1");
+
+
+            String text = zubrixSmsProxy.formatTextContent(alertInfoDTO);
+
+            for (SuposUserDTO userDTO : sugasmsUsers) {
+                String phoneNumber = userInfoCache.nameToPhone.getIfPresent(userDTO.getPersonCode());
+                if(phoneNumber == null) {
+                    PersonDTO person = personService.getOnePersonByPersonCode(
+                            PersonCodesDTO.builder()
+                                    .personCodes(Arrays.asList(userDTO.getPersonCode()))
+                                    .build()
+                    ).getData();
+                    phoneNumber = person.getPhone();
+                    userInfoCache.load();
+                }
+
+                limiter.acquire(1);
+
+
+                String finalPhoneNumber1 = phoneNumber;
+                CompletableFuture.runAsync(() -> {
+                    try {
+                        String finalPhoneNumber = finalPhoneNumber1;
+                        CompletableFuture.supplyAsync(() -> {
+                            try {
+                                boolean b = limiter.tryAcquire(1);
+                                return Retrys.doWithRetry(()-> sendMessageService.sendOneZubrixSmsMessage(finalPhoneNumber,text), r -> r.isSuccess(),3,100);
+                            } catch (Throwable e) {
+                                throw new RuntimeException(e);
+                            }
+                        });
+                    }catch (Throwable e) {
+                        String s = String.format("person: %s 未能成功通知到！！！", userDTO.getPersonCode());
+                        log.info(s);
+                        throw new IllegalStateException(s, e);
+                    }
+                    log.info("person: {} phone:{} 通知成功",userDTO.getPersonName(), finalPhoneNumber1);
+                }) ;
+
+            }
+        }
+
+        return Result.success(sugasmsUsers);
+    }
+
+    @Override
+    public Result notifySugarUserByEmail() {
+
+        Result<List<AlertInfoDTO>> alertsResult = getAlertsFromSupos();
+
+        if(!alertsResult.isSuccess()) {
+            return Result.error("获取报警信息异常");
+        }
+
+        List<AlertInfoDTO> alertInfoDTOS = alertsResult.getData();
+
+        if(alertInfoDTOS == null || alertInfoDTOS.isEmpty()) {
+            return Result.success("无需报警");
+        }
+
+
+        Result<List<SuposUserDTO>> res = userService.getUsersFromSupos("default_org_company", "sugarsms");
+
+        List<SuposUserDTO> sugasmsUsers = res.getData();
+
+        if(sugasmsUsers.isEmpty()) {
+            return Result.success("无需报警");
+        }
+
+
+        RateLimiter limiter = RateLimiter.create(3);
+
+
+
+        for (AlertInfoDTO alertInfoDTO : alertInfoDTOS) {
+
+
+            String key = String.format(EMAIL_KEY,alertInfoDTO.getId());
+
+            if (visited.containsKey(key)) {
+                continue;
+            }
+
+            visited.put(key,"1");
+
+            String text = zubrixSmsProxy.formatTextContent(alertInfoDTO);
+
+
+          for (SuposUserDTO userDTO : sugasmsUsers) {
+
+              String email = UserInfoCache.nameToEmail.getIfPresent(userDTO.getPersonCode());
+
+              if(email == null) {
+                  PersonDTO person = personService.getOnePersonByPersonCode(
+                          PersonCodesDTO.builder()
+                                  .personCodes(Arrays.asList(userDTO.getPersonCode()))
+                                  .build()
+                  ).getData();
+                  email = person.getEmail();
+                  userInfoCache.load();
+              }
+
+
+              if(StringUtils.isNotBlank(email)) {
+                  limiter.acquire(1);
+
+                  String finalEmail1 = email;
+                  CompletableFuture.runAsync(()->{
+                      String finalEmail = finalEmail1;
+                      limiter.acquire(1);
+                      sendMessageService.sendEmail(finalEmail,"sugar-plant-alert",text);
+                      log.info("person: {} email:{} 通知成功",userDTO.getPersonName(), finalEmail1);
+                  });
+              }
+          }
+        }
+
+
+        CompletableFuture.allOf();
+
+        return Result.success(sugasmsUsers);
+    }
 
     @Override
     public Result <ZubrixSmsResponse> notifyTest() {
@@ -174,75 +408,57 @@ public class AlertServiceImpl implements AlertService {
     }
 
     @Override
-    @Transactional
-    public Result<Boolean> notifyUserByEmail(SuposUserDTO userDTO, AlertInfoDTO alertInfoDTO) {
+    public Result <Boolean> notifyUserByEmail(SuposUserDTO userDTO,AlertInfoDTO alertInfoDTO ) {
+
         String email = UserInfoCache.nameToEmail.getIfPresent(userDTO.getPersonCode());
 
         if (email == null) {
             PersonDTO person = personService.getOnePersonByPersonCode(
                     PersonCodesDTO.builder()
-                            .personCodes(Collections.singletonList(userDTO.getPersonCode()))
+                            .personCodes(Arrays.asList(userDTO.getPersonCode()))
                             .build()
             ).getData();
-
-            if (person != null && StringUtils.isNotBlank(person.getEmail())) {
-                email = person.getEmail();
-                UserInfoCache.nameToEmail.put(userDTO.getPersonCode(), email);
-            } else {
-                log.error("无法获取用户 {} 的邮箱信息", userDTO.getPersonCode());
-                return Result.error("无法获取用户邮箱信息");
-            }
+            email = person.getEmail();
+            userInfoCache.load();
         }
 
-        if (StringUtils.isBlank(email)) {
-            log.warn("用户 {} 的邮箱为空", userDTO.getPersonCode());
-            return Result.error("用户邮箱为空");
-        }
 
-        String key = String.format(EMAIL_KEY, alertInfoDTO.getId(), email);
+        String key = String.format(EMAIL_KEY, alertInfoDTO.getId(),email);
 
-        // 使用 putIfAbsent 原子方法 来确保线程安全
-        if (visited.putIfAbsent(key, "1") != null) {
-            log.info("alertInfoDTO {} 已发送成功不再重新发送  {}", alertInfoDTO.getId(), email);
+        String text = zubrixSmsProxy.formatTextContent(alertInfoDTO);
+
+        if (visited.containsKey(key)) {
+            log.info("alertInfoDTO {} 已发送成功不再重新发送  {}",alertInfoDTO.getId() , email);
             return Result.success(true);
         }
 
-        String text = zubrixSmsProxy.formatTextContent(alertInfoDTO);
-        boolean sendRes = false;
+        boolean saveRes = false;
         AlertRecordEO recordEO = null;
+        if (StringUtils.isNotBlank(email)) {
+            boolean res = sendMessageService.sendEmail(email, "sugar-plant-alert", text);
 
-        try {
-            sendRes = sendMessageService.sendEmail(email, "sugar-plant-alert", text);
-        } catch (Exception e) {
-            log.error("发送邮件失败: {}", e.getMessage(), e);
-            recordEO = buildAlertRecordEO(alertInfoDTO, userDTO.getUsername(), null, email, MessageType.EMAIL, text, false);
-            boolean saveRes = alertRecordRepo.save(recordEO);
-            if (!saveRes) {
-                throw new RuntimeException("记录保存失败");
+            if(res) {
+                // 本次发送成功后 进行标记 不再进行二次发送
+                visited.put(key, "1");
+
+                recordEO = buildAlertRecordEO(alertInfoDTO, userDTO.getUsername(), null, email, MessageType.EMAIL, text, true);
+                saveRes =  alertRecordRepo.save(recordEO);
+            }else {
+                recordEO = buildAlertRecordEO(alertInfoDTO, userDTO.getUsername(), null, email, MessageType.EMAIL, text, false);
+                saveRes =  alertRecordRepo.save(recordEO);
             }
-            return Result.error("邮件发送失败");
+
+            log.info("alert: {} 通知成功 -> email:  {}",alertInfoDTO.getId() , email);
+
         }
 
-        if (sendRes) {
-            visited.put(key, "1");
-            recordEO = buildAlertRecordEO(alertInfoDTO, userDTO.getUsername(), null, email, MessageType.EMAIL, text, true);
-            boolean saveRes = alertRecordRepo.save(recordEO);
-            if (!saveRes) {
-                throw new RuntimeException("记录保存失败");
-            }
-            log.info("alert: {} 通知成功 -> email: {}", alertInfoDTO.getId(), email);
-        } else {
-            recordEO = buildAlertRecordEO(alertInfoDTO, userDTO.getUsername(), null, email, MessageType.EMAIL, text, false);
-            boolean saveRes = alertRecordRepo.save(recordEO);
-            if (!saveRes) {
-                throw new RuntimeException("记录保存失败");
-            }
-            log.warn("邮件发送失败: alertId={}, email={}", alertInfoDTO.getId(), email);
+        if (!saveRes) {
+            assert recordEO != null;
+            log.error("email alert: {} {} 数据库 落盘失败",recordEO.getAlertId(),recordEO.getEmail());
         }
 
-        return Result.success(sendRes);
+        return saveRes ?  Result.success(saveRes) : Result.error("记录保存失败");
     }
-
 
     @Override
     public Result<Boolean> notifyUserBySms(SuposUserDTO userDTO, AlertInfoDTO alertInfoDTO) {
