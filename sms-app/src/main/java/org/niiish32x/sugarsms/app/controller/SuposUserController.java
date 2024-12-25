@@ -19,6 +19,11 @@ public class SuposUserController {
     @Resource
     UserService suposUserService;
 
+    @RequestMapping("/users/roleList")
+    public Result getUserRoleList(@RequestParam String companyCode) {
+        return  suposUserService.getRoleListFromSupos(companyCode);
+    }
+
     @RequestMapping("/users/company")
     public Result getCompanyUser(@RequestParam String companyCode) {
         return  suposUserService.getUsersFromSupos(StringUtils.isBlank(companyCode) ? "default_org_company" : companyCode);

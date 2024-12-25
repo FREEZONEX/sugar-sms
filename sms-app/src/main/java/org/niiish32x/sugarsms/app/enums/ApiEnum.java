@@ -10,6 +10,9 @@ public enum ApiEnum {
 
     USER_API("/open-api/auth/v2/users"),
 
+    // https://cloud.supos.com/open/APIs/detail?treeNodeCode=1521&openapiVersionCode=c3bc97b89d05458d8cef7ee0c810dd6b&apisManageCode=25353e4b1c614159ab4ffc3f9ddbb769&clickActive=supOS
+    USER_ROLE_GET_API("/open-api/rbac/v2/roles"),
+
     PERSON_GET_API("/open-api/organization/v2/persons"),
 
     PERSON_BATCH_POST_API("/open-api/organization/v2/persons/bulk"),

@@ -9,16 +9,15 @@ import lombok.extern.slf4j.Slf4j;
 import org.niiish32x.sugarsms.app.dto.MessageDTO;
 import org.niiish32x.sugarsms.app.dto.PersonDTO;
 import org.niiish32x.sugarsms.app.dto.SuposUserDTO;
+import org.niiish32x.sugarsms.app.dto.SuposUserRoleDTO;
 import org.niiish32x.sugarsms.app.enums.ApiEnum;
-import org.niiish32x.sugarsms.app.external.SuposUserAddRequest;
-import org.niiish32x.sugarsms.app.external.UsersResponse;
+import org.niiish32x.sugarsms.app.external.*;
 import org.niiish32x.sugarsms.app.service.PersonService;
 import org.niiish32x.sugarsms.app.service.UserService;
 import org.niiish32x.sugarsms.app.tools.SuposUserMocker;
 import org.niiish32x.sugarsms.common.request.PageResponse;
 import org.niiish32x.sugarsms.common.request.SuposRequestManager;
 import org.niiish32x.sugarsms.common.result.Result;
-import org.niiish32x.sugarsms.common.result.ResultCode;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -48,7 +47,7 @@ public class UserServiceImpl implements UserService {
     PersonService personService;
 
     @Resource
-    SuposRequestManager suposRequestManager;
+    SuposRequestManager requestManager;
 
 
 
@@ -59,7 +58,7 @@ public class UserServiceImpl implements UserService {
 
         SuposUserAddRequest request = new SuposUserAddRequest(username,password);
 
-        HttpResponse response = suposRequestManager.suposApiPost(ApiEnum.USER_API.value, headerMap, queryMap, JSON.toJSONString(request));
+        HttpResponse response = requestManager.suposApiPost(ApiEnum.USER_API.value, headerMap, queryMap, JSON.toJSONString(request));
 
         return response.isOk() ? Result.success(response) : Result.error(JSON.toJSONString(response));
     }
@@ -71,7 +70,7 @@ public class UserServiceImpl implements UserService {
 
         SuposUserAddRequest request = new SuposUserAddRequest(username,password,roleNameList);
 
-        HttpResponse response = suposRequestManager.suposApiPost(ApiEnum.USER_API.value, headerMap, queryMap, JSON.toJSONString(request));
+        HttpResponse response = requestManager.suposApiPost(ApiEnum.USER_API.value, headerMap, queryMap, JSON.toJSONString(request));
 
         return response.isOk() ?  Result.success(response) : Result.error(JSON.toJSONString(response));
     }
@@ -109,7 +108,7 @@ public class UserServiceImpl implements UserService {
         queryMap.put(COMPANY_CODE_KEY, company);
 
         try {
-            HttpResponse response = suposRequestManager.suposApiGet(USER_API_PATH, headerMap, queryMap);
+            HttpResponse response = requestManager.suposApiGet(USER_API_PATH, headerMap, queryMap);
             UsersResponse usersResponse = JSON.parseObject(response.body(), UsersResponse.class);
 
             if (response.isOk()) {
@@ -135,7 +134,7 @@ public class UserServiceImpl implements UserService {
             queryMap.put("roleCode",roleCode);
             queryMap.put("pageSize","500");
             queryMap.put("pageIndex",String.valueOf(pageIndex));
-            HttpResponse response = suposRequestManager.suposApiGet(ApiEnum.USER_API.value, headerMap, queryMap);
+            HttpResponse response = requestManager.suposApiGet(ApiEnum.USER_API.value, headerMap, queryMap);
 
             UsersResponse usersResponse = JSON.parseObject(response.body(), UsersResponse.class);
 
@@ -173,13 +172,57 @@ public class UserServiceImpl implements UserService {
         queryMap.put("endTime",getTime()+"+0800");
         queryMap.put("noticeProtocol","stationLetter");
 
-        HttpResponse response = suposRequestManager.suposApiGet("/open-api/p/notification/v2alpha1/users/" + username + "/messages", headerMap, queryMap);
+        HttpResponse response = requestManager.suposApiGet("/open-api/p/notification/v2alpha1/users/" + username + "/messages", headerMap, queryMap);
         UserMessagesResponse userMessagesResponse = JSON.parseObject(response.body(), UserMessagesResponse.class);
 
         System.out.println(JSON.toJSONString(response));
 
         return Result.success(userMessagesResponse.getList());
 
+    }
+
+
+    @Override
+    public Result<List<RoleSpecDTO>> getRoleListFromSupos(String companyCode) {
+
+        // 验证输入参数
+        if (companyCode == null || companyCode.trim().isEmpty()) {
+            log.warn("Invalid companyCode: {}", companyCode);
+            return Result.error("Invalid company code");
+        }
+
+        try {
+            Map<String, String> headerMap = new HashMap<>();
+            Map<String, String> queryMap = new HashMap<>();
+            queryMap.put("companyCode", companyCode);
+
+            HttpResponse response = requestManager.suposApiGet(ApiEnum.USER_ROLE_GET_API.value, headerMap, queryMap);
+
+            // 检查响应是否为空
+            if (response == null || response.body() == null || response.body().trim().isEmpty()) {
+                log.warn("Empty response body for companyCode: {}", companyCode);
+                return Result.error("Empty response body");
+            }
+
+            RolePageResponse rolePageResponse = JSON.parseObject(response.body(), RolePageResponse.class);
+
+            // 检查 rolePageResponse 是否为空
+            if (rolePageResponse == null) {
+                log.warn("Failed to parse response body for companyCode: {}", companyCode);
+                return Result.error("Failed to parse response body");
+            }
+
+            List<RoleSpecDTO> roleList = rolePageResponse.getList();
+            if (roleList == null) {
+                roleList = Collections.emptyList();
+            }
+
+            return response.isOk() ? Result.success(roleList) : Result.error("API call failed");
+
+        } catch (Exception e) {
+            log.error("Error occurred while fetching role list for companyCode: {}", companyCode, e);
+            return Result.error("Internal server error");
+        }
     }
 
     private String getTime() {
