@@ -19,8 +19,13 @@ public enum ApiEnum {
 
     MESSAGE_POST_API("/open-api/p/notification/v2/topic/messages"),
 
-    ALERT_API("/open-api/supos/oodm/v2/alert/current");
+    // 当前所有报警信息
+    ALERT_API("/open-api/supos/oodm/v2/alert/current"),
 
+
+    // 当前所有报警信息的详细值
+    // https://cloud.supos.com/open/APIs/detail?treeNodeCode=1392&openapiVersionCode=c3bc97b89d05458d8cef7ee0c810dd6b&apisManageCode=25353e4b1c614159ab4ffc3f9ddbb769&clickActive=supOS
+    ALERT_SPEC_API("/open-api/supos/oodm/v2/alarms");
 
     public final String value;
 
