@@ -26,9 +26,6 @@ import java.util.List;
 @Slf4j
 public class ZubrixSmsProxy {
 
-    private static final String DEFAULT_VALUE = "0";
-    private static final String DEFAULT_TIME = "N/A";
-
     private final String zubrixSmsBaseUrl = "http://cloudsms.zubrixtechnologies.com/api/mt/SendSMS";
 
     private final String SMS_TEXT_TEMPLATE = "KPI %s exceeded to %s Threshold/Limit value %s value Location %s Date/Time%s Dhampur Sugar Mills";
@@ -47,37 +44,34 @@ public class ZubrixSmsProxy {
         return messageResponse;
     }
 
+
     public String formatTextContent(AlertInfoDTO alertInfoDTO) {
+        String time = TimeUtil.formatTimeStamp(alertInfoDTO.getStartDataTimestamp());
+        String text = String.format(SMS_TEXT_TEMPLATE, alertInfoDTO.getSourcePropertyName(), alertInfoDTO.getNewValue(), "0", alertInfoDTO.getSource(), time);
+        return text;
+    }
+
+
+    public String formatTextContent(AlertInfoDTO alertInfoDTO, String limitValue) {
         if (alertInfoDTO == null) {
             throw new IllegalArgumentException("alertInfoDTO cannot be null");
         }
 
-        String sourcePropertyName = alertInfoDTO.getSourcePropertyName();
-        String newValue = alertInfoDTO.getNewValue();
-        String source = alertInfoDTO.getSource();
+        String sourcePropertyName = alertInfoDTO.getSourcePropertyName() != null ? alertInfoDTO.getSourcePropertyName() : "未知属性";
+        Object newValue = alertInfoDTO.getNewValue() != null ? alertInfoDTO.getNewValue() : "未知值";
+        String source = alertInfoDTO.getSource() != null ? alertInfoDTO.getSource() : "未知来源";
         Long startDataTimestamp = alertInfoDTO.getStartDataTimestamp();
-
-        if (sourcePropertyName == null || newValue == null || source == null || startDataTimestamp == null) {
-            throw new IllegalArgumentException("Required fields in alertInfoDTO cannot be null");
-        }
 
         String time;
         try {
-            time = TimeUtil.formatTimeStamp(startDataTimestamp);
+            time = startDataTimestamp != null ? TimeUtil.formatTimeStamp(startDataTimestamp) : "未知时间";
         } catch (Exception e) {
-            // Log the exception for debugging purposes
-            System.err.println("Error formatting timestamp: " + e.getMessage());
-            time = DEFAULT_TIME;
+            // 记录日志或采取其他措施
+            time = "时间格式化失败";
         }
 
-        return String.format(SMS_TEXT_TEMPLATE, sourcePropertyName, newValue, DEFAULT_VALUE, source, time);
+        return String.format(SMS_TEXT_TEMPLATE, sourcePropertyName, newValue, limitValue, source, time);
     }
-
-//    public String formatTextContent(AlertInfoDTO alertInfoDTO) {
-//        String time = TimeUtil.formatTimeStamp(alertInfoDTO.getStartDataTimestamp());
-//        String text = String.format(SMS_TEXT_TEMPLATE, alertInfoDTO.getSourcePropertyName(), alertInfoDTO.getNewValue(), "0", alertInfoDTO.getSource(), time);
-//        return text;
-//    }
 
      public ZubrixSmsRequest buildRequest(String number,String text) {
          return ZubrixSmsRequest.builder()
