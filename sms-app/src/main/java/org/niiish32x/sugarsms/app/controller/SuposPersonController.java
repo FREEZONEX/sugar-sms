@@ -24,6 +24,7 @@ public class SuposPersonController {
     @RequestMapping("/persons/page")
     public Result<List<PersonDTO>>  getAllPerson(@RequestParam Integer currentPageSize) {
        return  personService.getPersonsFromSuposByPage(currentPageSize);
+//       return personService.getPersonsFromSuposByPage(1,10);
     }
 
     @RequestMapping("/persons/personCodes")
