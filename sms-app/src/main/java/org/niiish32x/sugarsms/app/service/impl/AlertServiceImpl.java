@@ -189,87 +189,6 @@ public class AlertServiceImpl implements AlertService {
         }
     }
 
-    @Override
-    public Result notifySugarUserBySms() {
-
-        Result<List<AlertInfoDTO>> alertsResult = getAlertsFromSupos();
-
-        if(!alertsResult.isSuccess()) {
-            log.error("获取报警信息异常");
-            return Result.error("获取报警信息异常");
-        }
-
-        List<AlertInfoDTO> alertInfoDTOS = alertsResult.getData();
-
-        if(alertInfoDTOS == null || alertInfoDTOS.isEmpty()) {
-            return Result.success("无需报警信息");
-        }
-
-
-        Result<List<SuposUserDTO>> res = userService.getUsersFromSupos("default_org_company", "sugarsms");
-
-        List<SuposUserDTO> sugasmsUsers = res.getData();
-
-        if(sugasmsUsers.isEmpty()) {
-            return Result.success("无需报警信息");
-        }
-
-        RateLimiter limiter = RateLimiter.create(3);
-
-
-        for (AlertInfoDTO alertInfoDTO : alertInfoDTOS) {
-
-            String key = String.format(PHONE_KEY,alertInfoDTO.getId());
-
-            if (visited.containsKey(key)) {
-                continue;
-            }
-
-            visited.put(key,"1");
-
-
-            String text = zubrixSmsProxy.formatTextContent(alertInfoDTO);
-
-            for (SuposUserDTO userDTO : sugasmsUsers) {
-                String phoneNumber = userInfoCache.nameToPhone.getIfPresent(userDTO.getPersonCode());
-                if(phoneNumber == null) {
-                    PersonDTO person = personService.getOnePersonByPersonCode(
-                            PersonCodesDTO.builder()
-                                    .personCodes(Arrays.asList(userDTO.getPersonCode()))
-                                    .build()
-                    ).getData();
-                    phoneNumber = person.getPhone();
-                    userInfoCache.load();
-                }
-
-                limiter.acquire(1);
-
-
-                String finalPhoneNumber1 = phoneNumber;
-                CompletableFuture.runAsync(() -> {
-                    try {
-                        String finalPhoneNumber = finalPhoneNumber1;
-                        CompletableFuture.supplyAsync(() -> {
-                            try {
-                                boolean b = limiter.tryAcquire(1);
-                                return Retrys.doWithRetry(()-> sendMessageService.sendOneZubrixSmsMessage(finalPhoneNumber,text), r -> r.isSuccess(),3,100);
-                            } catch (Throwable e) {
-                                throw new RuntimeException(e);
-                            }
-                        });
-                    }catch (Throwable e) {
-                        String s = String.format("person: %s 未能成功通知到！！！", userDTO.getPersonCode());
-                        log.info(s);
-                        throw new IllegalStateException(s, e);
-                    }
-                    log.info("person: {} phone:{} 通知成功",userDTO.getPersonName(), finalPhoneNumber1);
-                }) ;
-
-            }
-        }
-
-        return Result.success(sugasmsUsers);
-    }
 
     @Override
     public Result notifySugarUserByEmail() {
@@ -303,18 +222,13 @@ public class AlertServiceImpl implements AlertService {
         for (AlertInfoDTO alertInfoDTO : alertInfoDTOS) {
 
 
-            String key = String.format(EMAIL_KEY,alertInfoDTO.getId());
 
-            if (visited.containsKey(key)) {
-                continue;
-            }
-
-            visited.put(key,"1");
 
             String text = zubrixSmsProxy.formatTextContent(alertInfoDTO);
 
 
           for (SuposUserDTO userDTO : sugasmsUsers) {
+
 
               String email = UserInfoCache.nameToEmail.getIfPresent(userDTO.getPersonCode());
 
@@ -425,8 +339,6 @@ public class AlertServiceImpl implements AlertService {
 
         String key = String.format(EMAIL_KEY, alertInfoDTO.getId(),email);
 
-        String text = zubrixSmsProxy.formatTextContent(alertInfoDTO);
-
         if (visited.containsKey(key)) {
             log.info("alertInfoDTO {} 已发送成功不再重新发送  {}",alertInfoDTO.getId() , email);
             return Result.success(true);
@@ -434,6 +346,19 @@ public class AlertServiceImpl implements AlertService {
 
         boolean saveRes = false;
         AlertRecordEO recordEO = null;
+
+        Result<List<AlertSpecDTO>> alertsSpecFromSupos = getAlertsSpecFromSupos(alertInfoDTO.getSourcePropertyName());
+
+        if(!alertsSpecFromSupos.isSuccess()) {
+            log.error("获取alertsSpecFromSupos 报警详情信息异常");
+            return Result.error("获取alertsSpecFromSupos 报警详情信息异常");
+        }
+
+        AlertSpecDTO alertSpecDTO = alertsSpecFromSupos.getData().get(0);
+
+        String text = zubrixSmsProxy.formatTextContent(alertInfoDTO,alertSpecDTO.getLimitValue());
+
+
         if (StringUtils.isNotBlank(email)) {
             boolean res = sendMessageService.sendEmail(email, "sugar-plant-alert", text);
 
@@ -463,7 +388,16 @@ public class AlertServiceImpl implements AlertService {
     @Override
     public Result<Boolean> notifyUserBySms(SuposUserDTO userDTO, AlertInfoDTO alertInfoDTO) {
 
-        String text = zubrixSmsProxy.formatTextContent(alertInfoDTO);
+        Result<List<AlertSpecDTO>> alertsSpecFromSupos = getAlertsSpecFromSupos(alertInfoDTO.getSourcePropertyName());
+
+        if(!alertsSpecFromSupos.isSuccess()) {
+            log.error("获取alertsSpecFromSupos 报警详情信息异常");
+            return Result.error("获取alertsSpecFromSupos 报警详情信息异常");
+        }
+
+        AlertSpecDTO alertSpecDTO = alertsSpecFromSupos.getData().get(0);
+
+        String text = zubrixSmsProxy.formatTextContent(alertInfoDTO,alertSpecDTO.getLimitValue());
 
         String phoneNumber = userInfoCache.nameToPhone.getIfPresent(userDTO.getPersonCode());
 
