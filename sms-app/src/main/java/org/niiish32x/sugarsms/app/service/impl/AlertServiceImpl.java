@@ -15,6 +15,7 @@ import org.niiish32x.sugarsms.app.enums.ApiEnum;
 import org.niiish32x.sugarsms.app.event.AlertEvent;
 import org.niiish32x.sugarsms.app.external.AlertResponse;
 import org.niiish32x.sugarsms.app.external.AlertSpecResponse;
+import org.niiish32x.sugarsms.app.external.RoleSpecDTO;
 import org.niiish32x.sugarsms.app.external.ZubrixSmsResponse;
 import org.niiish32x.sugarsms.app.proxy.ZubrixSmsProxy;
 import org.niiish32x.sugarsms.app.queue.AlertMessageQueue;
@@ -47,6 +48,9 @@ import java.util.stream.Collectors;
 @Service
 @Slf4j
 public class AlertServiceImpl implements AlertService {
+
+    private final String DEFAULT_COMPANY_CODE = "default_org_company";
+    private final String SYSTEM_ROLE_CODE = "systemRole";
 
     static ThreadPoolExecutor poolExecutor = new ThreadPoolExecutor(
             100,
@@ -386,25 +390,45 @@ public class AlertServiceImpl implements AlertService {
 
     @Override
     public void consumeAlertEvent() {
-        Result<List<SuposUserDTO>> res = userService.getUsersFromSupos("default_org_company", "sugarsms");
+        // 获取角色列表并处理异常
+        Result<List<RoleSpecDTO>> roleListFromSupos = userService.getRoleListFromSupos(DEFAULT_COMPANY_CODE);
+        if (!roleListFromSupos.isSuccess()) {
+            throw new RuntimeException("Failed to get role list from Supos: " + roleListFromSupos.getMessage());
+        }
+        List<RoleSpecDTO> roleSpecDTOList = roleListFromSupos.getData();
 
-        List<SuposUserDTO> sugasmsUsers = res.getData();
+        List<SuposUserDTO> userLists = new ArrayList<>();
 
-//        RateLimiter limiter = RateLimiter.create(5);
+        for (RoleSpecDTO roleSpecDTO : roleSpecDTOList) {
+
+            if (roleSpecDTO != null && StringUtils.equals(roleSpecDTO.getRoleCode(), SYSTEM_ROLE_CODE)) {
+                continue;
+            }
+
+            Result<List<SuposUserDTO>> usersFromSupos = userService.getUsersFromSupos(DEFAULT_COMPANY_CODE, roleSpecDTO.getRoleCode());
+            if (!usersFromSupos.isSuccess()) {
+                throw new RuntimeException("Failed to get users from Supos: " + usersFromSupos.getMessage());
+            }
+            userLists.addAll(usersFromSupos.getData());
+        }
+
+//        RateLimiter limiter = RateLimiter.create(5); // 启用速率限制
 
         while (!alertMessageQueue.isEmpty()) {
             AlertInfoDTO alertInfoDTO = alertMessageQueue.poll();
-            int n = sugasmsUsers.size();
-
-            for (int i = 0 ; i < n ; i++) {
-//                limiter.acquire();
-                SuposUserDTO userDTO = sugasmsUsers.get(i);
-                CompletableFuture.supplyAsync(() -> notifyUserBySms(userDTO,alertInfoDTO) , poolExecutor);
-                CompletableFuture.supplyAsync(()->notifyUserByEmail(userDTO,alertInfoDTO) , poolExecutor) ;
+            if (alertInfoDTO == null) {
+                continue; // 处理空值
             }
 
-            CompletableFuture.allOf();
+            List<CompletableFuture<?>> futures = new ArrayList<>();
+            for (SuposUserDTO userDTO : userLists) {
+//                limiter.acquire(); // 控制发送速率
+                log.info("开始发送预警消息 -> role: {}  username: {}",userDTO.getUserRoleList().get(0),userDTO.getUsername());
+                futures.add(CompletableFuture.supplyAsync(() -> notifyUserBySms(userDTO, alertInfoDTO), poolExecutor));
+                futures.add(CompletableFuture.supplyAsync(() -> notifyUserByEmail(userDTO, alertInfoDTO), poolExecutor));
+            }
 
+            CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join(); // 等待所有任务完成
         }
 
 
