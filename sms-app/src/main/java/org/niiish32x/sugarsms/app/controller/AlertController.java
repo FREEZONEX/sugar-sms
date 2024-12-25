@@ -28,9 +28,15 @@ public class AlertController {
         return alertService.getAlertsFromSupos();
     }
 
+    @RequestMapping("/alert/spec")
+    public Result getAlertSpec() {
+        return alertService.getAlertsSpecFromSupos("Property_48");
+    }
+
+
     @RequestMapping("/alert/notify/sugarsms")
     public Result notifySugarsms(){
-        return alertService.notifySugarUserBySms();
+        return null;
     }
 
     @RequestMapping("/alert/notify/sugarsms/test")
