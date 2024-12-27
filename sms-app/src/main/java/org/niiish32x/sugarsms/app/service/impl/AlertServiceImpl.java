@@ -52,6 +52,8 @@ public class AlertServiceImpl implements AlertService {
     private final String DEFAULT_COMPANY_CODE = "default_org_company";
     private final String SYSTEM_ROLE_CODE = "systemRole";
 
+    private final String SUGAR_ALERT_EMAIL_SUBJECT = "sugar-plant-alert";
+
     static ThreadPoolExecutor poolExecutor = new ThreadPoolExecutor(
             100,
             200,
@@ -292,7 +294,7 @@ public class AlertServiceImpl implements AlertService {
 
 
         if (StringUtils.isNotBlank(email)) {
-            boolean res = sendMessageService.sendEmail(email, "sugar-plant-alert", text);
+            boolean res = sendMessageService.sendEmail(email, SUGAR_ALERT_EMAIL_SUBJECT, text);
 
             if(res) {
                 // 本次发送成功后 进行标记 不再进行二次发送
@@ -401,7 +403,8 @@ public class AlertServiceImpl implements AlertService {
 
         for (RoleSpecDTO roleSpecDTO : roleSpecDTOList) {
 
-            if (roleSpecDTO != null && StringUtils.equals(roleSpecDTO.getRoleCode(), SYSTEM_ROLE_CODE)) {
+            // 管理员 或者 无效 角色 跳过
+            if (roleSpecDTO != null && (StringUtils.equals(roleSpecDTO.getRoleCode(), SYSTEM_ROLE_CODE)|| roleSpecDTO.getValid() == 0)) {
                 continue;
             }
 
@@ -442,7 +445,7 @@ public class AlertServiceImpl implements AlertService {
          }
 
          for (AlertRecordEO alertRecordEO :  alertRecordRepo.find(MessageType.EMAIL, false)) {
-             boolean sendRes = sendMessageService.sendEmail(alertRecordEO.getEmail(), "sugar-plant-alert", alertRecordEO.getContent());
+             boolean sendRes = sendMessageService.sendEmail(alertRecordEO.getEmail(), SUGAR_ALERT_EMAIL_SUBJECT, alertRecordEO.getContent());
              if (sendRes) {
                  alertRecordEO.setSendTime(new Date());
                  alertRecordEO.setStatus(true);
