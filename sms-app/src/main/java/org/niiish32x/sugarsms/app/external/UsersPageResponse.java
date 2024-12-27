@@ -16,12 +16,11 @@ import java.util.List;
  * @date 2024.12.10 17:31
  */
 @Data
-
-public class UsersResponse extends PageResponse implements Serializable {
+public class UsersPageResponse extends PageResponse implements Serializable {
     @JSONField(name = "list")
     private List<SuposUserDTO> list;
 
-    public UsersResponse(){
+    public UsersPageResponse(){
         this.list = new ArrayList<>();
     }
 }

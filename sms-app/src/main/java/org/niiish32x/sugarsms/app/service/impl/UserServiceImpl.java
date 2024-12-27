@@ -9,7 +9,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.niiish32x.sugarsms.app.dto.MessageDTO;
 import org.niiish32x.sugarsms.app.dto.PersonDTO;
 import org.niiish32x.sugarsms.app.dto.SuposUserDTO;
-import org.niiish32x.sugarsms.app.dto.SuposUserRoleDTO;
 import org.niiish32x.sugarsms.app.enums.ApiEnum;
 import org.niiish32x.sugarsms.app.external.*;
 import org.niiish32x.sugarsms.app.service.PersonService;
@@ -109,13 +108,13 @@ public class UserServiceImpl implements UserService {
 
         try {
             HttpResponse response = requestManager.suposApiGet(USER_API_PATH, headerMap, queryMap);
-            UsersResponse usersResponse = JSON.parseObject(response.body(), UsersResponse.class);
+            UsersPageResponse usersPageResponse = JSON.parseObject(response.body(), UsersPageResponse.class);
 
             if (response.isOk()) {
-                return Result.success(usersResponse);
+                return Result.success(usersPageResponse);
             } else {
                 log.error("Failed to fetch users from Supos: {}", response.body());
-                return Result.error(JSON.toJSONString(usersResponse));
+                return Result.error(JSON.toJSONString(usersPageResponse));
             }
         } catch (Exception e) {
             log.error("Error occurred while fetching users from Supos", e);
@@ -146,12 +145,12 @@ public class UserServiceImpl implements UserService {
 
             try {
                 HttpResponse response = requestManager.suposApiGet(ApiEnum.USER_API.value, headerMap, queryMap);
-                UsersResponse usersResponse = JSON.parseObject(response.body(), UsersResponse.class);
+                UsersPageResponse usersPageResponse = JSON.parseObject(response.body(), UsersPageResponse.class);
 
-                if (usersResponse.getList() == null || usersResponse.getList().isEmpty()) {
+                if (usersPageResponse.getList() == null || usersPageResponse.getList().isEmpty()) {
                     break;
                 }
-                userList.addAll(usersResponse.getList());
+                userList.addAll(usersPageResponse.getList());
                 pageIndex++;
             } catch (Exception e) {
                 // 记录日志并返回错误信息
