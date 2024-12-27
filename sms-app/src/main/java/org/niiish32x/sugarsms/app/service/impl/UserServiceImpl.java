@@ -124,29 +124,47 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Result<List<SuposUserDTO>>  getUsersFromSupos(String companyCode, String roleCode) {
-        Map<String, String> headerMap = new HashMap<>();
-        Map<String, String> queryMap = new HashMap<>();
-        UsersResponse res = new UsersResponse();
-        int pageIndex = 1;
-        while (true) {
-            queryMap.put("companyCode",companyCode);
-            queryMap.put("roleCode",roleCode);
-            queryMap.put("pageSize","500");
-            queryMap.put("pageIndex",String.valueOf(pageIndex));
-            HttpResponse response = requestManager.suposApiGet(ApiEnum.USER_API.value, headerMap, queryMap);
-
-            UsersResponse usersResponse = JSON.parseObject(response.body(), UsersResponse.class);
-
-            if( usersResponse.getList() == null  || usersResponse.getList().isEmpty()){
-                break;
-            }
-            res.getList().addAll(usersResponse.getList());
-            pageIndex++;
+    public Result<List<SuposUserDTO>> getUsersFromSupos(String companyCode, String roleCode) {
+        // 输入验证
+        if (companyCode == null || companyCode.isEmpty() || roleCode == null || roleCode.isEmpty()) {
+            return Result.error("Invalid input parameters");
         }
 
+        Map<String, String> headerMap = new HashMap<>();
+        Map<String, String> queryMap = new HashMap<>();
 
-        return Result.success(res.getList());
+        List<SuposUserDTO> userList = Collections.synchronizedList(new ArrayList<>());
+        int pageSize = 500;
+        int maxPageIndex = 100; // 设置最大页数限制
+        int pageIndex = 1;
+
+        while (pageIndex <= maxPageIndex) {
+            queryMap.put("companyCode", companyCode);
+            queryMap.put("roleCode", roleCode);
+            queryMap.put("pageSize", String.valueOf(pageSize));
+            queryMap.put("pageIndex", String.valueOf(pageIndex));
+
+            try {
+                HttpResponse response = requestManager.suposApiGet(ApiEnum.USER_API.value, headerMap, queryMap);
+                UsersResponse usersResponse = JSON.parseObject(response.body(), UsersResponse.class);
+
+                if (usersResponse.getList() == null || usersResponse.getList().isEmpty()) {
+                    break;
+                }
+                userList.addAll(usersResponse.getList());
+                pageIndex++;
+            } catch (Exception e) {
+                // 记录日志并返回错误信息
+                log.error("Error fetching users from Supos: " + e.getMessage(), e);
+                return Result.error("Failed to fetch users: " + e.getMessage());
+            }
+        }
+
+        if (pageIndex > maxPageIndex) {
+            log.warn("Reached maximum page index limit without exhausting results.");
+        }
+
+        return Result.success(userList);
     }
 
     @Override
