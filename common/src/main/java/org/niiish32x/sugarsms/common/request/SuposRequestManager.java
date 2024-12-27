@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.niiish32x.sugarsms.common.supos.aksk.SignUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,6 +31,7 @@ import java.util.Map;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@Slf4j
 public class SuposRequestManager implements Serializable {
 
 
@@ -83,7 +85,7 @@ public class SuposRequestManager implements Serializable {
         HttpRequest request = new HttpRequest(suposRequest.getUrl())
                 .addHeaders(headerMap)
                 .formStr(queryMap);
-
+        log.info("req url {}",suposRequest.getUrl());
         HttpResponse response = request.execute();
         return response;
     }

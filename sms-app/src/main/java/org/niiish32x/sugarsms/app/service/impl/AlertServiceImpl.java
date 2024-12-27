@@ -182,8 +182,6 @@ public class AlertServiceImpl implements AlertService {
                 return Result.error("解析响应体失败");
             }
 
-            System.out.println(JSON.toJSONString(alertSpecResponse));
-
 
             List<AlertSpecDTO> alertList = alertSpecResponse.getList();
 
@@ -415,7 +413,7 @@ public class AlertServiceImpl implements AlertService {
             userLists.addAll(usersFromSupos.getData());
         }
 
-//        RateLimiter limiter = RateLimiter.create(5); // 启用速率限制
+
 
         while (!alertMessageQueue.isEmpty()) {
             AlertInfoDTO alertInfoDTO = alertMessageQueue.poll();
@@ -425,7 +423,6 @@ public class AlertServiceImpl implements AlertService {
 
             List<CompletableFuture<?>> futures = new ArrayList<>();
             for (SuposUserDTO userDTO : userLists) {
-//                limiter.acquire(); // 控制发送速率
                 log.info("开始发送预警消息 -> role: {}  username: {}",userDTO.getUserRoleList().get(0),userDTO.getUsername());
                 futures.add(CompletableFuture.supplyAsync(() -> notifyUserBySms(userDTO, alertInfoDTO), poolExecutor));
                 futures.add(CompletableFuture.supplyAsync(() -> notifyUserByEmail(userDTO, alertInfoDTO), poolExecutor));
