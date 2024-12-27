@@ -5,7 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.niiish32x.sugarsms.app.dto.AlertSpecDTO;
+import org.niiish32x.sugarsms.app.dto.AlarmDTO;
 import org.niiish32x.sugarsms.app.dto.PageDTO;
 
 import java.io.Serializable;
@@ -22,10 +22,10 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class AlertSpecResponse  implements Serializable {
+public class AlarmPageResponse implements Serializable {
 
     @JSONField(name = "list")
-    List<AlertSpecDTO> list;
+    List<AlarmDTO> list;
 
     @JSONField(name = "pagination")
     private PageDTO pageDTO;

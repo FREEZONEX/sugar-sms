@@ -2,8 +2,6 @@ package org.niiish32x.sugarsms.app.service.impl;
 
 import cn.hutool.http.HttpResponse;
 import com.alibaba.fastjson2.JSON;
-import com.google.common.util.concurrent.RateLimiter;
-import com.sun.corba.se.spi.orbutil.threadpool.ThreadPoolManager;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.niiish32x.sugarsms.alert.domain.entity.AlertRecordEO;
@@ -14,7 +12,7 @@ import org.niiish32x.sugarsms.app.dto.*;
 import org.niiish32x.sugarsms.app.enums.ApiEnum;
 import org.niiish32x.sugarsms.app.event.AlertEvent;
 import org.niiish32x.sugarsms.app.external.AlertResponse;
-import org.niiish32x.sugarsms.app.external.AlertSpecResponse;
+import org.niiish32x.sugarsms.app.external.AlarmPageResponse;
 import org.niiish32x.sugarsms.app.external.RoleSpecDTO;
 import org.niiish32x.sugarsms.app.external.ZubrixSmsResponse;
 import org.niiish32x.sugarsms.app.proxy.ZubrixSmsProxy;
@@ -25,18 +23,13 @@ import org.niiish32x.sugarsms.app.service.SendMessageService;
 import org.niiish32x.sugarsms.app.service.UserService;
 import org.niiish32x.sugarsms.common.request.SuposRequestManager;
 import org.niiish32x.sugarsms.common.result.Result;
-import org.niiish32x.sugarsms.common.result.ResultCode;
-import org.niiish32x.sugarsms.common.utils.Retrys;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.*;
-import java.util.stream.Collectors;
 
 /**
  * AlertServiceImpl
@@ -117,7 +110,7 @@ public class AlertServiceImpl implements AlertService {
     }
 
     @Override
-    public Result<List<AlertSpecDTO>> getAlertsSpecFromSupos(String attributeEnName) {
+    public Result<List<AlarmDTO>> getAlertsSpecFromSupos(String attributeEnName) {
         Map<String, String> headerMap = new HashMap<>();
         Map<String, String> queryMap = new HashMap<>();
         queryMap.put("attributeEnName",attributeEnName);
@@ -136,17 +129,17 @@ public class AlertServiceImpl implements AlertService {
             }
 
 
-            AlertSpecResponse alertSpecResponse = JSON.parseObject(response.body(), AlertSpecResponse.class);
+            AlarmPageResponse alarmPageResponse = JSON.parseObject(response.body(), AlarmPageResponse.class);
 
-            if (alertSpecResponse == null) {
+            if (alarmPageResponse == null) {
                 log.error("解析响应体失败");
                 return Result.error("解析响应体失败");
             }
 
-            System.out.println(JSON.toJSONString(alertSpecResponse));
+            System.out.println(JSON.toJSONString(alarmPageResponse));
 
 
-            List<AlertSpecDTO> alertList = alertSpecResponse.getList();
+            List<AlarmDTO> alertList = alarmPageResponse.getList();
 
             return Result.success(alertList);
 
@@ -157,7 +150,7 @@ public class AlertServiceImpl implements AlertService {
     }
 
     @Override
-    public Result<List<AlertSpecDTO>> getAlertsSpecFromSupos() {
+    public Result<List<AlarmDTO>> getAlertsSpecFromSupos() {
         Map<String, String> headerMap = new HashMap<>();
         Map<String, String> queryMap = new HashMap<>();
 
@@ -175,15 +168,15 @@ public class AlertServiceImpl implements AlertService {
             }
 
 
-            AlertSpecResponse alertSpecResponse = JSON.parseObject(response.body(), AlertSpecResponse.class);
+            AlarmPageResponse alarmPageResponse = JSON.parseObject(response.body(), AlarmPageResponse.class);
 
-            if (alertSpecResponse == null) {
+            if (alarmPageResponse == null) {
                 log.error("解析响应体失败");
                 return Result.error("解析响应体失败");
             }
 
 
-            List<AlertSpecDTO> alertList = alertSpecResponse.getList();
+            List<AlarmDTO> alertList = alarmPageResponse.getList();
 
             return Result.success(alertList);
 
@@ -279,16 +272,16 @@ public class AlertServiceImpl implements AlertService {
         boolean saveRes = false;
         AlertRecordEO recordEO = null;
 
-        Result<List<AlertSpecDTO>> alertsSpecFromSupos = getAlertsSpecFromSupos(alertInfoDTO.getSourcePropertyName());
+        Result<List<AlarmDTO>> alertsSpecFromSupos = getAlertsSpecFromSupos(alertInfoDTO.getSourcePropertyName());
 
         if(!alertsSpecFromSupos.isSuccess()) {
             log.error("获取alertsSpecFromSupos 报警详情信息异常");
             return Result.error("获取alertsSpecFromSupos 报警详情信息异常");
         }
 
-        AlertSpecDTO alertSpecDTO = alertsSpecFromSupos.getData().get(0);
+        AlarmDTO alarmDTO = alertsSpecFromSupos.getData().get(0);
 
-        String text = zubrixSmsProxy.formatTextContent(alertInfoDTO,alertSpecDTO.getLimitValue());
+        String text = zubrixSmsProxy.formatTextContent(alertInfoDTO, alarmDTO.getLimitValue());
 
 
         if (StringUtils.isNotBlank(email)) {
@@ -320,16 +313,16 @@ public class AlertServiceImpl implements AlertService {
     @Override
     public Result<Boolean> notifyUserBySms(SuposUserDTO userDTO, AlertInfoDTO alertInfoDTO) {
 
-        Result<List<AlertSpecDTO>> alertsSpecFromSupos = getAlertsSpecFromSupos(alertInfoDTO.getSourcePropertyName());
+        Result<List<AlarmDTO>> alertsSpecFromSupos = getAlertsSpecFromSupos(alertInfoDTO.getSourcePropertyName());
 
         if(!alertsSpecFromSupos.isSuccess()) {
             log.error("获取alertsSpecFromSupos 报警详情信息异常");
             return Result.error("获取alertsSpecFromSupos 报警详情信息异常");
         }
 
-        AlertSpecDTO alertSpecDTO = alertsSpecFromSupos.getData().get(0);
+        AlarmDTO alarmDTO = alertsSpecFromSupos.getData().get(0);
 
-        String text = zubrixSmsProxy.formatTextContent(alertInfoDTO,alertSpecDTO.getLimitValue());
+        String text = zubrixSmsProxy.formatTextContent(alertInfoDTO, alarmDTO.getLimitValue());
 
         String phoneNumber = userInfoCache.nameToPhone.getIfPresent(userDTO.getPersonCode());
 

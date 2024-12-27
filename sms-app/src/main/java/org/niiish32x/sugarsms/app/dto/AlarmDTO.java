@@ -6,7 +6,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import javax.print.attribute.standard.MediaSize;
 import java.io.Serializable;
 import java.util.List;
 
@@ -21,7 +20,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class AlertSpecDTO implements Serializable {
+public class AlarmDTO implements Serializable {
     @JSONField(name = "displayName")
     private String displayName;
     private int priority;
@@ -34,7 +33,9 @@ public class AlertSpecDTO implements Serializable {
     private String deadBandType;
     private String comment;
     private String alarmType;
-    private int id;
+    // 该条报警消息的Id
+    @JSONField(name = "id")
+    private int alarmId;
     private String enName;
     private String templateEnName;
     private String templateDisplayName;

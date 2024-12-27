@@ -34,6 +34,8 @@ public interface AlertRecordRepo {
 
     boolean save(AlertRecordEO alertRecordEO);
 
+    boolean save(List<AlertRecordEO> alertRecordEOS);
+
     /**
      * 找到所有发送失败的记录
      * @return
