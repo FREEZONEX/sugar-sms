@@ -37,7 +37,7 @@ public interface UserService {
      */
     Result <SuposUserDTO> role(String username,String role);
 
-    Result getMessageReceived(String username);
+
 
     Result<List<RoleSpecDTO>> getRoleListFromSupos(String companyCode);
 }

@@ -8,7 +8,6 @@ import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.niiish32x.sugarsms.api.person.dto.PersonDTO;
 import org.niiish32x.sugarsms.api.user.dto.*;
-import org.niiish32x.sugarsms.app.dto.MessageDTO;
 import org.niiish32x.sugarsms.app.enums.ApiEnum;
 import org.niiish32x.sugarsms.app.service.PersonService;
 import org.niiish32x.sugarsms.app.service.UserService;
@@ -152,31 +151,6 @@ public class UserServiceImpl implements UserService {
         Map<String, String> headerMap = new HashMap<>();
         Map<String, String> queryMap = new HashMap<>();
         return null;
-    }
-
-
-    @Data
-    class UserMessagesResponse extends PageResponse implements Serializable {
-        @JSONField(name = "list")
-        private List<MessageDTO> list;
-    }
-
-    @Override
-    public Result getMessageReceived(String username) {
-        Map<String, String> headerMap = new HashMap<>();
-        Map<String, String> queryMap = new HashMap<>();
-
-        queryMap.put("startTime","2021-01-26T16:02:15.666+0800");
-        queryMap.put("endTime",getTime()+"+0800");
-        queryMap.put("noticeProtocol","stationLetter");
-
-        HttpResponse response = requestManager.suposApiGet("/open-api/p/notification/v2alpha1/users/" + username + "/messages", headerMap, queryMap);
-        UserMessagesResponse userMessagesResponse = JSON.parseObject(response.body(), UserMessagesResponse.class);
-
-        System.out.println(JSON.toJSONString(response));
-
-        return Result.success(userMessagesResponse.getList());
-
     }
 
 
