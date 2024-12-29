@@ -47,7 +47,6 @@ public class AlarmEO implements Serializable {
     private Date createTime;
     private Date updateTime;
 
-    // 以下可以添加一些业务相关的方法示例，比如根据某个条件判断是否有效等逻辑
 
     /**
      * 判断报警是否处于启用状态
