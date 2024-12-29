@@ -11,10 +11,9 @@ import org.niiish32x.sugarsms.alarm.domain.repo.AlarmRepo;
 import org.niiish32x.sugarsms.alarm.persistence.converter.AlarmConverter;
 import org.niiish32x.sugarsms.api.alarm.dto.AlarmDTO;
 import org.niiish32x.sugarsms.api.alarm.dto.AlarmPageResponse;
-import org.niiish32x.sugarsms.api.alert.dto.AlertInfoDTO;
 import org.niiish32x.sugarsms.app.enums.ApiEnum;
 import org.niiish32x.sugarsms.alarm.app.AlarmService;
-import org.niiish32x.sugarsms.app.service.AlertService;
+import org.niiish32x.sugarsms.alert.app.AlertService;
 import org.niiish32x.sugarsms.common.request.SuposRequestManager;
 import org.niiish32x.sugarsms.common.result.Result;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -101,7 +100,7 @@ public class AlarmServiceImpl implements AlarmService {
                 queryMap.put("perPage",request.getPerPage().toString());
             }
 
-            HttpResponse response = requestManager.suposApiGet(ApiEnum.ALERT_SPEC_API.value, headerMap, queryMap);
+            HttpResponse response = requestManager.suposApiGet(ApiEnum.ALARM_API.value, headerMap, queryMap);
 
             if (!response.isOk()) {
                 log.error("请求失败，状态码: {}", response.getStatus());

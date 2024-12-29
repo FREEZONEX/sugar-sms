@@ -1,4 +1,4 @@
-package org.niiish32x.sugarsms.app.service.impl;
+package org.niiish32x.sugarsms.alert.app.impl;
 
 import cn.hutool.http.HttpResponse;
 import com.alibaba.fastjson2.JSON;
@@ -21,7 +21,7 @@ import org.niiish32x.sugarsms.api.user.dto.RoleSpecDTO;
 import org.niiish32x.sugarsms.app.external.ZubrixSmsResponse;
 import org.niiish32x.sugarsms.app.proxy.ZubrixSmsProxy;
 import org.niiish32x.sugarsms.app.queue.AlertMessageQueue;
-import org.niiish32x.sugarsms.app.service.AlertService;
+import org.niiish32x.sugarsms.alert.app.AlertService;
 import org.niiish32x.sugarsms.app.service.PersonService;
 import org.niiish32x.sugarsms.app.service.SendMessageService;
 import org.niiish32x.sugarsms.app.service.UserService;
@@ -121,7 +121,7 @@ public class AlertServiceImpl implements AlertService {
         queryMap.put("attributeEnName",attributeEnName);
 
         try {
-            HttpResponse response = requestManager.suposApiGet(ApiEnum.ALERT_SPEC_API.value, headerMap, queryMap);
+            HttpResponse response = requestManager.suposApiGet(ApiEnum.ALARM_API.value, headerMap, queryMap);
 
             if (!response.isOk()) {
                 log.error("请求失败，状态码: {}", response.getStatus());
@@ -160,7 +160,7 @@ public class AlertServiceImpl implements AlertService {
         Map<String, String> queryMap = new HashMap<>();
 
         try {
-            HttpResponse response = requestManager.suposApiGet(ApiEnum.ALERT_SPEC_API.value, headerMap, queryMap);
+            HttpResponse response = requestManager.suposApiGet(ApiEnum.ALARM_API.value, headerMap, queryMap);
 
             if (!response.isOk()) {
                 log.error("请求失败，状态码: {}", response.getStatus());

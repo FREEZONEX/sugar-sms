@@ -5,7 +5,7 @@ import org.niiish32x.sugarsms.alert.domain.repo.AlertRecordRepo;
 
 import org.niiish32x.sugarsms.api.alert.dto.AlertInfoDTO;
 import org.niiish32x.sugarsms.app.queue.AlertMessageQueue;
-import org.niiish32x.sugarsms.app.service.AlertService;
+import org.niiish32x.sugarsms.alert.app.AlertService;
 import org.niiish32x.sugarsms.common.result.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
