@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 /**
  * AlarmEO
@@ -41,30 +42,13 @@ public class AlarmEO implements Serializable {
     private String attributeEnName;
     private String attributeDisplayName;
     private String attributeComment;
-    private String instanceLabels;
-    private String attributeLabels;
-    private Boolean deleted;
+//    private String instanceLabels;
+    private List<InstanceLabelEO> instanceLabels;
+//    private String attributeLabels;
+    private List<AttributeLabelEO>  attributeLabels;
+    private boolean deleted;
     private Date createTime;
     private Date updateTime;
-
-
-    /**
-     * 判断报警是否处于启用状态
-     *
-     * @return true 如果启用，false 则未启用
-     */
-    public boolean isAlarmEnabled() {
-        return enable!= null && enable;
-    }
-
-    /**
-     * 判断是否已经被软删除
-     *
-     * @return true 如果已删除，false 则未删除
-     */
-    public boolean isDeleted() {
-        return deleted;
-    }
 }
 
 
