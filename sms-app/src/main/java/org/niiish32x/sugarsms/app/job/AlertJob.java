@@ -2,7 +2,8 @@ package org.niiish32x.sugarsms.app.job;
 
 import lombok.extern.slf4j.Slf4j;
 import org.niiish32x.sugarsms.alert.domain.repo.AlertRecordRepo;
-import org.niiish32x.sugarsms.app.dto.AlertInfoDTO;
+
+import org.niiish32x.sugarsms.api.alert.dto.AlertInfoDTO;
 import org.niiish32x.sugarsms.app.queue.AlertMessageQueue;
 import org.niiish32x.sugarsms.app.service.AlertService;
 import org.niiish32x.sugarsms.common.result.Result;

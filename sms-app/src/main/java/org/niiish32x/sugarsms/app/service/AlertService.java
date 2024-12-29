@@ -1,9 +1,9 @@
 package org.niiish32x.sugarsms.app.service;
 
 import org.niiish32x.sugarsms.alert.domain.entity.AlertRecordEO;
-import org.niiish32x.sugarsms.app.dto.AlertInfoDTO;
-import org.niiish32x.sugarsms.app.dto.AlarmDTO;
-import org.niiish32x.sugarsms.app.dto.SuposUserDTO;
+import org.niiish32x.sugarsms.api.alarm.dto.AlarmDTO;
+import org.niiish32x.sugarsms.api.alert.dto.AlertInfoDTO;
+import org.niiish32x.sugarsms.api.user.dto.SuposUserDTO;
 import org.niiish32x.sugarsms.app.external.ZubrixSmsResponse;
 import org.niiish32x.sugarsms.common.result.Result;
 
@@ -36,7 +36,7 @@ public interface AlertService {
       * @return
       * 发送失败 则返回 发送失败邮箱
       */
-     Result <Boolean> notifyUserByEmail(SuposUserDTO userDTO,AlertInfoDTO alertInfoDTO);
+     Result <Boolean> notifyUserByEmail(SuposUserDTO userDTO, AlertInfoDTO alertInfoDTO);
 
      /**
       *

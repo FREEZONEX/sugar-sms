@@ -39,11 +39,7 @@ public class SuposUserController {
         return  suposUserService.addSuposUser(username,password);
     }
 
-    @RequestMapping("/users/message")
-    public Result getUserMessage() {
 
-        return  suposUserService.getMessageReceived("admin");
-    }
 
 
     @RequestMapping("/users/mock")

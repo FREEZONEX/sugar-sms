@@ -1,8 +1,8 @@
 package org.niiish32x.sugarsms.app.service;
 
-import org.niiish32x.sugarsms.app.dto.SuposUserDTO;
-import org.niiish32x.sugarsms.app.dto.SuposUserRoleDTO;
-import org.niiish32x.sugarsms.app.external.RoleSpecDTO;
+
+import org.niiish32x.sugarsms.api.user.dto.SuposUserDTO;
+import org.niiish32x.sugarsms.api.user.dto.RoleSpecDTO;
 import org.niiish32x.sugarsms.common.result.Result;
 
 import java.util.List;
@@ -37,7 +37,7 @@ public interface UserService {
      */
     Result <SuposUserDTO> role(String username,String role);
 
-    Result getMessageReceived(String username);
+
 
     Result<List<RoleSpecDTO>> getRoleListFromSupos(String companyCode);
 }
