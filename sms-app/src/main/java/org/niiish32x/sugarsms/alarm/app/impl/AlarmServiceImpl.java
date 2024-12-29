@@ -5,6 +5,7 @@ import com.alibaba.fastjson2.JSON;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.niiish32x.sugarsms.alarm.app.assembler.AlarmAssembler;
+import org.niiish32x.sugarsms.alarm.app.command.SavaAlarmCommand;
 import org.niiish32x.sugarsms.alarm.app.external.AlarmRequest;
 import org.niiish32x.sugarsms.alarm.domain.entity.AlarmEO;
 import org.niiish32x.sugarsms.alarm.domain.repo.AlarmRepo;
@@ -128,27 +129,12 @@ public class AlarmServiceImpl implements AlarmService {
     }
 
     @Override
-    public Result<Boolean> save(AlarmDTO alarmDTO) {
-        // 输入参数校验
-        if (alarmDTO == null) {
-            log.warn("Input parameter 'alarmDTO' is null");
-            return Result.error("输入参数为空");
-        }
+    public Result<Boolean> save(SavaAlarmCommand command) {
 
-        try {
-            // DTO 转换为 EO
-            AlarmEO alarmEO = alarmAssembler.alarmDTO2EO(alarmDTO);
-
-            // 保存操作
-            boolean res = alarmRepo.save(alarmEO);
-
-            // 返回结果
-            return res ? Result.success(true) : Result.error("保存失败");
-        } catch (Exception e) {
-            // 异常处理与日志记录
-            log.error("保存报警信息失败: {}", e.getMessage(), e);
-            return Result.error("保存失败: " + e.getMessage());
-        }
+        AlarmDTO alarmDTO = command.getAlarmDTO();
+        AlarmEO alarmEO = alarmAssembler.alarmDTO2EO(alarmDTO);
+        boolean res = alarmRepo.save(alarmEO);
+        return res ? Result.success(true) : Result.error("保存失败");
     }
 
     @Override
