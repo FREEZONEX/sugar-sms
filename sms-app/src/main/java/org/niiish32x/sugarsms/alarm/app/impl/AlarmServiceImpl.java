@@ -158,7 +158,9 @@ public class AlarmServiceImpl implements AlarmService {
         List<String> failedAlarms = new ArrayList<>();
 
         for (AlarmDTO alarmDTO : alarmDTOS) {
-            Result<Boolean> res = save(alarmDTO);
+
+            SavaAlarmCommand command = new SavaAlarmCommand(alarmDTO);
+            Result<Boolean> res = save(command);
 
             // 检查保存结果
             if (!res.isSuccess()) {
