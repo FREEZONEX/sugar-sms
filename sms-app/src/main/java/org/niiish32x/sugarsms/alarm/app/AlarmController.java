@@ -30,4 +30,9 @@ public class AlarmController {
     public Result<List<AlarmDTO>>  getAlarmFromSupos(@RequestBody AlarmRequest request) {
         return alarmService.getAlarmsFromSupos(request);
     }
+
+    @RequestMapping("/alarm/sync")
+    public Result<Boolean>  syncAlarmFromSupos( ) {
+        return alarmService.syncAlarmFromSupos();
+    }
 }

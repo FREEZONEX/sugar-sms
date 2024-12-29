@@ -11,14 +11,17 @@ import org.niiish32x.sugarsms.alarm.domain.repo.AlarmRepo;
 import org.niiish32x.sugarsms.alarm.persistence.converter.AlarmConverter;
 import org.niiish32x.sugarsms.api.alarm.dto.AlarmDTO;
 import org.niiish32x.sugarsms.api.alarm.dto.AlarmPageResponse;
+import org.niiish32x.sugarsms.api.alert.dto.AlertInfoDTO;
 import org.niiish32x.sugarsms.app.enums.ApiEnum;
 import org.niiish32x.sugarsms.alarm.app.AlarmService;
+import org.niiish32x.sugarsms.app.service.AlertService;
 import org.niiish32x.sugarsms.common.request.SuposRequestManager;
 import org.niiish32x.sugarsms.common.result.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,7 +40,11 @@ public class AlarmServiceImpl implements AlarmService {
 
 
     @Autowired
+    AlertService alertService;
+
+    @Autowired
     AlarmRepo alarmRepo;
+
 
     AlarmConverter alarmConverter = AlarmConverter.INSTANCE;
 
@@ -151,6 +158,38 @@ public class AlarmServiceImpl implements AlarmService {
 
     @Override
     public Result<Boolean> syncAlarmFromSupos() {
-        return null;
+        // 获取报警信息
+        Result<List<AlarmDTO>> alarmsFromSupos = getAlarmsFromSupos(new AlarmRequest());
+
+        // 检查获取结果是否成功
+        if (!alarmsFromSupos.isSuccess()) {
+            return Result.error("Failed to fetch alarms from Supos: " + alarmsFromSupos.getMessage());
+        }
+
+        List<AlarmDTO> alarmDTOS = alarmsFromSupos.getData();
+
+        // 检查数据是否为空
+        if (alarmDTOS == null || alarmDTOS.isEmpty()) {
+            return Result.success(true); // 或者根据业务逻辑返回适当的值
+        }
+
+        boolean allSavedSuccessfully = true;
+        List<String> failedAlarms = new ArrayList<>();
+
+        for (AlarmDTO alarmDTO : alarmDTOS) {
+            Result<Boolean> res = save(alarmDTO);
+
+            // 检查保存结果
+            if (!res.isSuccess()) {
+                allSavedSuccessfully = false;
+                failedAlarms.add("Failed to save alarm: " + alarmDTO.toString() + ", error: " + res.getMessage());
+            }
+        }
+
+        if (allSavedSuccessfully) {
+            return Result.success(true);
+        } else {
+            return Result.error("Some alarms failed to save: " + String.join(", ", failedAlarms));
+        }
     }
 }
