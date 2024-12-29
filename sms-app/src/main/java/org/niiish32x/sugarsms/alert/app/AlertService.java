@@ -21,11 +21,6 @@ public interface AlertService {
 
      Result<List<AlertInfoDTO>> getAlertsFromSupos();
 
-
-     Result<List<AlarmDTO>> getAlertsSpecFromSupos(String attributeEnName);
-
-     Result<List<AlarmDTO>> getAlertsSpecFromSupos();
-
      Result  <ZubrixSmsResponse> notifyTest();
 
      void publishAlertEvent();

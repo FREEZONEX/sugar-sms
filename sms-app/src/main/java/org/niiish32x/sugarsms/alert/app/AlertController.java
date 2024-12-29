@@ -1,4 +1,4 @@
-package org.niiish32x.sugarsms.app.controller;
+package org.niiish32x.sugarsms.alert.app;
 
 import org.niiish32x.sugarsms.alert.domain.entity.AlertRecordEO;
 import org.niiish32x.sugarsms.app.external.ZubrixSmsResponse;
@@ -27,12 +27,6 @@ public class AlertController {
     public Result getAlert() {
         return alertService.getAlertsFromSupos();
     }
-
-    @RequestMapping("/alert/spec")
-    public Result getAlertSpec() {
-        return alertService.getAlertsSpecFromSupos("Property_48");
-    }
-
 
     @RequestMapping("/alert/notify/sugarsms")
     public Result notifySugarsms(){
