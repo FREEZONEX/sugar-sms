@@ -1,7 +1,8 @@
 package org.niiish32x.sugarsms.app.queue;
 
 import lombok.extern.slf4j.Slf4j;
-import org.niiish32x.sugarsms.app.dto.AlertInfoDTO;
+
+import org.niiish32x.sugarsms.api.alert.dto.AlertInfoDTO;
 import org.springframework.stereotype.Component;
 
 import java.util.concurrent.ArrayBlockingQueue;

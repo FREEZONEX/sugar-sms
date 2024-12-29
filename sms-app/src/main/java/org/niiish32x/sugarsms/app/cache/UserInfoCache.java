@@ -2,10 +2,10 @@ package org.niiish32x.sugarsms.app.cache;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import org.niiish32x.sugarsms.app.dto.PersonCodesDTO;
-import org.niiish32x.sugarsms.app.dto.PersonDTO;
-import org.niiish32x.sugarsms.app.dto.SuposUserDTO;
-import org.niiish32x.sugarsms.app.external.PersonsResponse;
+import org.niiish32x.sugarsms.api.person.dto.PersonCodesDTO;
+import org.niiish32x.sugarsms.api.person.dto.PersonDTO;
+import org.niiish32x.sugarsms.api.person.dto.PersonsResponse;
+import org.niiish32x.sugarsms.api.user.dto.SuposUserDTO;
 import org.niiish32x.sugarsms.app.service.PersonService;
 import org.niiish32x.sugarsms.app.service.UserService;
 import org.niiish32x.sugarsms.common.result.Result;
@@ -13,7 +13,6 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;

@@ -43,7 +43,7 @@ public class SuposRequestManager implements Serializable {
     @Value("${supos.sk}")
     private String sk;
     @Value("${supos.supos-address}")
-    private String baseUrl;
+    private String baseUrl ;
 
     private String url;
     private Map<String, String> headerMap;

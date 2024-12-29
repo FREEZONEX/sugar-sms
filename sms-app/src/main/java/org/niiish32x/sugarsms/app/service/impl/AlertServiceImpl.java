@@ -7,13 +7,17 @@ import org.apache.commons.lang3.StringUtils;
 import org.niiish32x.sugarsms.alert.domain.entity.AlertRecordEO;
 import org.niiish32x.sugarsms.alert.domain.entity.MessageType;
 import org.niiish32x.sugarsms.alert.domain.repo.AlertRecordRepo;
+import org.niiish32x.sugarsms.api.alarm.dto.AlarmDTO;
+import org.niiish32x.sugarsms.api.alert.dto.AlertInfoDTO;
+import org.niiish32x.sugarsms.api.person.dto.PersonCodesDTO;
+import org.niiish32x.sugarsms.api.person.dto.PersonDTO;
+import org.niiish32x.sugarsms.api.user.dto.SuposUserDTO;
 import org.niiish32x.sugarsms.app.cache.UserInfoCache;
-import org.niiish32x.sugarsms.app.dto.*;
 import org.niiish32x.sugarsms.app.enums.ApiEnum;
 import org.niiish32x.sugarsms.app.event.AlertEvent;
-import org.niiish32x.sugarsms.app.external.AlertResponse;
-import org.niiish32x.sugarsms.app.external.AlarmPageResponse;
-import org.niiish32x.sugarsms.app.external.RoleSpecDTO;
+import org.niiish32x.sugarsms.api.alert.dto.AlertResponse;
+import org.niiish32x.sugarsms.api.alarm.dto.AlarmPageResponse;
+import org.niiish32x.sugarsms.api.user.dto.RoleSpecDTO;
 import org.niiish32x.sugarsms.app.external.ZubrixSmsResponse;
 import org.niiish32x.sugarsms.app.proxy.ZubrixSmsProxy;
 import org.niiish32x.sugarsms.app.queue.AlertMessageQueue;
@@ -44,6 +48,7 @@ public class AlertServiceImpl implements AlertService {
 
     private final String DEFAULT_COMPANY_CODE = "default_org_company";
     private final String SYSTEM_ROLE_CODE = "systemRole";
+    private final String NORMAL_ROLE_CODE = "normalRole";
 
     private final String SUGAR_ALERT_EMAIL_SUBJECT = "sugar-plant-alert";
 
@@ -247,7 +252,7 @@ public class AlertServiceImpl implements AlertService {
     }
 
     @Override
-    public Result <Boolean> notifyUserByEmail(SuposUserDTO userDTO,AlertInfoDTO alertInfoDTO ) {
+    public Result <Boolean> notifyUserByEmail(SuposUserDTO userDTO, AlertInfoDTO alertInfoDTO ) {
 
         String email = UserInfoCache.nameToEmail.getIfPresent(userDTO.getPersonCode());
 
@@ -395,9 +400,10 @@ public class AlertServiceImpl implements AlertService {
         for (RoleSpecDTO roleSpecDTO : roleSpecDTOList) {
 
             // 管理员 或者 无效 角色 跳过
-            if (roleSpecDTO != null && (StringUtils.equals(roleSpecDTO.getRoleCode(), SYSTEM_ROLE_CODE)|| roleSpecDTO.getValid() == 0)) {
+            if (roleSpecDTO != null &&  (StringUtils.equals(roleSpecDTO.getRoleCode(), NORMAL_ROLE_CODE) ||  StringUtils.equals(roleSpecDTO.getRoleCode(), SYSTEM_ROLE_CODE)|| roleSpecDTO.getValid() == 0)) {
                 continue;
             }
+
 
             Result<List<SuposUserDTO>> usersFromSupos = userService.getUsersFromSupos(DEFAULT_COMPANY_CODE, roleSpecDTO.getRoleCode());
             if (!usersFromSupos.isSuccess()) {

@@ -1,8 +1,8 @@
 package org.niiish32x.sugarsms.app.controller;
 
-import org.niiish32x.sugarsms.app.dto.PersonCodesDTO;
-import org.niiish32x.sugarsms.app.dto.PersonDTO;
-import org.niiish32x.sugarsms.app.external.SuposPersonUpdateRequest;
+import org.niiish32x.sugarsms.api.person.dto.PersonCodesDTO;
+import org.niiish32x.sugarsms.api.person.dto.PersonDTO;
+import org.niiish32x.sugarsms.api.person.dto.SuposPersonUpdateRequest;
 import org.niiish32x.sugarsms.app.service.PersonService;
 import org.niiish32x.sugarsms.common.result.Result;
 import org.springframework.web.bind.annotation.*;

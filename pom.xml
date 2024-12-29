@@ -13,6 +13,7 @@
         <module>sms-app</module>
         <module>domain</module>
         <module>dao</module>
+        <module>api</module>
     </modules>
     <properties>
         <java.version>1.8</java.version>
