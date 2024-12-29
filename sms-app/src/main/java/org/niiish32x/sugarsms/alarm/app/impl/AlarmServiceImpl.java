@@ -37,10 +37,6 @@ public class AlarmServiceImpl implements AlarmService {
     @Resource
     SuposRequestManager requestManager;
 
-
-    @Autowired
-    AlertService alertService;
-
     @Autowired
     AlarmRepo alarmRepo;
 
