@@ -6,8 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import org.niiish32x.sugarsms.api.PageDTO;
-import org.niiish32x.sugarsms.api.alarm.dto.AlarmDTO;
+import org.niiish32x.sugarsms.common.request.PageDTO;
 
 
 import java.io.Serializable;

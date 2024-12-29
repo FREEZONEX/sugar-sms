@@ -2,8 +2,7 @@ package org.niiish32x.sugarsms.api.person.dto;
 
 import com.alibaba.fastjson2.annotation.JSONField;
 import lombok.Data;
-import org.niiish32x.sugarsms.api.person.dto.PersonDTO;
-import org.niiish32x.sugarsms.api.PageDTO;
+import org.niiish32x.sugarsms.common.request.PageDTO;
 import org.niiish32x.sugarsms.common.request.PageResponse;
 
 
