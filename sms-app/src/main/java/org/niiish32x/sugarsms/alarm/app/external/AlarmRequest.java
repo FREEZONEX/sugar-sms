@@ -8,11 +8,17 @@ package org.niiish32x.sugarsms.alarm.app.external;
  * @author shenghao ni
  * @date 2024.12.29 10:21
  */
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.List;
 
 @Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class AlarmRequest  {
     private String instanceEnName;
     private String instanceDisplayName;

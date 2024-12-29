@@ -4,6 +4,8 @@ import cn.hutool.http.HttpResponse;
 import com.alibaba.fastjson2.JSON;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.niiish32x.sugarsms.alarm.app.AlarmService;
+import org.niiish32x.sugarsms.alarm.app.external.AlarmRequest;
 import org.niiish32x.sugarsms.alert.domain.entity.AlertRecordEO;
 import org.niiish32x.sugarsms.alert.domain.entity.MessageType;
 import org.niiish32x.sugarsms.alert.domain.repo.AlertRecordRepo;
@@ -69,6 +71,9 @@ public class AlertServiceImpl implements AlertService {
     // email + 消息ID + email
     private final String EMAIL_KEY = "email%s%s";
 
+
+    @Autowired
+    AlarmService alarmService;
 
     @Resource
     AlertRecordRepo alertRecordRepo;
@@ -199,7 +204,11 @@ public class AlertServiceImpl implements AlertService {
         boolean saveRes = false;
         AlertRecordEO recordEO = null;
 
-        Result<List<AlarmDTO>> alertsSpecFromSupos = getAlertsSpecFromSupos(alertInfoDTO.getSourcePropertyName());
+
+        Result<List<AlarmDTO>> alertsSpecFromSupos = alarmService.getAlarmsFromSupos(AlarmRequest.builder()
+                        .attributeEnName(alertInfoDTO.getSourcePropertyName())
+                .build());
+
 
         if(!alertsSpecFromSupos.isSuccess()) {
             log.error("获取alertsSpecFromSupos 报警详情信息异常");
@@ -240,7 +249,9 @@ public class AlertServiceImpl implements AlertService {
     @Override
     public Result<Boolean> notifyUserBySms(SuposUserDTO userDTO, AlertInfoDTO alertInfoDTO) {
 
-        Result<List<AlarmDTO>> alertsSpecFromSupos = getAlertsSpecFromSupos(alertInfoDTO.getSourcePropertyName());
+        Result<List<AlarmDTO>> alertsSpecFromSupos = alarmService.getAlarmsFromSupos(AlarmRequest.builder()
+                .attributeEnName(alertInfoDTO.getSourcePropertyName())
+                .build());
 
         if(!alertsSpecFromSupos.isSuccess()) {
             log.error("获取alertsSpecFromSupos 报警详情信息异常");
