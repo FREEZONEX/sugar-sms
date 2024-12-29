@@ -1,4 +1,4 @@
-package org.niiish32x.sugarsms.app.service;
+package org.niiish32x.sugarsms.alert.app;
 
 import org.niiish32x.sugarsms.alert.domain.entity.AlertRecordEO;
 import org.niiish32x.sugarsms.api.alarm.dto.AlarmDTO;
@@ -20,11 +20,6 @@ public interface AlertService {
      List<AlertRecordEO> getAllAlertRecords();
 
      Result<List<AlertInfoDTO>> getAlertsFromSupos();
-
-
-     Result<List<AlarmDTO>> getAlertsSpecFromSupos(String attributeEnName);
-
-     Result<List<AlarmDTO>> getAlertsSpecFromSupos();
 
      Result  <ZubrixSmsResponse> notifyTest();
 

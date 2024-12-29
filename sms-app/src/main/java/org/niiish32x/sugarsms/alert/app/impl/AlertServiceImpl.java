@@ -1,9 +1,11 @@
-package org.niiish32x.sugarsms.app.service.impl;
+package org.niiish32x.sugarsms.alert.app.impl;
 
 import cn.hutool.http.HttpResponse;
 import com.alibaba.fastjson2.JSON;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.niiish32x.sugarsms.alarm.app.AlarmService;
+import org.niiish32x.sugarsms.alarm.app.external.AlarmRequest;
 import org.niiish32x.sugarsms.alert.domain.entity.AlertRecordEO;
 import org.niiish32x.sugarsms.alert.domain.entity.MessageType;
 import org.niiish32x.sugarsms.alert.domain.repo.AlertRecordRepo;
@@ -21,7 +23,7 @@ import org.niiish32x.sugarsms.api.user.dto.RoleSpecDTO;
 import org.niiish32x.sugarsms.app.external.ZubrixSmsResponse;
 import org.niiish32x.sugarsms.app.proxy.ZubrixSmsProxy;
 import org.niiish32x.sugarsms.app.queue.AlertMessageQueue;
-import org.niiish32x.sugarsms.app.service.AlertService;
+import org.niiish32x.sugarsms.alert.app.AlertService;
 import org.niiish32x.sugarsms.app.service.PersonService;
 import org.niiish32x.sugarsms.app.service.SendMessageService;
 import org.niiish32x.sugarsms.app.service.UserService;
@@ -70,6 +72,9 @@ public class AlertServiceImpl implements AlertService {
     private final String EMAIL_KEY = "email%s%s";
 
 
+    @Autowired
+    AlarmService alarmService;
+
     @Resource
     AlertRecordRepo alertRecordRepo;
 
@@ -113,84 +118,6 @@ public class AlertServiceImpl implements AlertService {
         AlertResponse alertResponse = JSON.parseObject(response.body(), AlertResponse.class);
         return alertResponse.getCode() == 200 ? Result.success(alertResponse.getAlerts())  : Result.error("查询报警信息失败") ;
     }
-
-    @Override
-    public Result<List<AlarmDTO>> getAlertsSpecFromSupos(String attributeEnName) {
-        Map<String, String> headerMap = new HashMap<>();
-        Map<String, String> queryMap = new HashMap<>();
-        queryMap.put("attributeEnName",attributeEnName);
-
-        try {
-            HttpResponse response = requestManager.suposApiGet(ApiEnum.ALERT_SPEC_API.value, headerMap, queryMap);
-
-            if (!response.isOk()) {
-                log.error("请求失败，状态码: {}", response.getStatus());
-                return Result.error("请求异常");
-            }
-
-            if (response.body() == null || response.body().trim().isEmpty()) {
-                log.error("响应体为空");
-                return Result.error("响应体为空");
-            }
-
-
-            AlarmPageResponse alarmPageResponse = JSON.parseObject(response.body(), AlarmPageResponse.class);
-
-            if (alarmPageResponse == null) {
-                log.error("解析响应体失败");
-                return Result.error("解析响应体失败");
-            }
-
-            System.out.println(JSON.toJSONString(alarmPageResponse));
-
-
-            List<AlarmDTO> alertList = alarmPageResponse.getList();
-
-            return Result.success(alertList);
-
-        } catch (Exception e) {
-            log.error("请求过程中发生异常", e);
-            return Result.error("请求过程中发生异常");
-        }
-    }
-
-    @Override
-    public Result<List<AlarmDTO>> getAlertsSpecFromSupos() {
-        Map<String, String> headerMap = new HashMap<>();
-        Map<String, String> queryMap = new HashMap<>();
-
-        try {
-            HttpResponse response = requestManager.suposApiGet(ApiEnum.ALERT_SPEC_API.value, headerMap, queryMap);
-
-            if (!response.isOk()) {
-                log.error("请求失败，状态码: {}", response.getStatus());
-                return Result.error("请求异常");
-            }
-
-            if (response.body() == null || response.body().trim().isEmpty()) {
-                log.error("响应体为空");
-                return Result.error("响应体为空");
-            }
-
-
-            AlarmPageResponse alarmPageResponse = JSON.parseObject(response.body(), AlarmPageResponse.class);
-
-            if (alarmPageResponse == null) {
-                log.error("解析响应体失败");
-                return Result.error("解析响应体失败");
-            }
-
-
-            List<AlarmDTO> alertList = alarmPageResponse.getList();
-
-            return Result.success(alertList);
-
-        } catch (Exception e) {
-            log.error("请求过程中发生异常", e);
-            return Result.error("请求过程中发生异常");
-        }
-    }
-
 
 
     @Override
@@ -277,7 +204,11 @@ public class AlertServiceImpl implements AlertService {
         boolean saveRes = false;
         AlertRecordEO recordEO = null;
 
-        Result<List<AlarmDTO>> alertsSpecFromSupos = getAlertsSpecFromSupos(alertInfoDTO.getSourcePropertyName());
+
+        Result<List<AlarmDTO>> alertsSpecFromSupos = alarmService.getAlarmsFromSupos(AlarmRequest.builder()
+                        .attributeEnName(alertInfoDTO.getSourcePropertyName())
+                .build());
+
 
         if(!alertsSpecFromSupos.isSuccess()) {
             log.error("获取alertsSpecFromSupos 报警详情信息异常");
@@ -318,7 +249,9 @@ public class AlertServiceImpl implements AlertService {
     @Override
     public Result<Boolean> notifyUserBySms(SuposUserDTO userDTO, AlertInfoDTO alertInfoDTO) {
 
-        Result<List<AlarmDTO>> alertsSpecFromSupos = getAlertsSpecFromSupos(alertInfoDTO.getSourcePropertyName());
+        Result<List<AlarmDTO>> alertsSpecFromSupos = alarmService.getAlarmsFromSupos(AlarmRequest.builder()
+                .attributeEnName(alertInfoDTO.getSourcePropertyName())
+                .build());
 
         if(!alertsSpecFromSupos.isSuccess()) {
             log.error("获取alertsSpecFromSupos 报警详情信息异常");

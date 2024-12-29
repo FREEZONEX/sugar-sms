@@ -1,7 +1,7 @@
 package org.niiish32x.sugarsms.app.event;
 
 import lombok.extern.slf4j.Slf4j;
-import org.niiish32x.sugarsms.app.service.AlertService;
+import org.niiish32x.sugarsms.alert.app.AlertService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
