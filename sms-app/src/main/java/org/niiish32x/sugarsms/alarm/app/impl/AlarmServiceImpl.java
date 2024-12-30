@@ -5,6 +5,7 @@ import com.alibaba.fastjson2.JSON;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.niiish32x.sugarsms.alarm.app.assembler.AlarmAssembler;
+import org.niiish32x.sugarsms.alarm.app.command.SavaAlarmCommand;
 import org.niiish32x.sugarsms.alarm.app.external.AlarmRequest;
 import org.niiish32x.sugarsms.alarm.domain.entity.AlarmEO;
 import org.niiish32x.sugarsms.alarm.domain.repo.AlarmRepo;
@@ -13,7 +14,6 @@ import org.niiish32x.sugarsms.api.alarm.dto.AlarmDTO;
 import org.niiish32x.sugarsms.api.alarm.dto.AlarmPageResponse;
 import org.niiish32x.sugarsms.app.enums.ApiEnum;
 import org.niiish32x.sugarsms.alarm.app.AlarmService;
-import org.niiish32x.sugarsms.alert.app.AlertService;
 import org.niiish32x.sugarsms.common.request.SuposRequestManager;
 import org.niiish32x.sugarsms.common.result.Result;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -128,27 +128,12 @@ public class AlarmServiceImpl implements AlarmService {
     }
 
     @Override
-    public Result<Boolean> save(AlarmDTO alarmDTO) {
-        // 输入参数校验
-        if (alarmDTO == null) {
-            log.warn("Input parameter 'alarmDTO' is null");
-            return Result.error("输入参数为空");
-        }
+    public Result<Boolean> save(SavaAlarmCommand command) {
 
-        try {
-            // DTO 转换为 EO
-            AlarmEO alarmEO = alarmAssembler.alarmDTO2EO(alarmDTO);
-
-            // 保存操作
-            boolean res = alarmRepo.save(alarmEO);
-
-            // 返回结果
-            return res ? Result.success(true) : Result.error("保存失败");
-        } catch (Exception e) {
-            // 异常处理与日志记录
-            log.error("保存报警信息失败: {}", e.getMessage(), e);
-            return Result.error("保存失败: " + e.getMessage());
-        }
+        AlarmDTO alarmDTO = command.getAlarmDTO();
+        AlarmEO alarmEO = alarmAssembler.alarmDTO2EO(alarmDTO);
+        boolean res = alarmRepo.saveOrUpdate(alarmEO);
+        return res ? Result.success(true) : Result.error("保存失败");
     }
 
     @Override
@@ -172,7 +157,9 @@ public class AlarmServiceImpl implements AlarmService {
         List<String> failedAlarms = new ArrayList<>();
 
         for (AlarmDTO alarmDTO : alarmDTOS) {
-            Result<Boolean> res = save(alarmDTO);
+
+            SavaAlarmCommand command = new SavaAlarmCommand(alarmDTO);
+            Result<Boolean> res = save(command);
 
             // 检查保存结果
             if (!res.isSuccess()) {
