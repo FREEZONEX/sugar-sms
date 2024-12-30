@@ -3,6 +3,8 @@ package org.niiish32x.sugarsms.alert.app.impl;
 import cn.hutool.http.HttpResponse;
 import com.alibaba.fastjson2.JSON;
 import com.google.common.cache.Cache;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.niiish32x.sugarsms.alarm.app.AlarmService;
@@ -53,6 +55,8 @@ import java.util.concurrent.*;
 @Service
 @Slf4j
 public class AlertServiceImpl implements AlertService {
+
+    Set<String> acceptRoles = Sets.newHashSet("sugarsms","canesms","cogensms","chemicalsms","distillerysms","CLsms","mgmtsms","commonsms");
 
     private final String DEFAULT_COMPANY_CODE = "default_org_company";
     private final String SYSTEM_ROLE_CODE = "systemRole";
@@ -433,7 +437,7 @@ public class AlertServiceImpl implements AlertService {
         for (RoleSpecDTO roleSpecDTO : roleSpecDTOList) {
 
             // 管理员 或者 无效 角色 跳过
-            if (roleSpecDTO != null &&  (StringUtils.equals(roleSpecDTO.getRoleCode(), NORMAL_ROLE_CODE) ||  StringUtils.equals(roleSpecDTO.getRoleCode(), SYSTEM_ROLE_CODE)|| roleSpecDTO.getValid() == 0)) {
+            if (roleSpecDTO == null ||  !acceptRoles.contains(roleSpecDTO.getRoleCode()) || roleSpecDTO.getValid() == 0 )  {
                 continue;
             }
 
@@ -452,21 +456,6 @@ public class AlertServiceImpl implements AlertService {
             if (alertInfoDTO == null) {
                 continue; // 处理空值
             }
-
-            Result<List<AlarmDTO>> alarms = alarmService.getAlarmsFromSupos(AlarmRequest.builder()
-                    .attributeEnName(alertInfoDTO.getSourcePropertyName())
-                    .build());
-
-            if (!alarms.isSuccess()) {
-                log.error("get alarm error {} ", alertInfoDTO);
-                continue;
-            }
-
-            for (AlarmDTO alarmDTO : alarms.getData()) {
-                SavaAlarmCommand savaAlarmCommand = new SavaAlarmCommand(alarmDTO);
-                alarmService.save(savaAlarmCommand);
-            }
-
 
             List<CompletableFuture<?>> futures = new ArrayList<>();
             for (SuposUserDTO userDTO : userLists) {
@@ -490,7 +479,7 @@ public class AlertServiceImpl implements AlertService {
              if (smsResponseResult.isSuccess()) {
                  alertRecordEO.setSendTime(new Date());
                  alertRecordEO.setStatus(true);
-                 alertRecordRepo.save(alertRecordEO);
+                 alertRecordRepo.update(alertRecordEO);
              }
          }
 
@@ -499,7 +488,7 @@ public class AlertServiceImpl implements AlertService {
              if (sendRes) {
                  alertRecordEO.setSendTime(new Date());
                  alertRecordEO.setStatus(true);
-                 alertRecordRepo.save(alertRecordEO);
+                 alertRecordRepo.update(alertRecordEO);
              }
          }
     }

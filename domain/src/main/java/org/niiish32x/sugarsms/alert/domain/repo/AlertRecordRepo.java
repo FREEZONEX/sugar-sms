@@ -3,7 +3,6 @@ package org.niiish32x.sugarsms.alert.domain.repo;
 import org.niiish32x.sugarsms.alert.domain.entity.AlertRecordEO;
 import org.niiish32x.sugarsms.alert.domain.entity.MessageType;
 
-import java.sql.Time;
 import java.util.List;
 
 /**
@@ -26,6 +25,8 @@ public interface AlertRecordRepo {
      */
     List<AlertRecordEO>  find(Long alertId);
 
+    List<Long> findExistingAlertIds(List<Long> AlertIds);
+
     /**
      * 找到所有发送失败记录
      * @return
@@ -33,6 +34,8 @@ public interface AlertRecordRepo {
     List<AlertRecordEO> find(MessageType type,boolean status);
 
     boolean save(AlertRecordEO alertRecordEO);
+
+    boolean update(AlertRecordEO alertRecordEO);
 
     boolean save(List<AlertRecordEO> alertRecordEOS);
 
