@@ -64,8 +64,20 @@ public class AlertRecordRepoImpl implements AlertRecordRepo {
 
     @Override
     public boolean save(AlertRecordEO alertRecordEO) {
+        AlertRecordDO alertRecordDO = converter.toDO(alertRecordEO);
 
-        return alertRecordDAO.save(converter.toDO(alertRecordEO));
+        AlertRecordDO one = alertRecordDAO.lambdaQuery()
+                .eq(AlertRecordDO::getAlertId, alertRecordDO.getAlertId())
+                .eq(AlertRecordDO::getType, alertRecordDO.getType())
+                .eq(AlertRecordDO::getUsername, alertRecordDO.getUsername())
+                .one();
+
+        if (one != null) {
+            alertRecordDO.setId(one.getId());
+            alertRecordDAO.updateById(alertRecordDO);
+        }
+
+        return alertRecordDAO.save(alertRecordDO);
     }
 
     @Override

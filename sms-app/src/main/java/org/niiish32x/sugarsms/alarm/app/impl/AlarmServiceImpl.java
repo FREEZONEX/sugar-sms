@@ -14,7 +14,6 @@ import org.niiish32x.sugarsms.api.alarm.dto.AlarmDTO;
 import org.niiish32x.sugarsms.api.alarm.dto.AlarmPageResponse;
 import org.niiish32x.sugarsms.app.enums.ApiEnum;
 import org.niiish32x.sugarsms.alarm.app.AlarmService;
-import org.niiish32x.sugarsms.alert.app.AlertService;
 import org.niiish32x.sugarsms.common.request.SuposRequestManager;
 import org.niiish32x.sugarsms.common.result.Result;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -133,7 +132,7 @@ public class AlarmServiceImpl implements AlarmService {
 
         AlarmDTO alarmDTO = command.getAlarmDTO();
         AlarmEO alarmEO = alarmAssembler.alarmDTO2EO(alarmDTO);
-        boolean res = alarmRepo.save(alarmEO);
+        boolean res = alarmRepo.saveOrUpdate(alarmEO);
         return res ? Result.success(true) : Result.error("保存失败");
     }
 

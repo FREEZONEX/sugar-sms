@@ -29,14 +29,37 @@ public class AlarmRepoImpl implements AlarmRepo {
 
 
     @Override
-    public List<AlarmEO> find() {
+    public List<AlarmEO> list() {
         List<AlarmDO> list = alarmDAO.lambdaQuery().list();
         return list.stream().map(converter::toEO).collect(Collectors.toList());
     }
 
     @Override
-    public boolean save(AlarmEO alarmEO) {
+    public AlarmEO findWithAttributeEnName(String attributeEnName) {
+        List<AlarmDO> alarmDOS = alarmDAO.lambdaQuery().eq(AlarmDO::getAttributeEnName, attributeEnName).list();
+        return !alarmDOS.isEmpty() ? converter.toEO(alarmDOS.get(0)) : null;
+    }
+
+
+    @Override
+    public boolean saveOrUpdate(AlarmEO alarmEO) {
         AlarmDO alarmDO = converter.toDO(alarmEO);
-        return alarmDAO.save(alarmDO);
+        // 查询是否存在相同 alarmId 的记录
+        AlarmDO existingAlarm = alarmDAO.lambdaQuery().eq(AlarmDO::getAlarmId, alarmDO.getAlarmId()).one();
+
+        if (existingAlarm != null) {
+            // 更新现有记录
+            alarmDO.setId(existingAlarm.getId()); // 确保主键一致
+            return alarmDAO.updateById(alarmDO);
+        } else {
+            // 插入新记录
+            return alarmDAO.save(alarmDO);
+        }
+    }
+
+    @Override
+    public AlarmEO find(String alarmId) {
+        List<AlarmDO> list = alarmDAO.lambdaQuery().eq(AlarmDO::getAlarmId, alarmId).list();
+        return list.get(0) != null ? converter.toEO(list.get(0)) : null;
     }
 }

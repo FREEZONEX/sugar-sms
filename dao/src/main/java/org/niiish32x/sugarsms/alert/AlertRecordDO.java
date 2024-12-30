@@ -7,6 +7,7 @@ package org.niiish32x.sugarsms.alert;
  * @date 2024.12.16 18:15
  */
 
+import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
@@ -29,7 +30,7 @@ public class AlertRecordDO implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    @TableId
+    @TableId(type = IdType.AUTO)
     private Long id;
 
     @TableField(value = "alert_id")

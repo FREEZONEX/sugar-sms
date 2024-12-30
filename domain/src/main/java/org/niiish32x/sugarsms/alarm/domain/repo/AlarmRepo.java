@@ -12,7 +12,11 @@ import java.util.List;
  */
 public interface AlarmRepo {
 
-    List<AlarmEO> find();
+    List<AlarmEO> list();
 
-    boolean save(AlarmEO alarmEO);
+    AlarmEO findWithAttributeEnName(String attributeEnName);
+
+    boolean saveOrUpdate(AlarmEO alarmEO);
+
+    AlarmEO find(String alarmId);
 }

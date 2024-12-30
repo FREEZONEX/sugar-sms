@@ -3,6 +3,8 @@ package org.niiish32x.sugarsms.alarm.persistence.converter;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.TypeReference;
 import com.google.common.collect.Lists;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
@@ -41,18 +43,21 @@ public interface AlarmConverter {
 
     @Named("parseInstanceLabelsToEO")
     default List<InstanceLabelEO> parseInstanceLabelsToEO(String instanceLabels) {
-        return Optional.ofNullable(instanceLabels)
-                .map(JSON::parseObject)
-                .map(jsonObject -> jsonObject.toJavaObject(new TypeReference<List<InstanceLabelEO>>() {}))
-                .orElse(Lists.newArrayList());
+
+        if (StringUtils.isEmpty(instanceLabels)) {
+            return Lists.newArrayList();
+        }
+
+        return JSON.parseArray(instanceLabels, InstanceLabelEO.class);
+
     }
 
 
     @Named("parseAttributeLabelsToEO")
     default List<AttributeLabelEO> parseAttributeLabelsToEO(String attributeLabels) {
-        return Optional.ofNullable(attributeLabels)
-                .map(JSON::parseObject)
-                .map(jsonObject -> jsonObject.toJavaObject(new TypeReference<List<AttributeLabelEO>>() {}))
-                .orElse(Lists.newArrayList());
+        if (StringUtils.isEmpty(attributeLabels)) {
+            return Lists.newArrayList();
+        }
+        return JSON.parseArray(attributeLabels, AttributeLabelEO.class);
     }
 }

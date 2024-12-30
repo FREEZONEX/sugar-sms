@@ -1,5 +1,6 @@
 package org.niiish32x.sugarsms.alert.app;
 
+import org.niiish32x.sugarsms.alert.app.command.AlertCommand;
 import org.niiish32x.sugarsms.alert.domain.entity.AlertRecordEO;
 import org.niiish32x.sugarsms.api.alarm.dto.AlarmDTO;
 import org.niiish32x.sugarsms.api.alert.dto.AlertInfoDTO;
@@ -42,6 +43,8 @@ public interface AlertService {
       * 发送失败则返回 发送失败的电话号码
       */
      Result <Boolean> notifyUserBySms(SuposUserDTO userDTO,AlertInfoDTO alertInfoDTO);
+
+     Result <Boolean> alert(AlertCommand command);
 
      Boolean cleanAlertPastDays(Integer days);
 
