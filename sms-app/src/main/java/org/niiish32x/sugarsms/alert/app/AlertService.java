@@ -36,7 +36,6 @@ public interface AlertService {
 
      /**
       * 生成 初始化 需要发送的报警消息
-      * @param alertInfoDTO
       * @return
       */
      Result productAlertRecord(ProductAlertRecordCommand alertInfoDTOS);
