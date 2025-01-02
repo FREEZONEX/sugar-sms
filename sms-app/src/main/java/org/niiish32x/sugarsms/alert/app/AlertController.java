@@ -33,12 +33,6 @@ public class AlertController {
         return null;
     }
 
-    @RequestMapping("/alert/notify/sugarsms/test")
-    public Result  <ZubrixSmsResponse>  notifyTest(){
-        return alertService.notifyTest();
-    }
-
-
     @RequestMapping("/alert/record/test")
     public List<AlertRecordEO> testAlert() {
         return alertService.getAllAlertRecords();

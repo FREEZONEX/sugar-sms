@@ -1,8 +1,8 @@
 package org.niiish32x.sugarsms.alert.app;
 
 import org.niiish32x.sugarsms.alert.app.command.AlertCommand;
+import org.niiish32x.sugarsms.alert.app.command.ProductAlertRecordCommand;
 import org.niiish32x.sugarsms.alert.domain.entity.AlertRecordEO;
-import org.niiish32x.sugarsms.api.alarm.dto.AlarmDTO;
 import org.niiish32x.sugarsms.api.alert.dto.AlertInfoDTO;
 import org.niiish32x.sugarsms.api.user.dto.SuposUserDTO;
 import org.niiish32x.sugarsms.app.external.ZubrixSmsResponse;
@@ -22,31 +22,22 @@ public interface AlertService {
 
      Result<List<AlertInfoDTO>> getAlertsFromSupos();
 
-     Result  <ZubrixSmsResponse> notifyTest();
 
      void publishAlertEvent();
 
-     /**
-      * @param userDTO
-      * @param alertInfoDTO
-      * @return
-      * 发送失败 则返回 发送失败邮箱
-      */
-     Result <Boolean> notifyUserByEmail(SuposUserDTO userDTO, AlertInfoDTO alertInfoDTO);
 
-     /**
-      *
-      * @param userDTO
-      * @param alertInfoDTO
-      * @return
-      *
-      * 发送失败则返回 发送失败的电话号码
-      */
-     Result <Boolean> notifyUserBySms(SuposUserDTO userDTO,AlertInfoDTO alertInfoDTO);
+     Result alert(AlertRecordEO record);
 
-     Result <Boolean> alert(AlertCommand command);
+     Result<List<SuposUserDTO>>  getAlertUsers();
 
      Boolean cleanAlertPastDays(Integer days);
 
      void consumeAlertEvent();
+
+     /**
+      * 生成 初始化 需要发送的报警消息
+      * @param alertInfoDTO
+      * @return
+      */
+     Result productAlertRecord(ProductAlertRecordCommand alertInfoDTOS);
 }

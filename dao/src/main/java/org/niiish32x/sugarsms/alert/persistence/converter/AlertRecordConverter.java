@@ -31,11 +31,11 @@ public interface AlertRecordConverter {
     AlertRecordEO toEO(AlertRecordDO alertRecordDO);
 
     default MessageType parseMessageTypeTDO (AlertRecordDO alertRecordDO) {
-        if (StringUtils.equals(alertRecordDO.getType(), "sms")) {
+        if (StringUtils.equals(alertRecordDO.getType(), "SMS")) {
             return MessageType.SMS;
         }
 
-        if (StringUtils.equals(alertRecordDO.getType(),"email")){
+        if (StringUtils.equals(alertRecordDO.getType(),"EMAIL")){
             return MessageType.EMAIL;
         }
 
