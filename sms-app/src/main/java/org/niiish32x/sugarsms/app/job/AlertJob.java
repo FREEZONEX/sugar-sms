@@ -45,7 +45,7 @@ public class AlertJob {
     AlarmService alarmService;
 
     @Scheduled(fixedDelay = 1000 * 10)
-    void alertJob() {
+    void getAlert() {
         try {
             Result<List<AlertInfoDTO>> alertsResp = alertService.getAlertsFromSupos();
 
@@ -65,12 +65,14 @@ public class AlertJob {
             }
 
             CompletableFuture.allOf();
-
-            alertService.publishAlertEvent();
-
         } catch (Exception e) {
             log.error("定时任务执行过程中发生异常", e);
         }
+    }
+
+    @Scheduled(fixedDelay = 1000 * 5)
+    void alert() {
+        alertService.consumeAlertEvent();
     }
 
     /**
