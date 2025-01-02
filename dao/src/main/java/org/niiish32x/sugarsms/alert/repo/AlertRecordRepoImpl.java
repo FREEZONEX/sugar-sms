@@ -104,7 +104,7 @@ public class AlertRecordRepoImpl implements AlertRecordRepo {
 
     @Override
     public List<AlertRecordEO> findFailRecords() {
-        List<AlertRecordDO> list = alertRecordDAO.lambdaQuery().eq(AlertRecordDO::getStatus, false).list();
+        List<AlertRecordDO> list = alertRecordDAO.lambdaQuery().eq(AlertRecordDO::getStatus, 0).list();
         return list.stream().map(converter::toEO).collect(Collectors.toList());
     }
 

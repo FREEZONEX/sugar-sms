@@ -25,7 +25,7 @@ public interface AlertRecordRepo {
      */
     List<AlertRecordEO>  find(Long alertId);
 
-    List<Long> findExistingAlertIds(List<Long> AlertIds);
+    List<Long> findExistingAlertIds(List<Long> alertIds);
 
     /**
      * 找到所有发送失败记录
@@ -34,6 +34,8 @@ public interface AlertRecordRepo {
     List<AlertRecordEO> find(MessageType type,boolean status);
 
     boolean save(AlertRecordEO alertRecordEO);
+
+
 
     boolean update(AlertRecordEO alertRecordEO);
 
