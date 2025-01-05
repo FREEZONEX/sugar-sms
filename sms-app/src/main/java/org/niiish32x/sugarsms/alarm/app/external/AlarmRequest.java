@@ -12,8 +12,12 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Supplier;
 
 @Data
 @Builder
@@ -36,6 +40,49 @@ public class AlarmRequest  {
     private Integer page;
     private Integer perPage;
     private Boolean excludeFunctionSetAlarm;
+
+
+
+
+    public Map<String, String> buildQueryMap() {
+        Map<String, String> queryMap = new HashMap<>();
+
+        addNonBlankField(queryMap, "instanceEnName", this::getInstanceEnName);
+        addNonBlankField(queryMap, "instanceDisplayName", this::getInstanceDisplayName);
+        addNonBlankField(queryMap, "attributeEnName", this::getAttributeEnName);
+        addNonBlankField(queryMap, "attributeDisplayName", this::getAttributeDisplayName);
+        addNonBlankField(queryMap, "attributeComment", this::getAttributeComment);
+        addNonBlankField(queryMap, "alarmEnName", this::getAlarmEnName);
+        addNonBlankField(queryMap, "alarmDisplayName", this::getAlarmDisplayName);
+        addNonBlankField(queryMap, "alarmComment", this::getAlarmComment);
+        addNonBlankField(queryMap, "alarmType", this::getAlarmType);
+
+        // 处理 alarmPriority
+        Integer alarmPriority = this.alarmPriority;
+        if (alarmPriority != null && alarmPriority > 0 && alarmPriority <= 10) {
+            queryMap.put("alarmPriority", alarmPriority.toString());
+        }
+
+        // 处理 page 和 perPage
+        Integer page = this.page;
+        if (page != null && page > 0) {
+            queryMap.put("page", page.toString());
+        }
+
+        Integer perPage = this.perPage;
+        if (perPage != null && perPage > 0 && perPage <= 500) {
+            queryMap.put("perPage", perPage.toString());
+        }
+
+        return queryMap;
+    }
+
+    private void addNonBlankField(Map<String, String> queryMap, String key, Supplier<String> supplier) {
+        String value = supplier.get();
+        if (StringUtils.isNotBlank(value)) {
+            queryMap.put(key, value);
+        }
+    }
 
 
 }
