@@ -4,7 +4,6 @@ import cn.hutool.http.HttpResponse;
 import com.alibaba.fastjson2.JSON;
 import com.google.common.cache.Cache;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.niiish32x.sugarsms.alarm.app.AlarmService;
@@ -32,12 +31,13 @@ import org.niiish32x.sugarsms.app.queue.AlertMessageQueue;
 import org.niiish32x.sugarsms.alert.app.AlertService;
 import org.niiish32x.sugarsms.app.service.PersonService;
 import org.niiish32x.sugarsms.app.service.SendMessageService;
-import org.niiish32x.sugarsms.app.service.UserService;
+import org.niiish32x.sugarsms.user.app.UserService;
 import org.niiish32x.sugarsms.common.enums.CompanyEnum;
 import org.niiish32x.sugarsms.common.enums.UserRoleEnum;
 import org.niiish32x.sugarsms.common.request.SuposRequestManager;
 import org.niiish32x.sugarsms.common.result.Result;
 import org.niiish32x.sugarsms.manager.thread.GlobalThreadManager;
+import org.niiish32x.sugarsms.user.app.external.UserPageQueryRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
@@ -263,7 +263,12 @@ public class AlertServiceImpl implements AlertService {
                 continue;
             }
 
-            Result<List<SuposUserDTO>> usersFromSupos = userService.getUsersFromSupos(CompanyEnum.DEFAULT.value, roleSpecDTO.getRoleCode());
+            UserPageQueryRequest userPageQueryRequest = UserPageQueryRequest.builder()
+                    .companyCode(CompanyEnum.DEFAULT.value)
+                    .roleCode(roleSpecDTO.getRoleCode())
+                    .getAll(true)
+                    .build();
+            Result<List<SuposUserDTO>> usersFromSupos = userService.getUsersFromSupos(userPageQueryRequest);
             if (!usersFromSupos.isSuccess()) {
                 return Result.error("Failed to get users from Supos: " + usersFromSupos.getMessage());
             }

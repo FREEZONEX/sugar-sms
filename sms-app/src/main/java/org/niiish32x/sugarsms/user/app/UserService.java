@@ -1,9 +1,10 @@
-package org.niiish32x.sugarsms.app.service;
+package org.niiish32x.sugarsms.user.app;
 
 
 import org.niiish32x.sugarsms.api.user.dto.SuposUserDTO;
 import org.niiish32x.sugarsms.api.user.dto.RoleSpecDTO;
 import org.niiish32x.sugarsms.common.result.Result;
+import org.niiish32x.sugarsms.user.app.external.UserPageQueryRequest;
 
 import java.util.List;
 
@@ -25,17 +26,12 @@ public interface UserService {
 
     Result mockUser();
 
-    Result getUsersFromSupos(String company);
+    Result <List<SuposUserDTO>> getUsersFromSupos(UserPageQueryRequest request);
+
+
 
     Result<List<SuposUserDTO>>  getUsersFromSupos(String companyCode, String roleCode);
 
-    /**
-     * 为指定用户 绑定角色角色
-     * @param username
-     * @param role
-     * @return
-     */
-    Result <SuposUserDTO> role(String username,String role);
 
 
 

@@ -1,8 +1,10 @@
 package org.niiish32x.sugarsms.app.controller;
 
 import org.apache.commons.lang3.StringUtils;
-import org.niiish32x.sugarsms.app.service.UserService;
+import org.niiish32x.sugarsms.common.enums.CompanyEnum;
+import org.niiish32x.sugarsms.user.app.UserService;
 import org.niiish32x.sugarsms.common.result.Result;
+import org.niiish32x.sugarsms.user.app.external.UserPageQueryRequest;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -25,13 +27,17 @@ public class SuposUserController {
     }
 
     @RequestMapping("/users/company")
-    public Result getCompanyUser(@RequestParam String companyCode) {
-        return  suposUserService.getUsersFromSupos(StringUtils.isBlank(companyCode) ? "default_org_company" : companyCode);
+    public Result getCompanyUser(@RequestBody UserPageQueryRequest request) {
+        return  suposUserService.getUsersFromSupos(request);
     }
 
     @RequestMapping("/users/company/role")
-    public Result getCompanyUserByRole(String companyCode,String roleCode) {
-        return  suposUserService.getUsersFromSupos(StringUtils.isBlank(companyCode) ? "default_org_company" : companyCode,roleCode);
+    public Result getCompanyUserByRole(String roleCode) {
+        UserPageQueryRequest request = UserPageQueryRequest.builder()
+                .companyCode(CompanyEnum.DEFAULT.value)
+                .roleCode(roleCode)
+                .build();
+        return  suposUserService.getUsersFromSupos(request);
     }
 
     @PostMapping("/users/add")

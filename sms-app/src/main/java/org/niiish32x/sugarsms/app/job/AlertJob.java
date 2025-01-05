@@ -55,6 +55,7 @@ public class AlertJob {
             }
 
             List<AlertInfoDTO> alertInfoDTOS = alertsResp.getData();
+
             if (alertInfoDTOS == null || alertInfoDTOS.isEmpty()) {
                 return;
             }
