@@ -7,7 +7,7 @@
         <version>0.0.1-SNAPSHOT</version>
     </parent>
     <artifactId>sms-app</artifactId>
-    <name> sms-app</name>
+    <name>sms-app</name>
     <url>http://maven.apache.org</url>
 
     <dependencies>
@@ -33,6 +33,12 @@
         <dependency>
             <groupId>org.niiish32x.sugar-sms</groupId>
             <artifactId>api</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.niiish32x.sugar-sms</groupId>
+            <artifactId>manager</artifactId>
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
 

@@ -3,13 +3,11 @@ package org.niiish32x.sugarsms.alert.app.impl;
 import cn.hutool.http.HttpResponse;
 import com.alibaba.fastjson2.JSON;
 import com.google.common.cache.Cache;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.niiish32x.sugarsms.alarm.app.AlarmService;
 import org.niiish32x.sugarsms.alarm.app.assembler.AlarmAssembler;
-import org.niiish32x.sugarsms.alarm.app.command.SavaAlarmCommand;
 import org.niiish32x.sugarsms.alarm.app.external.AlarmRequest;
 import org.niiish32x.sugarsms.alarm.domain.repo.AlarmRepo;
 import org.niiish32x.sugarsms.alert.app.command.AlertCommand;
@@ -36,6 +34,7 @@ import org.niiish32x.sugarsms.app.service.SendMessageService;
 import org.niiish32x.sugarsms.app.service.UserService;
 import org.niiish32x.sugarsms.common.request.SuposRequestManager;
 import org.niiish32x.sugarsms.common.result.Result;
+import org.niiish32x.sugarsms.manager.thread.GlobalThreadManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
@@ -64,13 +63,16 @@ public class AlertServiceImpl implements AlertService {
 
     private final String SUGAR_ALERT_EMAIL_SUBJECT = "sugar-plant-alert";
 
-    static ThreadPoolExecutor poolExecutor = new ThreadPoolExecutor(
-            100,
-            200,
-            100,TimeUnit.SECONDS,
-            new ArrayBlockingQueue<>(1000),
-            new ThreadPoolExecutor.CallerRunsPolicy() // 任务满后不拒绝执行 每次 预警短信 争取全部送达
-    );
+    static int maximumPoolSize = 100;
+    static int coolPoolSize = 30;
+
+    /**
+     * 根据消息表 发送报警 多就下一轮发送即可
+     */
+    static RejectedExecutionHandler handler = new ThreadPoolExecutor.AbortPolicy();
+
+    private static final ThreadPoolExecutor poolExecutor = GlobalThreadManager.getInstance().allocPool(coolPoolSize, maximumPoolSize,
+            10 * 60 * 1000, 1000, "sugar-sms-alert-pool", true ,handler);
 
 
     // 防止重复发送
