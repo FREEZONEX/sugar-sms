@@ -5,10 +5,27 @@
         <groupId>org.niiish32x.sugar-sms</groupId>
         <artifactId>sugar-sms</artifactId>
         <version>0.0.1-SNAPSHOT</version>
+
+
     </parent>
     <artifactId>manager</artifactId>
     <name>manager</name>
     <url>http://maven.apache.org</url>
+
+
+    <properties>
+        <org.apache.commons.commons-pool2>2.11.1</org.apache.commons.commons-pool2>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-pool2</artifactId>
+            <version>${org.apache.commons.commons-pool2}</version>
+        </dependency>
+    </dependencies>
+
+
 
 
     <build>

@@ -1,9 +1,7 @@
 package org.niiish32x.sugarsms.app.proxy;
 
-import com.google.common.util.concurrent.RateLimiter;
 import lombok.extern.slf4j.Slf4j;
-import org.niiish32x.sugarsms.common.session.SessionPool;
-import org.springframework.beans.factory.InitializingBean;
+import org.niiish32x.sugarsms.manager.session.SessionPool;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -11,7 +9,6 @@ import org.springframework.stereotype.Component;
 import javax.mail.*;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
-import java.util.Properties;
 
 /**
  * EmailSenderProxy
