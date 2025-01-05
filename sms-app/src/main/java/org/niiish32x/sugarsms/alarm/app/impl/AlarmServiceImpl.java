@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 
 /**
  * AlarmServiceImpl
@@ -51,50 +52,7 @@ public class AlarmServiceImpl implements AlarmService {
         Map<String, String> queryMap = new HashMap<>();
 
         try {
-
-            if(StringUtils.isNotBlank(request.getInstanceEnName())){
-                queryMap.put("instanceEnName",request.getInstanceEnName());
-            }
-
-            if (StringUtils.isNotBlank(request.getInstanceDisplayName())) {
-                queryMap.put("instanceDisplayName",request.getAlarmDisplayName());
-            }
-
-            if (StringUtils.isNotBlank(request.getAttributeEnName())) {
-                queryMap.put("attributeEnName",request.getAttributeEnName());
-            }
-
-            if (StringUtils.isNotBlank(request.getAttributeComment())) {
-                queryMap.put("attributeComment",request.getAttributeComment());
-            }
-
-            if (StringUtils.isNotBlank(request.getAlarmEnName())) {
-                queryMap.put("alarmEnName",request.getAlarmEnName());
-            }
-
-            if (StringUtils.isNotBlank(request.getAlarmDisplayName())){
-                queryMap.put("alarmDisplayName",request.getAlarmDisplayName());
-            }
-
-            if (StringUtils.isNotBlank(request.getAlarmComment())){
-                queryMap.put("alarmComment",request.getAlarmComment());
-            }
-
-            if (StringUtils.isNotBlank(request.getAlarmType())){
-                queryMap.put("alarmType",request.getAlarmType());
-            }
-
-            if (request.getAlarmPriority() != null && request.getAlarmPriority() > 0 && request.getAlarmPriority() <= 10){
-                queryMap.put("alarmPriority",request.getAlarmPriority().toString());
-            }
-
-            if (request.getAlarmPriority() != null &&  request.getPage() > 0) {
-                queryMap.put("page",request.getPage().toString());
-            }
-
-            if (request.getPerPage() != null &&  request.getPerPage() > 0 && request.getPerPage() <= 500) {
-                queryMap.put("perPage",request.getPerPage().toString());
-            }
+            queryMap = request.buildQueryMap();
 
             HttpResponse response = requestManager.suposApiGet(ApiEnum.ALARM_API.value, headerMap, queryMap);
 
@@ -126,6 +84,8 @@ public class AlarmServiceImpl implements AlarmService {
             return Result.error("请求过程中发生异常");
         }
     }
+
+
 
     @Override
     public Result<Boolean> save(SavaAlarmCommand command) {
