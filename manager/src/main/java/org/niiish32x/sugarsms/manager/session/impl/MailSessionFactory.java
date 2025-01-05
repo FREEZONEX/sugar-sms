@@ -1,5 +1,6 @@
-package org.niiish32x.sugarsms.common.session;
+package org.niiish32x.sugarsms.manager.session.impl;
 
+import org.niiish32x.sugarsms.manager.session.SessionFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -15,7 +16,7 @@ import javax.mail.Session;
  */
 
 @Component
-public class MailSessionFactory {
+public class MailSessionFactory implements SessionFactory {
     private final Properties properties;
 
     @Value("${mail.smtp.host}")
