@@ -7,9 +7,11 @@ import org.niiish32x.sugarsms.api.person.dto.PersonDTO;
 import org.niiish32x.sugarsms.api.person.dto.PersonsResponse;
 import org.niiish32x.sugarsms.api.user.dto.SuposUserDTO;
 import org.niiish32x.sugarsms.app.service.PersonService;
-import org.niiish32x.sugarsms.app.service.UserService;
+import org.niiish32x.sugarsms.common.enums.UserRoleEnum;
+import org.niiish32x.sugarsms.user.app.UserService;
 import org.niiish32x.sugarsms.common.enums.CompanyEnum;
 import org.niiish32x.sugarsms.common.result.Result;
+import org.niiish32x.sugarsms.user.app.external.UserPageQueryRequest;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.stereotype.Component;
 
@@ -27,10 +29,6 @@ import java.util.stream.Collectors;
 
 @Component
 public class UserInfoCache implements InitializingBean {
-
-
-    private final String SUGAR_SMS = "sugarsms";
-
 
     @Resource
     UserService userService;
@@ -58,7 +56,14 @@ public class UserInfoCache implements InitializingBean {
 
     public void load() {
         try {
-            List<SuposUserDTO> userDTOS = userService.getUsersFromSupos(CompanyEnum.DEFAULT.value, SUGAR_SMS).getData();
+
+            UserPageQueryRequest userPageQueryRequest = UserPageQueryRequest.builder()
+                    .companyCode(CompanyEnum.DEFAULT.value)
+                    .roleCode(UserRoleEnum.SUGAR.value)
+                    .getAll(true)
+                    .build();
+            List<SuposUserDTO>  userDTOS = userService.getUsersFromSupos(userPageQueryRequest).getData();
+
 
             if (userDTOS == null || userDTOS.isEmpty()) {
                 return;

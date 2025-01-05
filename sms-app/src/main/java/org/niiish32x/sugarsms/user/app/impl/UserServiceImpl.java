@@ -1,4 +1,4 @@
-package org.niiish32x.sugarsms.app.service.impl;
+package org.niiish32x.sugarsms.user.app.impl;
 
 import cn.hutool.http.HttpResponse;
 
@@ -8,10 +8,12 @@ import org.niiish32x.sugarsms.api.person.dto.PersonDTO;
 import org.niiish32x.sugarsms.api.user.dto.*;
 import org.niiish32x.sugarsms.common.enums.ApiEnum;
 import org.niiish32x.sugarsms.app.service.PersonService;
-import org.niiish32x.sugarsms.app.service.UserService;
+import org.niiish32x.sugarsms.common.enums.CompanyEnum;
+import org.niiish32x.sugarsms.user.app.UserService;
 import org.niiish32x.sugarsms.app.tools.SuposUserMocker;
 import org.niiish32x.sugarsms.common.request.SuposRequestManager;
 import org.niiish32x.sugarsms.common.result.Result;
+import org.niiish32x.sugarsms.user.app.external.UserPageQueryRequest;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -29,11 +31,7 @@ import java.util.*;
 @Slf4j
 public class UserServiceImpl implements UserService {
 
-
-    private static final String COMPANY_CODE_KEY = "companyCode";
-    private static final String USER_API_PATH = ApiEnum.USER_API.value;
-
-
+    private static final String USER_API_PATH = ApiEnum.USER_PAGE_GET_API.value;
 
 
     @Resource
@@ -51,7 +49,7 @@ public class UserServiceImpl implements UserService {
 
         SuposUserAddRequest request = new SuposUserAddRequest(username,password);
 
-        HttpResponse response = requestManager.suposApiPost(ApiEnum.USER_API.value, headerMap, queryMap, JSON.toJSONString(request));
+        HttpResponse response = requestManager.suposApiPost(ApiEnum.USER_PAGE_GET_API.value, headerMap, queryMap, JSON.toJSONString(request));
 
         return response.isOk() ? Result.success(response) : Result.error(JSON.toJSONString(response));
     }
@@ -63,7 +61,7 @@ public class UserServiceImpl implements UserService {
 
         SuposUserAddRequest request = new SuposUserAddRequest(username,password,roleNameList);
 
-        HttpResponse response = requestManager.suposApiPost(ApiEnum.USER_API.value, headerMap, queryMap, JSON.toJSONString(request));
+        HttpResponse response = requestManager.suposApiPost(ApiEnum.USER_PAGE_GET_API.value, headerMap, queryMap, JSON.toJSONString(request));
 
         return response.isOk() ?  Result.success(response) : Result.error(JSON.toJSONString(response));
     }
@@ -87,66 +85,53 @@ public class UserServiceImpl implements UserService {
         }
 
 
-        return getUsersFromSupos("default_org_company");
+        return getUsersFromSupos(UserPageQueryRequest.builder()
+                .companyCode(CompanyEnum.DEFAULT.value)
+                .build());
     }
 
     @Override
-    public Result getUsersFromSupos(String company) {
-        if (company == null || company.trim().isEmpty()) {
-            return Result.error("Company code cannot be null or empty");
-        }
-
+    public Result<List<SuposUserDTO>>  getUsersFromSupos(UserPageQueryRequest request) {
         Map<String, String> headerMap = new HashMap<>();
         Map<String, String> queryMap = new HashMap<>();
-        queryMap.put(COMPANY_CODE_KEY, company);
+        queryMap = request.buildQueryMap();
+        if(!request.isGetAll()) {
+            try {
+                HttpResponse response = requestManager.suposApiGet(USER_API_PATH, headerMap, queryMap);
+                UsersResponse usersResponse = JSON.parseObject(response.body(), UsersResponse.class);
 
-        try {
-            HttpResponse response = requestManager.suposApiGet(USER_API_PATH, headerMap, queryMap);
-            UsersResponse usersResponse = JSON.parseObject(response.body(), UsersResponse.class);
-
-            if (response.isOk()) {
-                return Result.success(usersResponse);
-            } else {
-                log.error("Failed to fetch users from Supos: {}", response.body());
-                return Result.error(JSON.toJSONString(usersResponse));
+                if (response.isOk()) {
+                    return Result.success(usersResponse.getList());
+                } else {
+                    log.error("Failed to fetch users from Supos: {}", response.body());
+                    return Result.error(JSON.toJSONString(usersResponse));
+                }
+            } catch (Exception e) {
+                log.error("Error occurred while fetching users from Supos", e);
+                return Result.error("An error occurred while fetching users from Supos");
             }
-        } catch (Exception e) {
-            log.error("Error occurred while fetching users from Supos", e);
-            return Result.error("An error occurred while fetching users from Supos");
-        }
-    }
+        }else {
 
-    @Override
-    public Result<List<SuposUserDTO>>  getUsersFromSupos(String companyCode, String roleCode) {
-        Map<String, String> headerMap = new HashMap<>();
-        Map<String, String> queryMap = new HashMap<>();
-        UsersResponse res = new UsersResponse();
-        int pageIndex = 1;
-        while (true) {
-            queryMap.put("companyCode",companyCode);
-            queryMap.put("roleCode",roleCode);
-            queryMap.put("pageSize","500");
-            queryMap.put("pageIndex",String.valueOf(pageIndex));
-            HttpResponse response = requestManager.suposApiGet(ApiEnum.USER_API.value, headerMap, queryMap);
+            UsersResponse res = new UsersResponse();
+            int pageIndex = 1;
 
-            UsersResponse usersResponse = JSON.parseObject(response.body(), UsersResponse.class);
+            while (true) {
+                queryMap.put("pageSize","500");
+                queryMap.put("pageIndex",String.valueOf(pageIndex));
+                HttpResponse response = requestManager.suposApiGet(ApiEnum.USER_PAGE_GET_API.value, headerMap, queryMap);
 
-            if( usersResponse.getList() == null  || usersResponse.getList().isEmpty()){
-                break;
+                UsersResponse usersResponse = JSON.parseObject(response.body(), UsersResponse.class);
+
+                if( usersResponse.getList() == null  || usersResponse.getList().isEmpty()){
+                    break;
+                }
+                res.getList().addAll(usersResponse.getList());
+                pageIndex++;
             }
-            res.getList().addAll(usersResponse.getList());
-            pageIndex++;
+
+
+            return Result.success(res.getList());
         }
-
-
-        return Result.success(res.getList());
-    }
-
-    @Override
-    public Result<SuposUserDTO> role(String username, String role) {
-        Map<String, String> headerMap = new HashMap<>();
-        Map<String, String> queryMap = new HashMap<>();
-        return null;
     }
 
 
