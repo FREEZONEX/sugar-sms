@@ -12,7 +12,7 @@ import org.niiish32x.sugarsms.alarm.domain.repo.AlarmRepo;
 import org.niiish32x.sugarsms.alarm.persistence.converter.AlarmConverter;
 import org.niiish32x.sugarsms.api.alarm.dto.AlarmDTO;
 import org.niiish32x.sugarsms.api.alarm.dto.AlarmPageResponse;
-import org.niiish32x.sugarsms.app.enums.ApiEnum;
+import org.niiish32x.sugarsms.common.enums.ApiEnum;
 import org.niiish32x.sugarsms.alarm.app.AlarmService;
 import org.niiish32x.sugarsms.common.request.SuposRequestManager;
 import org.niiish32x.sugarsms.common.result.Result;
