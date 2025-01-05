@@ -136,33 +136,6 @@ public class UserServiceImpl implements UserService {
 
 
     @Override
-    public Result<List<SuposUserDTO>>  getUsersFromSupos(String companyCode, String roleCode) {
-        Map<String, String> headerMap = new HashMap<>();
-        Map<String, String> queryMap = new HashMap<>();
-        UsersResponse res = new UsersResponse();
-        int pageIndex = 1;
-        while (true) {
-            queryMap.put("companyCode",companyCode);
-            queryMap.put("roleCode",roleCode);
-            queryMap.put("pageSize","500");
-            queryMap.put("pageIndex",String.valueOf(pageIndex));
-            HttpResponse response = requestManager.suposApiGet(ApiEnum.USER_PAGE_GET_API.value, headerMap, queryMap);
-
-            UsersResponse usersResponse = JSON.parseObject(response.body(), UsersResponse.class);
-
-            if( usersResponse.getList() == null  || usersResponse.getList().isEmpty()){
-                break;
-            }
-            res.getList().addAll(usersResponse.getList());
-            pageIndex++;
-        }
-
-
-        return Result.success(res.getList());
-    }
-
-
-    @Override
     public Result<List<RoleSpecDTO>> getRoleListFromSupos(String companyCode) {
 
         // 验证输入参数

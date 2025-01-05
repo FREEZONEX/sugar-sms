@@ -29,11 +29,5 @@ public interface UserService {
     Result <List<SuposUserDTO>> getUsersFromSupos(UserPageQueryRequest request);
 
 
-
-    Result<List<SuposUserDTO>>  getUsersFromSupos(String companyCode, String roleCode);
-
-
-
-
     Result<List<RoleSpecDTO>> getRoleListFromSupos(String companyCode);
 }
