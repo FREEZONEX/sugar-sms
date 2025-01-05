@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.niiish32x.sugarsms.common.enums.CompanyEnum;
 
 import java.util.List;
 import java.util.TimeZone;
@@ -41,7 +42,7 @@ public class SuposUserAddRequest {
         this.password = password;
         this.timeZone = "GMT+0800";
         this.personCode = username;
-        this.companyCode = "default_org_company";
+        this.companyCode = CompanyEnum.DEFAULT.value;
         this.accountType =  0;
     }
 
@@ -50,7 +51,7 @@ public class SuposUserAddRequest {
         this.password = password;
         this.timeZone = "GMT+0800";
         this.personCode = username;
-        this.companyCode = "default_org_company";
+        this.companyCode = CompanyEnum.DEFAULT.value;
         this.accountType =  0;
         this.roloNameList = list;
     }

@@ -12,7 +12,6 @@ import org.niiish32x.sugarsms.alarm.app.assembler.AlarmAssembler;
 import org.niiish32x.sugarsms.alarm.app.command.SavaAlarmCommand;
 import org.niiish32x.sugarsms.alarm.app.external.AlarmRequest;
 import org.niiish32x.sugarsms.alarm.domain.repo.AlarmRepo;
-import org.niiish32x.sugarsms.alert.app.command.AlertCommand;
 import org.niiish32x.sugarsms.alert.app.command.ProductAlertRecordCommand;
 import org.niiish32x.sugarsms.alert.domain.entity.AlertRecordEO;
 import org.niiish32x.sugarsms.alert.domain.entity.MessageType;
@@ -23,7 +22,7 @@ import org.niiish32x.sugarsms.api.person.dto.PersonCodesDTO;
 import org.niiish32x.sugarsms.api.person.dto.PersonDTO;
 import org.niiish32x.sugarsms.api.user.dto.SuposUserDTO;
 import org.niiish32x.sugarsms.app.cache.UserInfoCache;
-import org.niiish32x.sugarsms.app.enums.ApiEnum;
+import org.niiish32x.sugarsms.common.enums.ApiEnum;
 import org.niiish32x.sugarsms.app.event.AlertEvent;
 import org.niiish32x.sugarsms.api.alert.dto.AlertResponse;
 import org.niiish32x.sugarsms.api.user.dto.RoleSpecDTO;
@@ -34,6 +33,8 @@ import org.niiish32x.sugarsms.alert.app.AlertService;
 import org.niiish32x.sugarsms.app.service.PersonService;
 import org.niiish32x.sugarsms.app.service.SendMessageService;
 import org.niiish32x.sugarsms.app.service.UserService;
+import org.niiish32x.sugarsms.common.enums.CompanyEnum;
+import org.niiish32x.sugarsms.common.enums.UserRoleEnum;
 import org.niiish32x.sugarsms.common.request.SuposRequestManager;
 import org.niiish32x.sugarsms.common.result.Result;
 import org.niiish32x.sugarsms.manager.thread.GlobalThreadManager;
@@ -57,11 +58,8 @@ import java.util.concurrent.*;
 @Slf4j
 public class AlertServiceImpl implements AlertService {
 
-    Set<String> acceptRoles = Sets.newHashSet("sugarsms","canesms","cogensms","chemicalsms","distillerysms","CLsms","mgmtsms","commonsms");
 
-    private final String DEFAULT_COMPANY_CODE = "default_org_company";
-    private final String SYSTEM_ROLE_CODE = "systemRole";
-    private final String NORMAL_ROLE_CODE = "normalRole";
+
 
     private final String SUGAR_ALERT_EMAIL_SUBJECT = "sugar-plant-alert";
 
@@ -248,7 +246,7 @@ public class AlertServiceImpl implements AlertService {
     @Override
     public Result<List<SuposUserDTO>>  getAlertUsers() {
         // 获取角色列表并处理异常
-        Result<List<RoleSpecDTO>> roleListFromSupos = userService.getRoleListFromSupos(DEFAULT_COMPANY_CODE);
+        Result<List<RoleSpecDTO>> roleListFromSupos = userService.getRoleListFromSupos(CompanyEnum.DEFAULT.value);
         if (!roleListFromSupos.isSuccess()) {
             return Result.error("Failed to get role list from Supos: " + roleListFromSupos.getMessage());
         }
@@ -261,11 +259,11 @@ public class AlertServiceImpl implements AlertService {
         List<SuposUserDTO> alertUsers = new ArrayList<>(roleSpecDTOList.size() * 10); // 预估用户数量
 
         for (RoleSpecDTO roleSpecDTO : roleSpecDTOList) {
-            if (roleSpecDTO == null || !acceptRoles.contains(roleSpecDTO.getRoleCode()) || roleSpecDTO.getValid() == 0) {
+            if (roleSpecDTO == null || !UserRoleEnum.isAlertRole(roleSpecDTO.getRoleCode()) || roleSpecDTO.getValid() == 0) {
                 continue;
             }
 
-            Result<List<SuposUserDTO>> usersFromSupos = userService.getUsersFromSupos(DEFAULT_COMPANY_CODE, roleSpecDTO.getRoleCode());
+            Result<List<SuposUserDTO>> usersFromSupos = userService.getUsersFromSupos(CompanyEnum.DEFAULT.value, roleSpecDTO.getRoleCode());
             if (!usersFromSupos.isSuccess()) {
                 return Result.error("Failed to get users from Supos: " + usersFromSupos.getMessage());
             }

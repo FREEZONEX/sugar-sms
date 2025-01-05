@@ -8,6 +8,7 @@ import org.niiish32x.sugarsms.api.person.dto.PersonsResponse;
 import org.niiish32x.sugarsms.api.user.dto.SuposUserDTO;
 import org.niiish32x.sugarsms.app.service.PersonService;
 import org.niiish32x.sugarsms.app.service.UserService;
+import org.niiish32x.sugarsms.common.enums.CompanyEnum;
 import org.niiish32x.sugarsms.common.result.Result;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.stereotype.Component;
@@ -28,7 +29,6 @@ import java.util.stream.Collectors;
 public class UserInfoCache implements InitializingBean {
 
 
-    private final String DEFAULT_ORG_COMPANY = "default_org_company";
     private final String SUGAR_SMS = "sugarsms";
 
 
@@ -58,7 +58,7 @@ public class UserInfoCache implements InitializingBean {
 
     public void load() {
         try {
-            List<SuposUserDTO> userDTOS = userService.getUsersFromSupos(DEFAULT_ORG_COMPANY, SUGAR_SMS).getData();
+            List<SuposUserDTO> userDTOS = userService.getUsersFromSupos(CompanyEnum.DEFAULT.value, SUGAR_SMS).getData();
 
             if (userDTOS == null || userDTOS.isEmpty()) {
                 return;

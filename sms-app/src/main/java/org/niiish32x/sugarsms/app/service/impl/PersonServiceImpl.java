@@ -6,7 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.niiish32x.sugarsms.api.person.dto.PersonCodesDTO;
 import org.niiish32x.sugarsms.api.person.dto.PersonDTO;
-import org.niiish32x.sugarsms.app.enums.ApiEnum;
+import org.niiish32x.sugarsms.common.enums.ApiEnum;
 import org.niiish32x.sugarsms.api.person.dto.PersonsResponse;
 import org.niiish32x.sugarsms.api.person.dto.SuposPersonAddRequest;
 import org.niiish32x.sugarsms.api.person.dto.SuposPersonUpdateRequest;

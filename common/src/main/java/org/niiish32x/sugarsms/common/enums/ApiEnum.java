@@ -1,4 +1,4 @@
-package org.niiish32x.sugarsms.app.enums;
+package org.niiish32x.sugarsms.common.enums;
 
 /**
  * ApiEnum
