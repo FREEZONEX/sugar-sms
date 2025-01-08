@@ -69,29 +69,6 @@ public class UserServiceImpl implements UserService {
         return response.isOk() ?  Result.success(response) : Result.error(JSON.toJSONString(response));
     }
 
-    @Override
-    public Result mockUser() {
-        for (int i = 1 ;  i <= 10 ;  i++){
-            List<PersonDTO> persons = personService.getPersonsFromSuposByPage(i).getData();
-
-            List<String> roleNameList = new ArrayList<>();
-            roleNameList.add("sugarsms");
-
-            for (PersonDTO personDTO : persons) {
-                String password = SuposUserMocker.generatePassword();
-                Result res = addSuposUser(personDTO.getName(), password, roleNameList);
-
-                if(!Objects.equals(res.getCode(), 200)) {
-                    return res;
-                }
-            }
-        }
-
-
-        return getUsersFromSupos(UserPageQueryRequest.builder()
-                .companyCode(CompanyEnum.DEFAULT.value)
-                .build());
-    }
 
     @Override
     public Result<List<SuposUserDTO>>  getUsersFromSupos(UserPageQueryRequest request) {
