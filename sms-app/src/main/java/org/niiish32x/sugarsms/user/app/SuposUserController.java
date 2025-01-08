@@ -45,13 +45,4 @@ public class SuposUserController {
         return  suposUserService.addSuposUser(username,password);
     }
 
-
-
-
-    @RequestMapping("/users/mock")
-    public Result mockCompanyUser() {
-
-        return  suposUserService.mockUser();
-    }
-
 }
