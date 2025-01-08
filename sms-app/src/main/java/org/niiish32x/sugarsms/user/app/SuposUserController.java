@@ -1,4 +1,4 @@
-package org.niiish32x.sugarsms.app.controller;
+package org.niiish32x.sugarsms.user.app;
 
 import org.apache.commons.lang3.StringUtils;
 import org.niiish32x.sugarsms.common.enums.CompanyEnum;

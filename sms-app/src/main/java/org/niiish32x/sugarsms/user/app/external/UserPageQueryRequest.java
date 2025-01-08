@@ -4,6 +4,7 @@ import lombok.*;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
 
@@ -45,7 +46,7 @@ public class UserPageQueryRequest {
     private boolean getAll = false;
 
     public Map<String, String> buildQueryMap() {
-        Map<String, String> queryMap = new java.util.HashMap<>();
+        Map<String, String> queryMap = new HashMap<>();
         addNonBlankField(queryMap, "keyword", this::getKeyword);
         addNonBlankField(queryMap, "pageIndex", () -> String.valueOf(this.pageIndex));
         addNonBlankField(queryMap, "pageSize", () -> String.valueOf(this.pageSize));
