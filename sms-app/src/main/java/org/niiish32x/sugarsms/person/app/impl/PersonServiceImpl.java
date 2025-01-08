@@ -36,7 +36,7 @@ public class PersonServiceImpl implements PersonService {
 
 
     @Override
-    public Result<List<PersonDTO>> personPageSearchFromSupos(PersonPageQueryRequest request) {
+    public Result<List<PersonDTO>> searchPeronFromSupos(PersonPageQueryRequest request) {
         Map<String, String> headerMap = new HashMap<>();
         Map<String, String> queryMap = new HashMap<>();
 

@@ -18,7 +18,13 @@ import java.util.List;
  */
 public interface PersonService {
 
-    Result<List<PersonDTO>> personPageSearchFromSupos(PersonPageQueryRequest request);
+
+    /**
+     * 分页查询 person 从supos
+     * @param request
+     * @return
+     */
+    Result<List<PersonDTO>> searchPeronFromSupos(PersonPageQueryRequest request);
 
 
     Result<PersonDTO>  getOnePersonByPersonCode(PersonCodesDTO personCodesDTO);

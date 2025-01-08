@@ -8,7 +8,6 @@ import org.niiish32x.sugarsms.person.app.external.PersonPageQueryRequest;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
-import java.util.List;
 
 /**
  * PersonController
@@ -45,6 +44,6 @@ public class SuposPersonController {
 
     @RequestMapping("/persons/test")
     public Result test(@RequestBody PersonPageQueryRequest request){
-        return personService.personPageSearchFromSupos(request);
+        return personService.searchPeronFromSupos(request);
     }
 }
