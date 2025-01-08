@@ -1,6 +1,6 @@
-package org.niiish32x.sugarsms.app.controller;
+package org.niiish32x.sugarsms.message.app;
 
-import org.niiish32x.sugarsms.app.service.SendMessageService;
+import org.niiish32x.sugarsms.message.app.SendMessageService;
 import org.niiish32x.sugarsms.common.result.Result;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;

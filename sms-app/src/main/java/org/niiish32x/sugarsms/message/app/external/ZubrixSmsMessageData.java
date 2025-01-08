@@ -1,4 +1,4 @@
-package org.niiish32x.sugarsms.app.external;
+package org.niiish32x.sugarsms.message.app.external;
 
 import com.alibaba.fastjson2.annotation.JSONField;
 import lombok.Data;

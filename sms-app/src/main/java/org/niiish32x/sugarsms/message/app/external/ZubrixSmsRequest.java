@@ -1,4 +1,4 @@
-package org.niiish32x.sugarsms.app.external;
+package org.niiish32x.sugarsms.message.app.external;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

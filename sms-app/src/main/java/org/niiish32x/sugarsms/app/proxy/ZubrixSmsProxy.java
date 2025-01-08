@@ -6,8 +6,8 @@ import com.alibaba.fastjson2.JSON;
 import lombok.extern.slf4j.Slf4j;
 
 import org.niiish32x.sugarsms.api.alert.dto.AlertInfoDTO;
-import org.niiish32x.sugarsms.app.external.ZubrixSmsResponse;
-import org.niiish32x.sugarsms.app.external.ZubrixSmsRequest;
+import org.niiish32x.sugarsms.message.app.external.ZubrixSmsResponse;
+import org.niiish32x.sugarsms.message.app.external.ZubrixSmsRequest;
 import org.niiish32x.sugarsms.common.utils.TimeUtil;
 import org.springframework.stereotype.Component;
 
