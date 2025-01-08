@@ -1,5 +1,6 @@
 package org.niiish32x.sugarsms.user.app.external;
 
+import com.google.common.base.Preconditions;
 import lombok.*;
 import org.apache.commons.lang3.StringUtils;
 
@@ -46,6 +47,9 @@ public class UserPageQueryRequest {
     private boolean getAll = false;
 
     public Map<String, String> buildQueryMap() {
+
+        Preconditions.checkArgument(StringUtils.isNotBlank(companyCode),"company 不能为空");
+
         Map<String, String> queryMap = new HashMap<>();
         addNonBlankField(queryMap, "keyword", this::getKeyword);
         addNonBlankField(queryMap, "pageIndex", () -> String.valueOf(this.pageIndex));

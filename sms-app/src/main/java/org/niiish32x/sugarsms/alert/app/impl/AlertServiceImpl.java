@@ -2,6 +2,7 @@ package org.niiish32x.sugarsms.alert.app.impl;
 
 import cn.hutool.http.HttpResponse;
 import com.alibaba.fastjson2.JSON;
+import com.google.common.base.Preconditions;
 import com.google.common.cache.Cache;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
@@ -318,6 +319,8 @@ public class AlertServiceImpl implements AlertService {
             }
 
             List<SuposUserDTO> userDTOS = alertUsersResult.getData();
+
+
 
             ArrayList<Long> alertsIds = Lists.newArrayList(alertInfoDTO.getId());
             // 批量查询已发送过的 alertId
