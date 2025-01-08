@@ -85,17 +85,6 @@ public class PersonServiceImpl implements PersonService {
         }
     }
 
-    @Override
-    public Result <List<PersonDTO>>  getPersonsFromSuposByPage(Integer currentPageSize) {
-        Map<String, String> headerMap = new HashMap<>();
-        Map<String, String> queryMap = new HashMap<>();
-        queryMap.put("current", String.valueOf(currentPageSize));
-        HttpResponse response = requestManager.suposApiGet(ApiEnum.PERSON_GET_API.value, headerMap, queryMap);
-
-        PersonsResponse personsResponse = JSON.parseObject(response.body(),PersonsResponse.class);
-
-        return Result.success(personsResponse.getList()) ;
-    }
 
     @Override
     public Result<PersonDTO>  getOnePersonByPersonCode(PersonCodesDTO personCodesDTO) {

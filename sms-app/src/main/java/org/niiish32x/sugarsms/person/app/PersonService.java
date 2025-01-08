@@ -20,7 +20,6 @@ public interface PersonService {
 
     Result<List<PersonDTO>> personPageSearchFromSupos(PersonPageQueryRequest request);
 
-    Result<List <PersonDTO>>  getPersonsFromSuposByPage(Integer currentPageSize);
 
     Result<PersonDTO>  getOnePersonByPersonCode(PersonCodesDTO personCodesDTO);
 

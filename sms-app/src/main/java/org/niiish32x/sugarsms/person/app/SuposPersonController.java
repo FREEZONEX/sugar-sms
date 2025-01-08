@@ -21,12 +21,6 @@ public class SuposPersonController {
     @Resource
     PersonService personService;
 
-    @RequestMapping("/persons/page")
-    public Result<List<PersonDTO>>  getAllPerson(@RequestParam Integer currentPageSize) {
-       return  personService.getPersonsFromSuposByPage(currentPageSize);
-//       return personService.getPersonsFromSuposByPage(1,10);
-    }
-
     @RequestMapping("/persons/personCodes")
     public Result<PersonDTO>  getOnePersonByPersonCode(@RequestBody PersonCodesDTO personCodesDTO){
         return personService.getOnePersonByPersonCode(personCodesDTO);
