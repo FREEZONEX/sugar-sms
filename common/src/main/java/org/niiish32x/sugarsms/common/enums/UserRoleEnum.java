@@ -32,7 +32,7 @@ public enum UserRoleEnum {
     }
 
 
-    public static final Set ALERT_ROLE_SETS = Sets.newHashSet(UserRoleEnum.SUGAR, UserRoleEnum.COGEN, UserRoleEnum.CHEMICAL, UserRoleEnum.DISTILLERY, UserRoleEnum.COUNTRY_LIQOUR);
+    public static final Set ALERT_ROLE_SETS = Sets.newHashSet(UserRoleEnum.SUGAR.value, UserRoleEnum.COGEN.value, UserRoleEnum.CHEMICAL.value, UserRoleEnum.DISTILLERY.value, UserRoleEnum.COUNTRY_LIQOUR.value);
 
     public static boolean isAlertRole(UserRoleEnum role) {
         return ALERT_ROLE_SETS.contains(role);
@@ -40,8 +40,8 @@ public enum UserRoleEnum {
 
     public static boolean isAlertRole(String role) {
         try {
-            UserRoleEnum roleEnum = UserRoleEnum.valueOf(role);
-            return ALERT_ROLE_SETS.contains(roleEnum);
+
+            return ALERT_ROLE_SETS.contains(role);
         } catch (IllegalArgumentException e) {
             return false;
         }
