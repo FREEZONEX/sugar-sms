@@ -1,4 +1,4 @@
-package org.niiish32x.sugarsms.api.user.dto;
+package org.niiish32x.sugarsms.user.app.external;
 
 import com.alibaba.fastjson2.annotation.JSONField;
 import lombok.Data;

@@ -15,6 +15,9 @@ public enum ApiEnum {
 
     PERSON_GET_API("/open-api/organization/v2/persons"),
 
+    // https://cloud.supos.com/open/APIs/detail?treeNodeCode=1767&openapiVersionCode=c3bc97b89d05458d8cef7ee0c810dd6b&apisManageCode=25353e4b1c614159ab4ffc3f9ddbb769&clickActive=supOS
+    PERSON_GET_API_V25("/open-api/supos/organization/v2.5/persons"),
+
     PERSON_BATCH_POST_API("/open-api/organization/v2/persons/bulk"),
 
     // 修改人员信息

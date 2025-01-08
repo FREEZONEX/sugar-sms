@@ -1,4 +1,4 @@
-package org.niiish32x.sugarsms.app.service.impl;
+package org.niiish32x.sugarsms.person.app.impl;
 
 import cn.hutool.http.HttpResponse;
 import com.alibaba.fastjson2.JSON;
@@ -10,10 +10,11 @@ import org.niiish32x.sugarsms.common.enums.ApiEnum;
 import org.niiish32x.sugarsms.api.person.dto.PersonsResponse;
 import org.niiish32x.sugarsms.api.person.dto.SuposPersonAddRequest;
 import org.niiish32x.sugarsms.api.person.dto.SuposPersonUpdateRequest;
-import org.niiish32x.sugarsms.app.service.PersonService;
+import org.niiish32x.sugarsms.person.app.PersonService;
 import org.niiish32x.sugarsms.app.tools.SuposUserMocker;
 import org.niiish32x.sugarsms.common.request.SuposRequestManager;
 import org.niiish32x.sugarsms.common.result.Result;
+import org.niiish32x.sugarsms.person.app.external.PersonPageQueryRequest;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -35,6 +36,56 @@ public class PersonServiceImpl implements PersonService {
 
 
     @Override
+    public Result<List<PersonDTO>> personPageSearchFromSupos(PersonPageQueryRequest request) {
+        Map<String, String> headerMap = new HashMap<>();
+        Map<String, String> queryMap = new HashMap<>();
+
+        try {
+            if (!request.isGetAll()) {
+                queryMap = request.buildQueryMap();
+                HttpResponse response = requestManager.suposApiGet(ApiEnum.PERSON_GET_API_V25.value, headerMap, queryMap);
+                PersonsResponse personsResponse = JSON.parseObject(response.body(), PersonsResponse.class);
+                if (response.isOk()) {
+                    return Result.success(personsResponse.getList());
+                } else {
+                    log.error("Failed to fetch persons from Supos: {}", response.body());
+                    return Result.error(JSON.toJSONString(personsResponse));
+                }
+            }else {
+                PersonsResponse res = new PersonsResponse();
+                res.setList(new ArrayList<>());
+                int pageNo = 1;
+
+                while (true) {
+                    queryMap = request.buildQueryMap();
+                    queryMap.put("pageNo",String.valueOf(pageNo));
+                    System.out.println(JSON.toJSONString(queryMap));
+                    HttpResponse response = requestManager.suposApiGet(ApiEnum.PERSON_GET_API_V25.value, headerMap, queryMap);
+                    PersonsResponse personsResponse = JSON.parseObject(response.body(), PersonsResponse.class);
+
+                    if (!response.isOk()) {
+                        log.error("Failed to fetch persons from Supos: {}", response.body());
+                        return Result.error(JSON.toJSONString(personsResponse));
+                    }
+
+                    if (personsResponse.getList() == null || personsResponse.getList().isEmpty()) {
+                        break;
+                    }
+
+                    res.getList().addAll(personsResponse.getList());
+                    pageNo++;
+                }
+
+                return Result.success(res.getList());
+            }
+
+        }catch (Exception e) {
+            log.error("Error occurred while fetching persons from Supos", e);
+            return Result.error("An error occurred while fetching persons from Supos");
+        }
+    }
+
+    @Override
     public Result <List<PersonDTO>>  getPersonsFromSuposByPage(Integer currentPageSize) {
         Map<String, String> headerMap = new HashMap<>();
         Map<String, String> queryMap = new HashMap<>();
@@ -44,55 +95,6 @@ public class PersonServiceImpl implements PersonService {
         PersonsResponse personsResponse = JSON.parseObject(response.body(),PersonsResponse.class);
 
         return Result.success(personsResponse.getList()) ;
-    }
-
-    @Override
-    public Result<List<PersonDTO>> getPersonsFromSuposByPage(Integer currentPage, Integer pageSize) {
-        // 输入验证
-        if (currentPage == null || currentPage < 1 || pageSize == null || pageSize < 1) {
-            return Result.error("Invalid page parameters");
-        }
-
-        Map<String, String> headerMap = new HashMap<>();
-        Map<String, String> queryMap = new HashMap<>();
-        queryMap.put("current", String.valueOf(currentPage));
-        // 默认20 最大值为500
-        queryMap.put("pageSize", String.valueOf(pageSize));
-
-        try {
-            HttpResponse response = requestManager.suposApiGet(ApiEnum.PERSON_GET_API.value, headerMap, queryMap);
-
-            // 检查 HTTP 响应状态码
-            if (!response.isOk() ) {
-                return Result.error("API request failed with status code: " );
-            }
-
-            PersonsResponse personsResponse = JSON.parseObject(response.body(), PersonsResponse.class);
-            return Result.success(personsResponse.getList());
-
-        } catch (Exception e) {
-            // 记录日志
-            log.error("Error occurred while fetching persons from Supos API", e);
-            return Result.error("Failed to fetch persons from Supos API");
-        }
-    }
-
-
-
-    @Override
-    public Result<List<PersonDTO>> getTotalPersons() {
-
-        List<PersonDTO> res = new ArrayList<>();
-
-        for (int i = 1 ;  ; i++) {
-            Result<List<PersonDTO>> personsRes = getPersonsFromSuposByPage(i);
-
-            if (personsRes.getData().isEmpty()) {
-                return Result.success(res);
-            }
-
-            res.addAll(personsRes.getData());
-        }
     }
 
     @Override
@@ -174,46 +176,4 @@ public class PersonServiceImpl implements PersonService {
 
         return Result.success("mock完成");
     }
-
-    @Override
-    public Result test() {
-        Result<List<PersonDTO>> result = getTotalPersons();
-
-        if(!result.isSuccess()) {
-            return Result.error("查找人员失败");
-        }
-
-        List<PersonDTO> personDTOS = result.getData();
-
-        if (personDTOS.isEmpty()) {
-            Result.error("persons 为空");
-        }
-
-        for (PersonDTO personDTO : personDTOS) {
-
-            if (personDTO.getName().equals("virtual_person")) {
-                continue;
-            }
-
-            if(StringUtils.equals(personDTO.getPhone(),"919747934600")){
-                log.info("person: {} {}",personDTO.getName(),personDTO.getPhone());
-                Result updatedRes = updatePerson(SuposPersonUpdateRequest.builder()
-                        .phone("xxx74xx34xxx")
-                        .name(personDTO.getName())
-                        .mainPositionCode(personDTO.getMainPosition().getCode())
-                        .status(personDTO.getStatus().getCode())
-                        .gender(personDTO.getGender().getCode())
-                        .code(personDTO.getCode())
-                        .build());
-
-                if (!updatedRes.isSuccess()) {
-                    log.error("{} : {}",JSON.toJSONString(personDTO),JSON.toJSONString(updatedRes));
-                }
-            }
-        }
-
-        return Result.success("全部更新成功");
-    }
-
-
 }

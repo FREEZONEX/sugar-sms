@@ -7,13 +7,16 @@ import lombok.extern.slf4j.Slf4j;
 import org.niiish32x.sugarsms.api.person.dto.PersonDTO;
 import org.niiish32x.sugarsms.api.user.dto.*;
 import org.niiish32x.sugarsms.common.enums.ApiEnum;
-import org.niiish32x.sugarsms.app.service.PersonService;
+import org.niiish32x.sugarsms.person.app.PersonService;
 import org.niiish32x.sugarsms.common.enums.CompanyEnum;
 import org.niiish32x.sugarsms.user.app.UserService;
 import org.niiish32x.sugarsms.app.tools.SuposUserMocker;
 import org.niiish32x.sugarsms.common.request.SuposRequestManager;
 import org.niiish32x.sugarsms.common.result.Result;
+import org.niiish32x.sugarsms.user.app.external.RolePageResponse;
+import org.niiish32x.sugarsms.user.app.external.SuposUserAddRequest;
 import org.niiish32x.sugarsms.user.app.external.UserPageQueryRequest;
+import org.niiish32x.sugarsms.user.app.external.UsersResponse;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;

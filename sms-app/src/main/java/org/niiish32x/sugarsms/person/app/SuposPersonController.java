@@ -1,10 +1,10 @@
-package org.niiish32x.sugarsms.app.controller;
+package org.niiish32x.sugarsms.person.app;
 
 import org.niiish32x.sugarsms.api.person.dto.PersonCodesDTO;
 import org.niiish32x.sugarsms.api.person.dto.PersonDTO;
 import org.niiish32x.sugarsms.api.person.dto.SuposPersonUpdateRequest;
-import org.niiish32x.sugarsms.app.service.PersonService;
 import org.niiish32x.sugarsms.common.result.Result;
+import org.niiish32x.sugarsms.person.app.external.PersonPageQueryRequest;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -50,7 +50,7 @@ public class SuposPersonController {
     }
 
     @RequestMapping("/persons/test")
-    public Result test(){
-        return personService.test();
+    public Result test(@RequestBody PersonPageQueryRequest request){
+        return personService.personPageSearchFromSupos(request);
     }
 }

@@ -6,7 +6,7 @@ import org.niiish32x.sugarsms.api.person.dto.PersonCodesDTO;
 import org.niiish32x.sugarsms.api.person.dto.PersonDTO;
 import org.niiish32x.sugarsms.api.person.dto.PersonsResponse;
 import org.niiish32x.sugarsms.api.user.dto.SuposUserDTO;
-import org.niiish32x.sugarsms.app.service.PersonService;
+import org.niiish32x.sugarsms.person.app.PersonService;
 import org.niiish32x.sugarsms.common.enums.UserRoleEnum;
 import org.niiish32x.sugarsms.user.app.UserService;
 import org.niiish32x.sugarsms.common.enums.CompanyEnum;
