@@ -29,7 +29,6 @@ public interface PersonService {
 
     Result<PersonDTO>  getOnePersonByPersonCode(PersonCodesDTO personCodesDTO);
 
-    Result <PersonsResponse>  getPersonsByPersonCodes(PersonCodesDTO personCodesDTOS);
 
     Result addPerson(String code);
 

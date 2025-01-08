@@ -102,22 +102,6 @@ public class PersonServiceImpl implements PersonService {
     }
 
     @Override
-    public Result <PersonsResponse> getPersonsByPersonCodes(PersonCodesDTO personCodesDTOS) {
-        Map<String, String> headerMap = new HashMap<>();
-        Map<String, String> queryMap = new HashMap<>();
-
-        String join = String.join(",", personCodesDTOS.getPersonCodes());
-        queryMap.put("personCodes", join);
-        queryMap.put("current","1");
-        queryMap.put("pageSize","500");
-
-        HttpResponse response = requestManager.suposApiGet(ApiEnum.PERSON_GET_API.value, headerMap, queryMap);
-
-        PersonsResponse dto = JSON.parseObject(response.body(), PersonsResponse.class);
-        return  response.isOk() ? Result.success(dto) : Result.error("获取person信息异常");
-    }
-
-    @Override
     public Result addPerson(String code) {
         Map<String, String> headerMap = new HashMap<>();
         Map<String, String> queryMap = new HashMap<>();
