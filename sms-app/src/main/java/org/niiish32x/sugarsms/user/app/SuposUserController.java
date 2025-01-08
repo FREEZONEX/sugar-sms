@@ -1,4 +1,4 @@
-package org.niiish32x.sugarsms.app.controller;
+package org.niiish32x.sugarsms.user.app;
 
 import org.apache.commons.lang3.StringUtils;
 import org.niiish32x.sugarsms.common.enums.CompanyEnum;
@@ -43,15 +43,6 @@ public class SuposUserController {
     @PostMapping("/users/add")
     public Result getCompanyUser(@RequestParam String username,@RequestParam String password) {
         return  suposUserService.addSuposUser(username,password);
-    }
-
-
-
-
-    @RequestMapping("/users/mock")
-    public Result mockCompanyUser() {
-
-        return  suposUserService.mockUser();
     }
 
 }

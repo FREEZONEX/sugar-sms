@@ -24,8 +24,6 @@ public interface UserService {
 
     Result addSuposUser(String username,String password,List<String> roleNameList);
 
-    Result mockUser();
-
     Result <List<SuposUserDTO>> getUsersFromSupos(UserPageQueryRequest request);
 
 
