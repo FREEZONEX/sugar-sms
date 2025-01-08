@@ -1,10 +1,7 @@
-package org.niiish32x.sugarsms.app.service;
+package org.niiish32x.sugarsms.message.app;
 
-import org.niiish32x.sugarsms.app.external.ZubrixSmsResponse;
+import org.niiish32x.sugarsms.message.app.external.ZubrixSmsResponse;
 import org.niiish32x.sugarsms.common.result.Result;
-
-import java.util.List;
-import java.util.Map;
 
 /**
  * SendMessageService

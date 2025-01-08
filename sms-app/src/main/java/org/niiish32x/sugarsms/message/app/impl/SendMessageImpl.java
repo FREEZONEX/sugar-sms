@@ -1,14 +1,13 @@
-package org.niiish32x.sugarsms.app.service.impl;
+package org.niiish32x.sugarsms.message.app.impl;
 
 import com.alibaba.fastjson2.JSON;
 import com.google.common.util.concurrent.RateLimiter;
 import lombok.extern.slf4j.Slf4j;
-import org.niiish32x.sugarsms.app.external.ZubrixSmsResponse;
+import org.niiish32x.sugarsms.message.app.external.ZubrixSmsResponse;
 import org.niiish32x.sugarsms.app.proxy.EmailSenderProxy;
 import org.niiish32x.sugarsms.app.proxy.ZubrixSmsProxy;
-import org.niiish32x.sugarsms.app.service.SendMessageService;
+import org.niiish32x.sugarsms.message.app.SendMessageService;
 import org.niiish32x.sugarsms.common.result.Result;
-import org.niiish32x.sugarsms.common.result.ResultCode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

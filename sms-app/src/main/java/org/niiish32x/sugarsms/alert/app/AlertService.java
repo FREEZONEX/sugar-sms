@@ -1,11 +1,9 @@
 package org.niiish32x.sugarsms.alert.app;
 
-import org.niiish32x.sugarsms.alert.app.command.AlertCommand;
 import org.niiish32x.sugarsms.alert.app.command.ProductAlertRecordCommand;
 import org.niiish32x.sugarsms.alert.domain.entity.AlertRecordEO;
 import org.niiish32x.sugarsms.api.alert.dto.AlertInfoDTO;
 import org.niiish32x.sugarsms.api.user.dto.SuposUserDTO;
-import org.niiish32x.sugarsms.app.external.ZubrixSmsResponse;
 import org.niiish32x.sugarsms.common.result.Result;
 
 import java.util.List;
