@@ -30,7 +30,7 @@ public interface AlertService {
 
      Boolean cleanAlertPastDays(Integer days);
 
-     void consumeAlertEvent();
+     void sendAlert();
 
      /**
       * 生成 初始化 需要发送的报警消息

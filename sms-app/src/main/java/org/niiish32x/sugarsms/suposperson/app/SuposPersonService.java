@@ -38,7 +38,6 @@ public interface SuposPersonService {
 
     Result updatePerson(SuposPersonUpdateRequest request);
 
-
     Result savePerson(SavePersonCommand command);
 
 

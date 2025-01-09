@@ -4,13 +4,15 @@ import cn.hutool.http.HttpResponse;
 import com.alibaba.fastjson2.JSON;
 import com.google.common.base.Preconditions;
 import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.niiish32x.sugarsms.alarm.app.AlarmService;
 import org.niiish32x.sugarsms.alarm.app.assembler.AlarmAssembler;
-import org.niiish32x.sugarsms.alarm.app.command.SavaAlarmCommand;
+import org.niiish32x.sugarsms.alarm.app.command.SaveAlarmCommand;
 import org.niiish32x.sugarsms.alarm.app.external.AlarmRequest;
+import org.niiish32x.sugarsms.alarm.domain.entity.AlarmEO;
 import org.niiish32x.sugarsms.alarm.domain.repo.AlarmRepo;
 import org.niiish32x.sugarsms.alert.app.command.ProductAlertRecordCommand;
 import org.niiish32x.sugarsms.alert.domain.entity.AlertRecordEO;
@@ -18,20 +20,23 @@ import org.niiish32x.sugarsms.alert.domain.entity.MessageType;
 import org.niiish32x.sugarsms.alert.domain.repo.AlertRecordRepo;
 import org.niiish32x.sugarsms.api.alarm.dto.AlarmDTO;
 import org.niiish32x.sugarsms.api.alert.dto.AlertInfoDTO;
-import org.niiish32x.sugarsms.api.person.dto.PersonCodesDTO;
 import org.niiish32x.sugarsms.api.person.dto.SuposPersonDTO;
 import org.niiish32x.sugarsms.api.user.dto.SuposUserDTO;
-import org.niiish32x.sugarsms.app.cache.UserInfoCache;
 import org.niiish32x.sugarsms.common.enums.ApiEnum;
 import org.niiish32x.sugarsms.app.event.AlertEvent;
 import org.niiish32x.sugarsms.api.alert.dto.AlertResponse;
 import org.niiish32x.sugarsms.api.user.dto.RoleSpecDTO;
+import org.niiish32x.sugarsms.common.utils.Retrys;
 import org.niiish32x.sugarsms.message.app.external.ZubrixSmsResponse;
 import org.niiish32x.sugarsms.app.proxy.ZubrixSmsProxy;
 import org.niiish32x.sugarsms.app.queue.AlertMessageQueue;
 import org.niiish32x.sugarsms.alert.app.AlertService;
 import org.niiish32x.sugarsms.suposperson.app.SuposPersonService;
 import org.niiish32x.sugarsms.message.app.SendMessageService;
+import org.niiish32x.sugarsms.suposperson.app.command.SavePersonCommand;
+import org.niiish32x.sugarsms.suposperson.app.external.PersonPageQueryRequest;
+import org.niiish32x.sugarsms.suposperson.domain.entity.SuposPersonEO;
+import org.niiish32x.sugarsms.suposperson.domain.repo.SuposPersonRepo;
 import org.niiish32x.sugarsms.user.app.UserService;
 import org.niiish32x.sugarsms.common.enums.CompanyEnum;
 import org.niiish32x.sugarsms.common.enums.UserRoleEnum;
@@ -59,13 +64,10 @@ import java.util.concurrent.*;
 @Slf4j
 public class AlertServiceImpl implements AlertService {
 
-
-
-
     private final String SUGAR_ALERT_EMAIL_SUBJECT = "sugar-plant-alert";
 
-    static int maximumPoolSize = 100;
-    static int coolPoolSize = 30;
+    static int maximumPoolSize = 300;
+    static int coolPoolSize = 100;
 
     /**
      * 根据消息表 发送报警 多就下一轮发送即可
@@ -73,17 +75,34 @@ public class AlertServiceImpl implements AlertService {
     static RejectedExecutionHandler handler = new ThreadPoolExecutor.AbortPolicy();
 
     private static final ThreadPoolExecutor poolExecutor = GlobalThreadManager.getInstance().allocPool(coolPoolSize, maximumPoolSize,
-            10 * 60 * 1000, 1000, "sugar-sms-alert-pool", true ,handler);
+            10 * 60 * 1000, 3000, "sugar-sms-alert-pool", true ,handler);
 
 
-    // 防止重复发送
-    static  ConcurrentHashMap <String,String> visited = new ConcurrentHashMap<>();
-    // sms + 消息ID + phone
-    private final String PHONE_KEY = "sms%s%s";
+    private static final Cache<String,AlarmEO> ALARM_CACHE = CacheBuilder.newBuilder()
+            .expireAfterWrite(30, TimeUnit.SECONDS)
+            .initialCapacity(10)
+            .maximumSize(30)
+            .build();
 
-    // email + 消息ID + email
-    private final String EMAIL_KEY = "email%s%s";
+    /**
+     * 缓存报警用户信息 30秒后 过期
+     */
+    private static final Cache<String,List<SuposUserDTO>> USER_CACHE = CacheBuilder.newBuilder()
+            .expireAfterWrite(30, TimeUnit.SECONDS)
+            .initialCapacity(10)
+            .maximumSize(30)
+            .build();
 
+    /**
+     * 缓存人员信息
+     * PersonCode --- SuposPersonEO
+     * 写入后保存 5分钟
+     */
+    private static final Cache<String,SuposPersonEO> PERSON_CACHE = CacheBuilder.newBuilder()
+            .expireAfterWrite(5, TimeUnit.MINUTES)
+            .initialCapacity(200)
+            .maximumSize(1000)
+            .build();
 
     AlarmAssembler alarmAssembler = AlarmAssembler.INSTANCE;
 
@@ -111,9 +130,6 @@ public class AlertServiceImpl implements AlertService {
     UserService userService;
 
     @Resource
-    UserInfoCache userInfoCache;
-
-    @Resource
     SuposPersonService suposPersonService;
 
     @Resource
@@ -122,6 +138,9 @@ public class AlertServiceImpl implements AlertService {
 
     @Resource
     SendMessageService sendMessageService;
+
+    @Autowired
+    SuposPersonRepo suposPersonRepo;
 
     @Override
     public List<AlertRecordEO> getAllAlertRecords() {
@@ -181,71 +200,20 @@ public class AlertServiceImpl implements AlertService {
     }
 
 
-    private String getContactInfo(String personCode, Cache<String, String> cache) {
-        String contactInfo = cache.getIfPresent(personCode);
-        if (contactInfo == null) {
-            try {
-                SuposPersonDTO person = suposPersonService.getOnePersonByPersonCode(
-                        PersonCodesDTO.builder()
-                                .personCodes(Arrays.asList(personCode))
-                                .build()
-                ).getData();
-                contactInfo = person.getPhone(); // 根据实际需求选择 phone 或 email
-                cache.put(personCode, contactInfo);
-            } catch (Exception e) {
-                log.error("获取用户联系方式失败: {}", e.getMessage(), e);
-            }
-        }
-        return contactInfo;
-    }
-
-    private boolean sendNotification(String contactInfo, AlertInfoDTO alertInfoDTO, MessageType messageType, String text, String username) {
-        if (StringUtils.isBlank(contactInfo)) {
-            return true; // 如果联系方式为空，直接返回成功，避免后续逻辑
-        }
-
-        String key = String.format(messageType == MessageType.SMS ? PHONE_KEY : EMAIL_KEY, alertInfoDTO.getId(), contactInfo);
-        if (visited.containsKey(key)) {
-            log.info("alert 已经{}发送过无需再次通知 {} -> {}", messageType, alertInfoDTO.getId(), contactInfo);
-            return true;
-        }
-
-        boolean sendSuccess = false;
-        try {
-            switch (messageType) {
-                case SMS:
-                    Result<ZubrixSmsResponse> smsResp = sendMessageService.sendOneZubrixSmsMessage(contactInfo, text);
-                    sendSuccess = smsResp.isSuccess();
-                    break;
-                case EMAIL:
-                    sendSuccess = sendMessageService.sendEmail(contactInfo, SUGAR_ALERT_EMAIL_SUBJECT, text);
-                    break;
-            }
-
-            if (sendSuccess) {
-                visited.put(key, "1");
-            }
-        } catch (Exception e) {
-            log.error("发送{}通知失败: {}", messageType, e.getMessage(), e);
-        }
-
-        AlertRecordEO recordEO = buildAlertRecordEO(alertInfoDTO, username, messageType == MessageType.SMS ? contactInfo : null, messageType == MessageType.EMAIL ? contactInfo : null, messageType, text, sendSuccess);
-        boolean saveRes = alertRecordRepo.save(recordEO);
-
-        if (!saveRes) {
-            log.error("{} alert: {} {} 数据库 落盘失败", messageType, recordEO.getAlertId(), recordEO.getPhone() != null ? recordEO.getPhone() : recordEO.getEmail());
-            return false;
-        }
-
-        return true;
-    }
-
     /**
      * 获取所有需要 接收到 通知统治的User
      * @return
      */
     @Override
     public Result<List<SuposUserDTO>>  getAlertUsers() {
+        List<SuposUserDTO> alertUsers = null;
+
+        alertUsers = USER_CACHE.getIfPresent("alert");
+
+        if (alertUsers != null) {
+            return Result.success(alertUsers);
+        }
+
         // 获取角色列表并处理异常
         Result<List<RoleSpecDTO>> roleListFromSupos = userService.getRoleListFromSupos(CompanyEnum.DEFAULT.value);
         if (!roleListFromSupos.isSuccess()) {
@@ -257,7 +225,7 @@ public class AlertServiceImpl implements AlertService {
             return Result.success(new ArrayList<>());
         }
 
-        List<SuposUserDTO> alertUsers = new ArrayList<>(roleSpecDTOList.size() * 10); // 预估用户数量
+        alertUsers = new ArrayList<>(roleSpecDTOList.size() * 10); // 预估用户数量
 
         for (RoleSpecDTO roleSpecDTO : roleSpecDTOList) {
             if (roleSpecDTO == null || !UserRoleEnum.isAlertRole(roleSpecDTO.getRoleCode()) || roleSpecDTO.getValid() == 0) {
@@ -275,6 +243,8 @@ public class AlertServiceImpl implements AlertService {
             }
             alertUsers.addAll(usersFromSupos.getData());
         }
+
+        USER_CACHE.put("alert",alertUsers);
 
         return Result.success(alertUsers);
     }
@@ -294,14 +264,13 @@ public class AlertServiceImpl implements AlertService {
     }
 
     @Override
-    public void consumeAlertEvent() {
+    public void sendAlert() {
         log.info("开始 发送alert 报警");
 
         List<AlertRecordEO> failRecords = alertRecordRepo.findFailRecords();
 
         for (AlertRecordEO alertRecordEO : failRecords) {
             CompletableFuture.supplyAsync(()-> alert(alertRecordEO), poolExecutor);
-//            alert(alertRecordEO);
         }
     }
 
@@ -320,8 +289,6 @@ public class AlertServiceImpl implements AlertService {
 
             List<SuposUserDTO> userDTOS = alertUsersResult.getData();
 
-
-
             ArrayList<Long> alertsIds = Lists.newArrayList(alertInfoDTO.getId());
             // 批量查询已发送过的 alertId
             List<Long> existingAlertIds = alertRecordRepo.findExistingAlertIds(alertsIds);
@@ -331,46 +298,54 @@ public class AlertServiceImpl implements AlertService {
                 return Result.success();
             }
 
-            Result<List<AlarmDTO>> alarmsFromSupos = alarmService.getAlarmsFromSupos(
-                    AlarmRequest.builder()
-                            .attributeEnName(alertInfoDTO.getSourcePropertyName())
-                            .build());
+            AlarmEO alarmEO = null;
 
-            if (!alarmsFromSupos.isSuccess() || alarmsFromSupos.getData() == null || alarmsFromSupos.getData().isEmpty()) {
-                log.error("获取alarmsFromSupos 报警详情信息异常或为空: {}", alarmsFromSupos.getMessage());
-                return Result.error(alarmsFromSupos.getMessage());
+            alarmEO = ALARM_CACHE.getIfPresent(alertInfoDTO.getSourcePropertyName());
+
+            if (alarmEO == null) {
+                alarmEO = alarmRepo.findWithAttributeEnName(alertInfoDTO.getSourcePropertyName());
             }
 
-            AlarmDTO alarmDTO = alarmsFromSupos.getData().get(0);
+            if (alarmEO == null) {
+                Result<List<AlarmDTO>> alarmsFromSupos = alarmService.getAlarmsFromSupos(
+                        AlarmRequest.builder()
+                                .attributeEnName(alertInfoDTO.getSourcePropertyName())
+                                .build());
 
-            SavaAlarmCommand savaAlarmCommand = new SavaAlarmCommand(alarmDTO);
-            Result<Boolean> saveResult = alarmService.save(savaAlarmCommand);
-            if (!saveResult.isSuccess()) {
-                log.error("保存报警信息失败: {}", saveResult.getMessage());
-                return Result.error(saveResult.getMessage());
+                if (!alarmsFromSupos.isSuccess() || alarmsFromSupos.getData() == null || alarmsFromSupos.getData().isEmpty()) {
+                    log.error("获取alarmsFromSupos 报警详情信息异常或为空: {}", alarmsFromSupos.getMessage());
+                    return Result.error(alarmsFromSupos.getMessage());
+                }
+
+                AlarmDTO alarmDTO = alarmsFromSupos.getData().get(0);
+                SaveAlarmCommand saveAlarmCommand = new SaveAlarmCommand(alarmDTO);
+                Result<Boolean> saveRes = alarmService.save(saveAlarmCommand);
+
+                if (!saveRes.isSuccess()) {
+                    log.error("保存alarmsFromSupos 报警详情信息异常: {}", saveRes.getMessage());
+                    return Result.error(saveRes.getMessage());
+                }
+
+                alarmEO = alarmRepo.findWithAttributeEnName(alertInfoDTO.getSourcePropertyName());
             }
 
-            String text = zubrixSmsProxy.formatTextContent(alertInfoDTO, alarmDTO.getLimitValue());
+            ALARM_CACHE.put(alertInfoDTO.getSourcePropertyName(), alarmEO);
+
+            String text = zubrixSmsProxy.formatTextContent(alertInfoDTO, alarmEO.getLimitValue());
 
             List<AlertRecordEO> alertRecords = new ArrayList<>();
             for (SuposUserDTO userDTO : userDTOS) {
-                String phoneNumber = getUserPhone(userDTO);
-                String email = getUserEmail(userDTO);
 
-                // 验证手机号
-                if (StringUtils.isBlank(phoneNumber) || !isValidPhoneNumber(phoneNumber)) {
-                    log.warn("用户 {} 的手机号无效: {}", userDTO.getUsername(), phoneNumber);
-                }else  {
-                    alertRecords.add(buildAlertRecordEO(alertInfoDTO, userDTO.getUsername(), phoneNumber, null, MessageType.SMS, text, false));
-                }
-
-                // 验证邮箱
-                if (StringUtils.isBlank(email) || !isValidEmail(email)) {
-                    log.warn("用户 {} 的邮箱无效: {}", userDTO.getUsername(), email);
-                }else {
-                    alertRecords.add(buildAlertRecordEO(alertInfoDTO, userDTO.getUsername(), null, email, MessageType.EMAIL, text, false));
-                }
+                CompletableFuture.runAsync(()-> {
+                    try {
+                        // 重试3次
+                        Retrys.doWithRetry(()->prepareAlertRecord(userDTO, alertRecords, alertInfoDTO, text), r-> r,3,1000L);
+                    } catch (Throwable e) {
+                        throw new RuntimeException(e);
+                    }
+                },poolExecutor);
             }
+            CompletableFuture.allOf();
 
             alertRecordRepo.save(alertRecords);
 
@@ -378,39 +353,68 @@ public class AlertServiceImpl implements AlertService {
         } catch (Exception e) {
             log.error("处理告警记录时发生异常: {}", e.getMessage(), e);
             return Result.error("处理告警记录时发生异常: " + e.getMessage());
+        } catch (Throwable e) {
+            throw new RuntimeException(e);
         }
     }
 
-    private String getUserEmail (SuposUserDTO userDTO) {
-        String email = UserInfoCache.nameToEmail.getIfPresent(userDTO.getPersonCode());
+    private boolean prepareAlertRecord(SuposUserDTO userDTO, List<AlertRecordEO> alertRecords, AlertInfoDTO alertInfoDTO, String text) {
+        String phoneNumber = null;
+        String email = null;
 
-        if (email == null) {
-            SuposPersonDTO person = suposPersonService.getOnePersonByPersonCode(
-                    PersonCodesDTO.builder()
-                            .personCodes(Arrays.asList(userDTO.getPersonCode()))
-                            .build()
-            ).getData();
-            email = person.getEmail();
-            userInfoCache.load();
+        SuposPersonEO personEO = null;
+
+        personEO = PERSON_CACHE.getIfPresent(userDTO.getPersonCode());
+
+        if (personEO == null || personEO.getUser().getModifyTime() != userDTO.getModifyTime()) {
+            personEO = suposPersonRepo.findByCode(userDTO.getPersonCode());
         }
 
-        return email;
-    }
+        if (personEO == null || personEO.getUser().getModifyTime() != userDTO.getModifyTime() ) {
+            synchronized (this){
+                if (personEO == null) {
+                    PersonPageQueryRequest request = PersonPageQueryRequest.builder()
+                            .companyCode(CompanyEnum.DEFAULT.value)
+                            .hasBoundUser(true)
+                            .username(userDTO.getUsername())
+                            .build();
+                    Result<List<SuposPersonDTO>> peronFromSupos = suposPersonService.searchPeronFromSupos(request);
 
-    private String getUserPhone (SuposUserDTO userDTO) {
-        String phoneNumber = userInfoCache.nameToPhone.getIfPresent(userDTO.getPersonCode());
+                    if (!peronFromSupos.isSuccess() || peronFromSupos.getData() == null || peronFromSupos.getData().isEmpty()) {
+                        log.error("获取用户信息失败: {}", userDTO.getPersonCode());
+                        return true;
+                    }
 
-        if(phoneNumber == null) {
-            SuposPersonDTO person = suposPersonService.getOnePersonByPersonCode(
-                    PersonCodesDTO.builder()
-                            .personCodes(Arrays.asList(userDTO.getPersonCode()))
-                            .build()
-            ).getData();
-            phoneNumber = person.getPhone();
-            userInfoCache.load();
+                    SavePersonCommand savePersonCommand = new SavePersonCommand(peronFromSupos.getData().get(0));
+                    Result savePerson = suposPersonService.savePerson(savePersonCommand);
+                    if (!savePerson.isSuccess()) {
+                        log.error("保存用户信息失败: {}", savePerson.getMessage());
+                        return true;
+                    }
+
+
+                }
+            }
+
+            personEO = suposPersonRepo.findByCode(userDTO.getPersonCode());
         }
 
-        return phoneNumber;
+        Preconditions.checkArgument(personEO != null, "personEO is null " + userDTO.getUsername());
+        PERSON_CACHE.put(userDTO.getPersonCode(), personEO);
+        phoneNumber = personEO.getPhone() == null ? null : personEO.getPhone().trim();
+        email =  personEO.getEmail() == null ? null : personEO.getEmail().trim();
+
+        // 验证手机号
+        if ( StringUtils.isNotBlank(phoneNumber) && isValidPhoneNumber(Objects.requireNonNull(phoneNumber))) {
+            alertRecords.add(buildAlertRecordEO(alertInfoDTO, userDTO.getUsername(), phoneNumber, null, MessageType.SMS, text, false));
+        }
+
+        // 验证邮箱
+        if (StringUtils.isNotBlank(email) && isValidEmail(email)) {
+            alertRecords.add(buildAlertRecordEO(alertInfoDTO, userDTO.getUsername(), null, email, MessageType.EMAIL, text, false));
+        }
+
+        return false;
     }
 
 

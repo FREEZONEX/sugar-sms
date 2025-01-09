@@ -24,6 +24,6 @@ public class AlertEventListener {
     @EventListener
     public void receiveEvent(AlertEvent alertEvent) {
         log.info("接收到 报警事件");
-        alertService.consumeAlertEvent();
+        alertService.sendAlert();
     }
 }

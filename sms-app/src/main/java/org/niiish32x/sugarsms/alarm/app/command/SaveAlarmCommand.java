@@ -5,8 +5,6 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.niiish32x.sugarsms.api.alarm.dto.AlarmDTO;
 
-import java.util.List;
-
 /**
  * SavaAlarmCommand
  *
@@ -18,10 +16,10 @@ import java.util.List;
 
 @Getter
 @Slf4j
-public class SavaAlarmCommand {
+public class SaveAlarmCommand {
     private final AlarmDTO alarmDTO;
 
-    public SavaAlarmCommand(AlarmDTO alarmDTO){
+    public SaveAlarmCommand(AlarmDTO alarmDTO){
         Preconditions.checkArgument(alarmDTO != null, "alarmDTO cannot be null");
         this.alarmDTO = alarmDTO;
         log.debug("SaveAlarmCommand initialized with alarmDTO: {}", alarmDTO);

@@ -3,10 +3,10 @@ package org.niiish32x.sugarsms.alarm.app.impl;
 import cn.hutool.http.HttpResponse;
 import com.alibaba.fastjson2.JSON;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.niiish32x.sugarsms.alarm.app.assembler.AlarmAssembler;
-import org.niiish32x.sugarsms.alarm.app.command.SavaAlarmCommand;
+import org.niiish32x.sugarsms.alarm.app.command.SaveAlarmCommand;
 import org.niiish32x.sugarsms.alarm.app.external.AlarmRequest;
+import org.niiish32x.sugarsms.alarm.app.query.AlarmQuery;
 import org.niiish32x.sugarsms.alarm.domain.entity.AlarmEO;
 import org.niiish32x.sugarsms.alarm.domain.repo.AlarmRepo;
 import org.niiish32x.sugarsms.alarm.persistence.converter.AlarmConverter;
@@ -24,7 +24,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Supplier;
 
 /**
  * AlarmServiceImpl
@@ -88,13 +87,21 @@ public class AlarmServiceImpl implements AlarmService {
 
 
     @Override
-    public Result<Boolean> save(SavaAlarmCommand command) {
+    public Result<Boolean> save(SaveAlarmCommand command) {
 
         AlarmDTO alarmDTO = command.getAlarmDTO();
         AlarmEO alarmEO = alarmAssembler.alarmDTO2EO(alarmDTO);
         boolean res = alarmRepo.saveOrUpdate(alarmEO);
         return res ? Result.success(true) : Result.error("保存失败");
     }
+
+    @Override
+    public Result<AlarmDTO> getAlarm(AlarmQuery query) {
+        AlarmEO alarmEO = alarmRepo.findWithAttributeEnName(query.getAttributeEnName());
+        AlarmDTO alarmDTO = alarmAssembler.alarmEO2DTO(alarmEO);
+        return Result.success(alarmDTO);
+    }
+
 
     @Override
     public Result<Boolean> syncAlarmFromSupos() {
@@ -118,7 +125,7 @@ public class AlarmServiceImpl implements AlarmService {
 
         for (AlarmDTO alarmDTO : alarmDTOS) {
 
-            SavaAlarmCommand command = new SavaAlarmCommand(alarmDTO);
+            SaveAlarmCommand command = new SaveAlarmCommand(alarmDTO);
             Result<Boolean> res = save(command);
 
             // 检查保存结果

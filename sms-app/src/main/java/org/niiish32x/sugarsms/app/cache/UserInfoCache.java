@@ -51,7 +51,7 @@ public class UserInfoCache implements InitializingBean {
      */
     @Override
     public void afterPropertiesSet() throws Exception {
-        load();
+//        load();
     }
 
 
