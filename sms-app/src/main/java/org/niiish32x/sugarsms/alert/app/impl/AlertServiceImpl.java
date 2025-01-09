@@ -32,6 +32,10 @@ import org.niiish32x.sugarsms.app.queue.AlertMessageQueue;
 import org.niiish32x.sugarsms.alert.app.AlertService;
 import org.niiish32x.sugarsms.suposperson.app.SuposPersonService;
 import org.niiish32x.sugarsms.message.app.SendMessageService;
+import org.niiish32x.sugarsms.suposperson.app.command.SavePersonCommand;
+import org.niiish32x.sugarsms.suposperson.app.external.PersonPageQueryRequest;
+import org.niiish32x.sugarsms.suposperson.domain.entity.SuposPersonEO;
+import org.niiish32x.sugarsms.suposperson.domain.repo.SuposPersonRepo;
 import org.niiish32x.sugarsms.user.app.UserService;
 import org.niiish32x.sugarsms.common.enums.CompanyEnum;
 import org.niiish32x.sugarsms.common.enums.UserRoleEnum;
@@ -47,6 +51,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * AlertServiceImpl
@@ -122,6 +127,9 @@ public class AlertServiceImpl implements AlertService {
 
     @Resource
     SendMessageService sendMessageService;
+
+    @Autowired
+    SuposPersonRepo suposPersonRepo;
 
     @Override
     public List<AlertRecordEO> getAllAlertRecords() {
@@ -354,8 +362,41 @@ public class AlertServiceImpl implements AlertService {
 
             List<AlertRecordEO> alertRecords = new ArrayList<>();
             for (SuposUserDTO userDTO : userDTOS) {
-                String phoneNumber = getUserPhone(userDTO);
-                String email = getUserEmail(userDTO);
+
+                SuposPersonEO personEO = suposPersonRepo.findByCode(userDTO.getPersonCode());
+
+                if (personEO == null) {
+                    synchronized (this){
+                        if (personEO == null) {
+                            PersonPageQueryRequest request = PersonPageQueryRequest.builder()
+                                    .companyCode(CompanyEnum.DEFAULT.value)
+                                    .hasBoundUser(true)
+                                    .username(userDTO.getUsername())
+                                    .build();
+                            Result<List<SuposPersonDTO>> peronFromSupos = suposPersonService.searchPeronFromSupos(request);
+
+                            if (!peronFromSupos.isSuccess() || peronFromSupos.getData() == null || peronFromSupos.getData().isEmpty()) {
+                                log.error("获取用户信息失败: {}", userDTO.getPersonCode());
+                                continue;
+                            }
+
+                            SavePersonCommand savePersonCommand = new SavePersonCommand(peronFromSupos.getData().get(0));
+                            Result savePerson = suposPersonService.savePerson(savePersonCommand);
+                            if (!savePerson.isSuccess()) {
+                                log.error("保存用户信息失败: {}", savePerson.getMessage());
+                                continue;
+                            }
+
+
+                        }
+                    }
+
+                    personEO = suposPersonRepo.findByCode(userDTO.getPersonCode());
+                }
+
+                Preconditions.checkArgument(personEO != null, "personEO is null " + userDTO.getUsername());
+                String phoneNumber = personEO.getPhone() == null ? null : personEO.getPhone().trim();
+                String email =  personEO.getEmail() == null ? null : personEO.getEmail().trim();
 
                 // 验证手机号
                 if (StringUtils.isBlank(phoneNumber) || !isValidPhoneNumber(phoneNumber)) {

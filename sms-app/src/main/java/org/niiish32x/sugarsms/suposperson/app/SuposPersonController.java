@@ -50,11 +50,6 @@ public class SuposPersonController {
 
     }
 
-    @RequestMapping("/persons/sync")
-    public Result  syncPersonsFromSupos () {
-        return  suposPersonService.syncPersonsFromSupos(CompanyEnum.DEFAULT);
-    }
-
 
     @RequestMapping("/persons/test")
     public Result test(@RequestBody PersonPageQueryRequest request){
