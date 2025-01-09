@@ -41,11 +41,6 @@ public interface SuposPersonService {
 
     Result savePerson(SavePersonCommand command);
 
-    /**
-     * 全量同步  supos用户
-     * @return
-     */
-    Result syncPersonsFromSupos(CompanyEnum companyEnum);
 
     Result mockPerson();
 

@@ -248,25 +248,6 @@ public class SuposPersonServiceImpl implements SuposPersonService {
         return res ? Result.success(personDTO) : Result.error("保存失败");
     }
 
-    @Override
-    public Result syncPersonsFromSupos(CompanyEnum companyEnum) {
-        PersonPageQueryRequest request = PersonPageQueryRequest.builder()
-                .companyCode(companyEnum.DEFAULT.value)
-                .getAll(true)
-                .build();
-
-        Result<List<SuposPersonDTO>> listResult = searchPeronFromSupos(request);
-
-        Preconditions.checkArgument(listResult.isSuccess(),"获取人员列表失败");
-
-        for (SuposPersonDTO suposPersonDTO : listResult.getData()) {
-            SavePersonCommand savePersonCommand = new SavePersonCommand(suposPersonDTO);
-            Result res = savePerson(savePersonCommand);
-            Preconditions.checkArgument(res ==null || res.isSuccess(), res.getMessage());
-        }
-
-        return Result.success("同步完成");
-    }
 
     @Override
     public Result mockPerson() {
