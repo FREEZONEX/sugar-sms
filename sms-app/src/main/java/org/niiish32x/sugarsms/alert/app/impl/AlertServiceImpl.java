@@ -335,17 +335,8 @@ public class AlertServiceImpl implements AlertService {
 
             List<AlertRecordEO> alertRecords = new ArrayList<>();
             for (SuposUserDTO userDTO : userDTOS) {
-
-                CompletableFuture.runAsync(()-> {
-                    try {
-                        // 重试3次
-                        Retrys.doWithRetry(()->prepareAlertRecord(userDTO, alertRecords, alertInfoDTO, text), r-> r,3,1000L);
-                    } catch (Throwable e) {
-                        throw new RuntimeException(e);
-                    }
-                },poolExecutor);
+                alertRecords = prepareAlertRecord(userDTO, alertInfoDTO, text);
             }
-            CompletableFuture.allOf();
 
             alertRecordRepo.save(alertRecords);
 
@@ -358,7 +349,9 @@ public class AlertServiceImpl implements AlertService {
         }
     }
 
-    private boolean prepareAlertRecord(SuposUserDTO userDTO, List<AlertRecordEO> alertRecords, AlertInfoDTO alertInfoDTO, String text) {
+    private List<AlertRecordEO> prepareAlertRecord(SuposUserDTO userDTO, AlertInfoDTO alertInfoDTO, String text) {
+        List<AlertRecordEO> alertRecords = new ArrayList<>();
+
         String phoneNumber = null;
         String email = null;
 
@@ -382,14 +375,13 @@ public class AlertServiceImpl implements AlertService {
 
                     if (!peronFromSupos.isSuccess() || peronFromSupos.getData() == null || peronFromSupos.getData().isEmpty()) {
                         log.error("获取用户信息失败: {}", userDTO.getPersonCode());
-                        return true;
                     }
 
                     SavePersonCommand savePersonCommand = new SavePersonCommand(peronFromSupos.getData().get(0));
                     Result savePerson = suposPersonService.savePerson(savePersonCommand);
                     if (!savePerson.isSuccess()) {
                         log.error("保存用户信息失败: {}", savePerson.getMessage());
-                        return true;
+
                     }
 
 
@@ -414,7 +406,7 @@ public class AlertServiceImpl implements AlertService {
             alertRecords.add(buildAlertRecordEO(alertInfoDTO, userDTO.getUsername(), null, email, MessageType.EMAIL, text, false));
         }
 
-        return false;
+        return alertRecords;
     }
 
 

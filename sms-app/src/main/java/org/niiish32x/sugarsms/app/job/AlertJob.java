@@ -2,23 +2,22 @@ package org.niiish32x.sugarsms.app.job;
 
 import lombok.extern.slf4j.Slf4j;
 import org.niiish32x.sugarsms.alarm.app.AlarmService;
-import org.niiish32x.sugarsms.alarm.app.command.SavaAlarmCommand;
-import org.niiish32x.sugarsms.alarm.app.external.AlarmRequest;
 import org.niiish32x.sugarsms.alert.app.command.ProductAlertRecordCommand;
 import org.niiish32x.sugarsms.alert.domain.repo.AlertRecordRepo;
 
-import org.niiish32x.sugarsms.api.alarm.dto.AlarmDTO;
 import org.niiish32x.sugarsms.api.alert.dto.AlertInfoDTO;
 import org.niiish32x.sugarsms.app.queue.AlertMessageQueue;
 import org.niiish32x.sugarsms.alert.app.AlertService;
 import org.niiish32x.sugarsms.common.result.Result;
+import org.niiish32x.sugarsms.manager.thread.GlobalThreadManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
+import java.util.concurrent.RejectedExecutionHandler;
+import java.util.concurrent.ThreadPoolExecutor;
 
 /**
  * AlertJob
@@ -44,6 +43,15 @@ public class AlertJob {
     @Autowired
     AlarmService alarmService;
 
+    static int maximumPoolSize = 300;
+    static int coolPoolSize = 100;
+
+
+    static RejectedExecutionHandler handler = new ThreadPoolExecutor.CallerRunsPolicy();
+
+    private static final ThreadPoolExecutor poolExecutor = GlobalThreadManager.getInstance().allocPool(coolPoolSize, maximumPoolSize,
+            10 * 60 * 1000, 3000, "sugar-sms-alert-pool", true ,handler);
+
     @Scheduled(fixedDelay = 1000 * 10)
     void getAlert() {
         try {
@@ -62,7 +70,7 @@ public class AlertJob {
 
 
             for (AlertInfoDTO alertInfoDTO : alertInfoDTOS) {
-                CompletableFuture.supplyAsync(()-> alertService.productAlertRecord(new ProductAlertRecordCommand(alertInfoDTO))) ;
+                CompletableFuture.runAsync(() -> alertService.productAlertRecord(new ProductAlertRecordCommand(alertInfoDTO)),poolExecutor) ;
             }
 
             CompletableFuture.allOf();
@@ -71,15 +79,15 @@ public class AlertJob {
         }
     }
 
-    @Scheduled(fixedDelay = 1000 * 5)
+//    @Scheduled(fixedDelay = 1000 * 5)
     void alert() {
-        alertService.consumeAlertEvent();
+        alertService.sendAlert();
     }
 
     /**
      * 每周六 凌晨 3点
      */
-    @Scheduled(cron = "0 0 3 ? * SAT")
+//    @Scheduled(cron = "0 0 3 ? * SAT")
     void cleanJob() {
         // 清理过去两周的消息
         alertService.cleanAlertPastDays(14);
