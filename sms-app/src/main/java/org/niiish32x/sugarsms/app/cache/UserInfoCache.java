@@ -4,7 +4,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Lists;
-import org.niiish32x.sugarsms.api.person.dto.PersonDTO;
+import org.niiish32x.sugarsms.api.person.dto.SuposPersonDTO;
 import org.niiish32x.sugarsms.api.user.dto.SuposUserDTO;
 import org.niiish32x.sugarsms.suposperson.app.SuposPersonService;
 import org.niiish32x.sugarsms.common.enums.UserRoleEnum;
@@ -81,14 +81,14 @@ public class UserInfoCache implements InitializingBean {
                         .companyCode(CompanyEnum.DEFAULT.value)
                         .hasBoundUser(true)
                         .build();
-                Result<List<PersonDTO>> res = suposPersonService.searchPeronFromSupos(personPageQueryRequest);
+                Result<List<SuposPersonDTO>> res = suposPersonService.searchPeronFromSupos(personPageQueryRequest);
 
                 Preconditions.checkArgument(res.isSuccess(),"person 缓存同步失败");
 
-                 List<PersonDTO> personDTOS = res.getData();
-                 for (PersonDTO personDTO : personDTOS) {
-                     nameToPhone.put(personDTO.getName(), personDTO.getPhone());
-                     nameToEmail.put(personDTO.getName(), personDTO.getEmail());
+                 List<SuposPersonDTO> suposPersonDTOS = res.getData();
+                 for (SuposPersonDTO suposPersonDTO : suposPersonDTOS) {
+                     nameToPhone.put(suposPersonDTO.getName(), suposPersonDTO.getPhone());
+                     nameToEmail.put(suposPersonDTO.getName(), suposPersonDTO.getEmail());
                  }
 
             }

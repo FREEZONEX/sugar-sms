@@ -21,7 +21,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class PersonDTO implements Serializable {
+public class SuposPersonDTO implements Serializable {
     private String code;
     private String name;
     private int valid;

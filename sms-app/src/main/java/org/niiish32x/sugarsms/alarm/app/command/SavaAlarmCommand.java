@@ -1,5 +1,6 @@
 package org.niiish32x.sugarsms.alarm.app.command;
 
+import com.google.common.base.Preconditions;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.niiish32x.sugarsms.api.alarm.dto.AlarmDTO;
@@ -21,9 +22,7 @@ public class SavaAlarmCommand {
     private final AlarmDTO alarmDTO;
 
     public SavaAlarmCommand(AlarmDTO alarmDTO){
-        if (alarmDTO == null) {
-            throw new IllegalArgumentException("AlarmDTO cannot be null");
-        }
+        Preconditions.checkArgument(alarmDTO != null, "alarmDTO cannot be null");
         this.alarmDTO = alarmDTO;
         log.debug("SaveAlarmCommand initialized with alarmDTO: {}", alarmDTO);
     }

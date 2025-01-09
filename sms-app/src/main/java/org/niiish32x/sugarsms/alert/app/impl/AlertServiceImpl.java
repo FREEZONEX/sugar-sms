@@ -19,7 +19,7 @@ import org.niiish32x.sugarsms.alert.domain.repo.AlertRecordRepo;
 import org.niiish32x.sugarsms.api.alarm.dto.AlarmDTO;
 import org.niiish32x.sugarsms.api.alert.dto.AlertInfoDTO;
 import org.niiish32x.sugarsms.api.person.dto.PersonCodesDTO;
-import org.niiish32x.sugarsms.api.person.dto.PersonDTO;
+import org.niiish32x.sugarsms.api.person.dto.SuposPersonDTO;
 import org.niiish32x.sugarsms.api.user.dto.SuposUserDTO;
 import org.niiish32x.sugarsms.app.cache.UserInfoCache;
 import org.niiish32x.sugarsms.common.enums.ApiEnum;
@@ -185,7 +185,7 @@ public class AlertServiceImpl implements AlertService {
         String contactInfo = cache.getIfPresent(personCode);
         if (contactInfo == null) {
             try {
-                PersonDTO person = suposPersonService.getOnePersonByPersonCode(
+                SuposPersonDTO person = suposPersonService.getOnePersonByPersonCode(
                         PersonCodesDTO.builder()
                                 .personCodes(Arrays.asList(personCode))
                                 .build()
@@ -385,7 +385,7 @@ public class AlertServiceImpl implements AlertService {
         String email = UserInfoCache.nameToEmail.getIfPresent(userDTO.getPersonCode());
 
         if (email == null) {
-            PersonDTO person = suposPersonService.getOnePersonByPersonCode(
+            SuposPersonDTO person = suposPersonService.getOnePersonByPersonCode(
                     PersonCodesDTO.builder()
                             .personCodes(Arrays.asList(userDTO.getPersonCode()))
                             .build()
@@ -401,7 +401,7 @@ public class AlertServiceImpl implements AlertService {
         String phoneNumber = userInfoCache.nameToPhone.getIfPresent(userDTO.getPersonCode());
 
         if(phoneNumber == null) {
-            PersonDTO person = suposPersonService.getOnePersonByPersonCode(
+            SuposPersonDTO person = suposPersonService.getOnePersonByPersonCode(
                     PersonCodesDTO.builder()
                             .personCodes(Arrays.asList(userDTO.getPersonCode()))
                             .build()

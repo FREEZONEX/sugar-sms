@@ -2,9 +2,11 @@ package org.niiish32x.sugarsms.suposperson.app;
 
 
 import org.niiish32x.sugarsms.api.person.dto.PersonCodesDTO;
-import org.niiish32x.sugarsms.api.person.dto.PersonDTO;
+import org.niiish32x.sugarsms.api.person.dto.SuposPersonDTO;
 import org.niiish32x.sugarsms.api.person.dto.SuposPersonUpdateRequest;
+import org.niiish32x.sugarsms.common.enums.CompanyEnum;
 import org.niiish32x.sugarsms.common.result.Result;
+import org.niiish32x.sugarsms.suposperson.app.command.SavePersonCommand;
 import org.niiish32x.sugarsms.suposperson.app.external.PersonPageQueryRequest;
 import org.niiish32x.sugarsms.suposperson.domain.entity.SuposPersonEO;
 
@@ -26,15 +28,24 @@ public interface SuposPersonService {
      * @param request
      * @return
      */
-    Result<List<PersonDTO>> searchPeronFromSupos(PersonPageQueryRequest request);
+    Result<List<SuposPersonDTO>> searchPeronFromSupos(PersonPageQueryRequest request);
 
 
-    Result<PersonDTO>  getOnePersonByPersonCode(PersonCodesDTO personCodesDTO);
+    Result<SuposPersonDTO>  getOnePersonByPersonCode(PersonCodesDTO personCodesDTO);
 
 
     Result addPerson(String code);
 
     Result updatePerson(SuposPersonUpdateRequest request);
+
+
+    Result savePerson(SavePersonCommand command);
+
+    /**
+     * 全量同步  supos用户
+     * @return
+     */
+    Result syncPersonsFromSupos(CompanyEnum companyEnum);
 
     Result mockPerson();
 

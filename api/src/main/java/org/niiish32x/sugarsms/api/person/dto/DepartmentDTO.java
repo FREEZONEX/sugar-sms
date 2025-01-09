@@ -19,7 +19,7 @@ import java.io.Serializable;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-class DepartmentDTO implements Serializable {
+public class DepartmentDTO implements Serializable {
     private String name;
     private String code;
 
