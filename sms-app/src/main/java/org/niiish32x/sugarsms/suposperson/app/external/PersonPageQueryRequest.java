@@ -62,8 +62,6 @@ public class PersonPageQueryRequest {
     // 人员编号集合，查询指定的人员，单次请求最多20个编号，参数以“,”隔开
     private List<String> codes;
 
-    @Builder.Default
-    boolean getAll = false;
 
     public Map<String,String> buildQueryMap() {
         Preconditions.checkArgument(StringUtils.isNotBlank(this.companyCode),"companyCode 必须非空");
