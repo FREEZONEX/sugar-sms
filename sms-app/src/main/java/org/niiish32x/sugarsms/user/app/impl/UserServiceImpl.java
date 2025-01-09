@@ -4,13 +4,10 @@ import cn.hutool.http.HttpResponse;
 
 import com.alibaba.fastjson2.JSON;
 import lombok.extern.slf4j.Slf4j;
-import org.niiish32x.sugarsms.api.person.dto.PersonDTO;
 import org.niiish32x.sugarsms.api.user.dto.*;
 import org.niiish32x.sugarsms.common.enums.ApiEnum;
-import org.niiish32x.sugarsms.person.app.PersonService;
-import org.niiish32x.sugarsms.common.enums.CompanyEnum;
+import org.niiish32x.sugarsms.suposperson.app.SuposPersonService;
 import org.niiish32x.sugarsms.user.app.UserService;
-import org.niiish32x.sugarsms.app.tools.SuposUserMocker;
 import org.niiish32x.sugarsms.common.request.SuposRequestManager;
 import org.niiish32x.sugarsms.common.result.Result;
 import org.niiish32x.sugarsms.user.app.external.RolePageResponse;
@@ -38,7 +35,7 @@ public class UserServiceImpl implements UserService {
 
 
     @Resource
-    PersonService personService;
+    SuposPersonService suposPersonService;
 
     @Resource
     SuposRequestManager requestManager;

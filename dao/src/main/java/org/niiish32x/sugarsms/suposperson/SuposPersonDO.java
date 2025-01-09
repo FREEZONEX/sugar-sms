@@ -40,7 +40,7 @@ public class SuposPersonDO implements Serializable {
     private int valid;
     @TableField(value = "gender")
     private String gender;
-    @TableField(value = "status;")
+    @TableField(value = "status")
     private String status;
     @TableField(value = "mainPosition")
     private String mainPosition;

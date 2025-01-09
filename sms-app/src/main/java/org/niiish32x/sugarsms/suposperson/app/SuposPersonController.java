@@ -1,13 +1,14 @@
-package org.niiish32x.sugarsms.person.app;
+package org.niiish32x.sugarsms.suposperson.app;
 
 import org.niiish32x.sugarsms.api.person.dto.PersonCodesDTO;
 import org.niiish32x.sugarsms.api.person.dto.PersonDTO;
 import org.niiish32x.sugarsms.api.person.dto.SuposPersonUpdateRequest;
 import org.niiish32x.sugarsms.common.result.Result;
-import org.niiish32x.sugarsms.person.app.external.PersonPageQueryRequest;
+import org.niiish32x.sugarsms.suposperson.app.external.PersonPageQueryRequest;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import java.util.List;
 
 /**
  * PersonController
@@ -18,32 +19,39 @@ import javax.annotation.Resource;
 @RestController
 public class SuposPersonController {
     @Resource
-    PersonService personService;
+    SuposPersonService suposPersonService;
 
     @RequestMapping("/persons/personCodes")
     public Result<PersonDTO>  getOnePersonByPersonCode(@RequestBody PersonCodesDTO personCodesDTO){
-        return personService.getOnePersonByPersonCode(personCodesDTO);
+        return suposPersonService.getOnePersonByPersonCode(personCodesDTO);
     }
 
     @RequestMapping("/persons/add")
     public Result  addPersonByPersonCode(@RequestParam String code) {
-       return personService.addPerson(code);
+       return suposPersonService.addPerson(code);
     }
 
 
     @RequestMapping("/persons/update")
     public Result  addPersonByPersonCode(@RequestBody SuposPersonUpdateRequest req) {
-        return personService.updatePerson(req);
+        return suposPersonService.updatePerson(req);
     }
 
 
     @RequestMapping("/persons/mock")
     public Result mockPerson(){
-        return personService.mockPerson();
+        return suposPersonService.mockPerson();
+    }
+
+
+    @RequestMapping("/persons")
+    public Result  getAllPerson() {
+       return  suposPersonService.getAllPerson();
+
     }
 
     @RequestMapping("/persons/test")
     public Result test(@RequestBody PersonPageQueryRequest request){
-        return personService.searchPeronFromSupos(request);
+        return suposPersonService.searchPeronFromSupos(request);
     }
 }
