@@ -1,7 +1,8 @@
 package org.niiish32x.sugarsms.alarm.app;
 
-import org.niiish32x.sugarsms.alarm.app.command.SavaAlarmCommand;
+import org.niiish32x.sugarsms.alarm.app.command.SaveAlarmCommand;
 import org.niiish32x.sugarsms.alarm.app.external.AlarmRequest;
+import org.niiish32x.sugarsms.alarm.app.query.AlarmQuery;
 import org.niiish32x.sugarsms.api.alarm.dto.AlarmDTO;
 import org.niiish32x.sugarsms.common.result.Result;
 
@@ -16,7 +17,9 @@ import java.util.List;
 public interface AlarmService {
     Result<List<AlarmDTO>> getAlarmsFromSupos(AlarmRequest request);
 
-    Result<Boolean> save(SavaAlarmCommand command);
+    Result<Boolean> save(SaveAlarmCommand command);
+
+    Result<AlarmDTO> getAlarm(AlarmQuery query);
 
     Result<Boolean> syncAlarmFromSupos();
 }
