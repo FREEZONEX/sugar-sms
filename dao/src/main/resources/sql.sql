@@ -58,3 +58,40 @@ CREATE TABLE `alarm` (
 
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='报警信息表';
 
+use sugar_sms;
+drop table supos_person;
+CREATE TABLE `supos_person` (
+                          `id`  bigint(20)  NOT NULL AUTO_INCREMENT PRIMARY KEY COMMENT '自增主键，唯一标识每条记录',
+                          `code` VARCHAR(255)   NOT NULL ,
+                          `name` VARCHAR(255)  DEFAULT  NULL,
+                          `valid` TINYINT(1) NOT NULL DEFAULT 0 COMMENT '0表示false，1表示true',
+                          `gender` VARCHAR(10)  ,
+                          `status` VARCHAR(255) ,
+                          `mainPosition` VARCHAR(255) COMMENT '主要职位',
+                          `entryDate` DATETIME COMMENT '入职日期' DEFAULT NULL,
+                          `title` VARCHAR(255) COMMENT '职称',
+                          `qualification` VARCHAR(255) COMMENT '资质',
+                          `education` VARCHAR(255) COMMENT '教育程度',
+                          `major` VARCHAR(255) COMMENT '专业',
+                          `idNumber` VARCHAR(18) COMMENT '身份证号码',
+                          `phone` varchar(255) COMMENT '电话号码',
+                          `email` varchar(255) COMMENT '电子邮箱',
+                          `avatarUrl` VARCHAR(255) COMMENT '头像链接',
+                          `signUrl` VARCHAR(255) COMMENT '签名链接',
+                          `departments` VARCHAR(255) COMMENT '部门信息',
+                          `companies` TEXT COMMENT '公司信息',
+                          `user` TEXT COMMENT '用户相关信息 用户相关信息 指的是该person所绑定的用户 ',
+                          `positions` TEXT COMMENT '人员所在岗位信息',
+                          `modifyTime` DATETIME COMMENT '最后修改时间（零时区时间），格式为：“yyyy-MM-dd’T’HH:mm:ss.SSSZ”，例如：“2021-01-26T16:02:15.666+0000”',
+                          `directLeader` VARCHAR(255) COMMENT '直属领导',
+                          `grandLeader` VARCHAR(255) COMMENT '隔级领导',
+
+                          `deleted` TINYINT(1) NOT NULL DEFAULT 0 COMMENT '删除状态 0表示未删除 1表示删除 用于软删除',
+                          `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+                          `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间' ,
+
+                        index idx_code(code)
+
+
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Supos persons信息表';
+

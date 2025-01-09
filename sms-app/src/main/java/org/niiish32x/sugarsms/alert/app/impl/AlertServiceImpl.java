@@ -30,7 +30,7 @@ import org.niiish32x.sugarsms.message.app.external.ZubrixSmsResponse;
 import org.niiish32x.sugarsms.app.proxy.ZubrixSmsProxy;
 import org.niiish32x.sugarsms.app.queue.AlertMessageQueue;
 import org.niiish32x.sugarsms.alert.app.AlertService;
-import org.niiish32x.sugarsms.person.app.PersonService;
+import org.niiish32x.sugarsms.suposperson.app.SuposPersonService;
 import org.niiish32x.sugarsms.message.app.SendMessageService;
 import org.niiish32x.sugarsms.user.app.UserService;
 import org.niiish32x.sugarsms.common.enums.CompanyEnum;
@@ -114,7 +114,7 @@ public class AlertServiceImpl implements AlertService {
     UserInfoCache userInfoCache;
 
     @Resource
-    PersonService personService;
+    SuposPersonService suposPersonService;
 
     @Resource
     SuposRequestManager requestManager;
@@ -185,7 +185,7 @@ public class AlertServiceImpl implements AlertService {
         String contactInfo = cache.getIfPresent(personCode);
         if (contactInfo == null) {
             try {
-                PersonDTO person = personService.getOnePersonByPersonCode(
+                PersonDTO person = suposPersonService.getOnePersonByPersonCode(
                         PersonCodesDTO.builder()
                                 .personCodes(Arrays.asList(personCode))
                                 .build()
@@ -385,7 +385,7 @@ public class AlertServiceImpl implements AlertService {
         String email = UserInfoCache.nameToEmail.getIfPresent(userDTO.getPersonCode());
 
         if (email == null) {
-            PersonDTO person = personService.getOnePersonByPersonCode(
+            PersonDTO person = suposPersonService.getOnePersonByPersonCode(
                     PersonCodesDTO.builder()
                             .personCodes(Arrays.asList(userDTO.getPersonCode()))
                             .build()
@@ -401,7 +401,7 @@ public class AlertServiceImpl implements AlertService {
         String phoneNumber = userInfoCache.nameToPhone.getIfPresent(userDTO.getPersonCode());
 
         if(phoneNumber == null) {
-            PersonDTO person = personService.getOnePersonByPersonCode(
+            PersonDTO person = suposPersonService.getOnePersonByPersonCode(
                     PersonCodesDTO.builder()
                             .personCodes(Arrays.asList(userDTO.getPersonCode()))
                             .build()

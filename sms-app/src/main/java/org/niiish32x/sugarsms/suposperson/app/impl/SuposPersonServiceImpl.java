@@ -1,20 +1,22 @@
-package org.niiish32x.sugarsms.person.app.impl;
+package org.niiish32x.sugarsms.suposperson.app.impl;
 
 import cn.hutool.http.HttpResponse;
 import com.alibaba.fastjson2.JSON;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.niiish32x.sugarsms.api.person.dto.PersonCodesDTO;
 import org.niiish32x.sugarsms.api.person.dto.PersonDTO;
 import org.niiish32x.sugarsms.common.enums.ApiEnum;
 import org.niiish32x.sugarsms.api.person.dto.PersonsResponse;
 import org.niiish32x.sugarsms.api.person.dto.SuposPersonAddRequest;
 import org.niiish32x.sugarsms.api.person.dto.SuposPersonUpdateRequest;
-import org.niiish32x.sugarsms.person.app.PersonService;
+import org.niiish32x.sugarsms.suposperson.app.SuposPersonService;
 import org.niiish32x.sugarsms.app.tools.SuposUserMocker;
 import org.niiish32x.sugarsms.common.request.SuposRequestManager;
 import org.niiish32x.sugarsms.common.result.Result;
-import org.niiish32x.sugarsms.person.app.external.PersonPageQueryRequest;
+import org.niiish32x.sugarsms.suposperson.app.external.PersonPageQueryRequest;
+import org.niiish32x.sugarsms.suposperson.domain.entity.SuposPersonEO;
+import org.niiish32x.sugarsms.suposperson.domain.repo.SuposPersonRepo;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -29,11 +31,19 @@ import java.util.*;
 
 @Service
 @Slf4j
-public class PersonServiceImpl implements PersonService {
+public class SuposPersonServiceImpl implements SuposPersonService {
 
     @Resource
     SuposRequestManager requestManager;
 
+    @Autowired
+    SuposPersonRepo suposPersonRepo;
+
+
+    @Override
+    public Result<List<SuposPersonEO>> getAllPerson() {
+        return Result.success(suposPersonRepo.find());
+    }
 
     @Override
     public Result<List<PersonDTO>> searchPeronFromSupos(PersonPageQueryRequest request) {

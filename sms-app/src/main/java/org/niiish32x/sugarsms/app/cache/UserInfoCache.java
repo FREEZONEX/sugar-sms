@@ -4,13 +4,11 @@ import com.google.common.base.Preconditions;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Lists;
-import org.niiish32x.sugarsms.api.person.dto.PersonCodesDTO;
 import org.niiish32x.sugarsms.api.person.dto.PersonDTO;
-import org.niiish32x.sugarsms.api.person.dto.PersonsResponse;
 import org.niiish32x.sugarsms.api.user.dto.SuposUserDTO;
-import org.niiish32x.sugarsms.person.app.PersonService;
+import org.niiish32x.sugarsms.suposperson.app.SuposPersonService;
 import org.niiish32x.sugarsms.common.enums.UserRoleEnum;
-import org.niiish32x.sugarsms.person.app.external.PersonPageQueryRequest;
+import org.niiish32x.sugarsms.suposperson.app.external.PersonPageQueryRequest;
 import org.niiish32x.sugarsms.user.app.UserService;
 import org.niiish32x.sugarsms.common.enums.CompanyEnum;
 import org.niiish32x.sugarsms.common.result.Result;
@@ -37,7 +35,7 @@ public class UserInfoCache implements InitializingBean {
     UserService userService;
 
     @Resource
-    PersonService personService;
+    SuposPersonService suposPersonService;
 
     public static Cache<String,String> nameToEmail = CacheBuilder.newBuilder()
             .expireAfterAccess(300, TimeUnit.SECONDS)
@@ -83,7 +81,7 @@ public class UserInfoCache implements InitializingBean {
                         .companyCode(CompanyEnum.DEFAULT.value)
                         .hasBoundUser(true)
                         .build();
-                Result<List<PersonDTO>> res = personService.searchPeronFromSupos(personPageQueryRequest);
+                Result<List<PersonDTO>> res = suposPersonService.searchPeronFromSupos(personPageQueryRequest);
 
                 Preconditions.checkArgument(res.isSuccess(),"person 缓存同步失败");
 
