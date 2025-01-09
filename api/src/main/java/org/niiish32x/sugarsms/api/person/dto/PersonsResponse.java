@@ -17,7 +17,7 @@ import java.util.List;
 @Data
 public class PersonsResponse extends PageResponse {
     @JSONField(name = "list")
-    private List<PersonDTO> list;
+    private List<SuposPersonDTO> list;
     @JSONField(name = "pagination")
     private PageDTO pageDTO;
 }
