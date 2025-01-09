@@ -84,7 +84,7 @@ public class SuposPersonDO implements Serializable {
     @TableField(value = "directLeader")
     private String directLeader;
 
-    // 隔级领导\
+    // 隔级领导
     @TableField(value = "grandLeader")
     private String grandLeader;
 
@@ -92,7 +92,7 @@ public class SuposPersonDO implements Serializable {
      * 软删除标志位  0未删除 1表示删除
      */
     @TableField(value = "deleted")
-    private Integer deleted;
+    private Integer deleted = 0;
 
     @TableField(value = "create_time")
     private Date createTime;

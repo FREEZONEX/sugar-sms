@@ -65,7 +65,7 @@ CREATE TABLE `supos_person` (
                           `code` VARCHAR(255)   NOT NULL ,
                           `name` VARCHAR(255)  DEFAULT  NULL,
                           `valid` TINYINT(1) NOT NULL DEFAULT 0 COMMENT '0表示false，1表示true',
-                          `gender` VARCHAR(10)  ,
+                          `gender` VARCHAR(255)  ,
                           `status` VARCHAR(255) ,
                           `mainPosition` VARCHAR(255) COMMENT '主要职位',
                           `entryDate` DATETIME COMMENT '入职日期' DEFAULT NULL,

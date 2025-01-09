@@ -2,20 +2,20 @@ package org.niiish32x.sugarsms.suposperson.app.impl;
 
 import cn.hutool.http.HttpResponse;
 import com.alibaba.fastjson2.JSON;
+import com.google.common.base.Preconditions;
 import lombok.extern.slf4j.Slf4j;
-import org.niiish32x.sugarsms.api.person.dto.PersonCodesDTO;
-import org.niiish32x.sugarsms.api.person.dto.PersonDTO;
+import org.niiish32x.sugarsms.api.person.dto.*;
 import org.niiish32x.sugarsms.common.enums.ApiEnum;
-import org.niiish32x.sugarsms.api.person.dto.PersonsResponse;
-import org.niiish32x.sugarsms.api.person.dto.SuposPersonAddRequest;
-import org.niiish32x.sugarsms.api.person.dto.SuposPersonUpdateRequest;
+import org.niiish32x.sugarsms.common.enums.CompanyEnum;
 import org.niiish32x.sugarsms.suposperson.app.SuposPersonService;
 import org.niiish32x.sugarsms.app.tools.SuposUserMocker;
 import org.niiish32x.sugarsms.common.request.SuposRequestManager;
 import org.niiish32x.sugarsms.common.result.Result;
+import org.niiish32x.sugarsms.suposperson.app.command.SavePersonCommand;
 import org.niiish32x.sugarsms.suposperson.app.external.PersonPageQueryRequest;
-import org.niiish32x.sugarsms.suposperson.domain.entity.SuposPersonEO;
+import org.niiish32x.sugarsms.suposperson.domain.entity.*;
 import org.niiish32x.sugarsms.suposperson.domain.repo.SuposPersonRepo;
+import org.niiish32x.sugarsms.user.domain.entity.UserEO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -42,11 +42,11 @@ public class SuposPersonServiceImpl implements SuposPersonService {
 
     @Override
     public Result<List<SuposPersonEO>> getAllPerson() {
-        return Result.success(suposPersonRepo.find());
+        return Result.success(suposPersonRepo.findByCode());
     }
 
     @Override
-    public Result<List<PersonDTO>> searchPeronFromSupos(PersonPageQueryRequest request) {
+    public Result<List<SuposPersonDTO>> searchPeronFromSupos(PersonPageQueryRequest request) {
         Map<String, String> headerMap = new HashMap<>();
         Map<String, String> queryMap = new HashMap<>();
 
@@ -97,7 +97,7 @@ public class SuposPersonServiceImpl implements SuposPersonService {
 
 
     @Override
-    public Result<PersonDTO>  getOnePersonByPersonCode(PersonCodesDTO personCodesDTO) {
+    public Result<SuposPersonDTO>  getOnePersonByPersonCode(PersonCodesDTO personCodesDTO) {
 
         Map<String, String> headerMap = new HashMap<>();
         Map<String, String> queryMap = new HashMap<>();
@@ -145,6 +145,155 @@ public class SuposPersonServiceImpl implements SuposPersonService {
         log.info("update person : {}" ,JSON.toJSONString(response.body()));
 
         return response.isOk() ? Result.success(request) : Result.error("修改失败: " + JSON.toJSONString(response));
+    }
+
+    @Override
+    public Result savePerson(SavePersonCommand command) {
+
+        SuposPersonDTO personDTO = command.getSuposPersonDTO();
+
+        GenderEO genderEO = GenderEO.builder()
+                .code(personDTO.getGender().getCode())
+                .name(personDTO.getGender().getName())
+                .build();
+
+        StatusEO statusEO = StatusEO.builder()
+                .code(personDTO.getStatus().getCode())
+                .name(personDTO.getStatus().getName())
+                .build();
+
+
+
+        MainPositionEO mainPositionEO = MainPositionEO.builder()
+                .code(personDTO.getMainPosition().getCode())
+                .name(personDTO.getMainPosition().getName())
+                .build();
+
+
+        TitleEO titleEO = null;
+        if (personDTO.getTitle() != null){
+            titleEO = TitleEO.builder()
+                    .code(personDTO.getTitle().getCode())
+                    .name(personDTO.getTitle().getName())
+                    .build();
+        }
+
+        EducationEO educationEO = null;
+        if (personDTO.getQualification() != null) {
+            educationEO = EducationEO.builder()
+                    .code(personDTO.getEducation().getCode())
+                    .name(personDTO.getEducation().getName())
+                    .build();
+        }
+
+        List<DepartmentEO> departmentEOS = new ArrayList<>();
+
+        for (DepartmentDTO departmentDTO : personDTO.getDepartments()) {
+            DepartmentEO departmentEO = DepartmentEO.builder()
+                    .code(departmentDTO.getCode())
+                    .name(departmentDTO.getName())
+                    .build();
+            departmentEOS.add(departmentEO);
+        }
+
+        List<CompanyEO> companyEOS = new ArrayList<>();
+
+        for (CompanyDTO companyDTO : personDTO.getCompanies()) {
+            CompanyEO companyEO = CompanyEO.builder()
+                    .code(companyDTO.getCode())
+                    .name(companyDTO.getName())
+                    .build();
+            companyEOS.add(companyEO);
+        }
+
+
+        UserEO userEO = null;
+        if (personDTO.getUser() != null){
+            userEO = UserEO.builder()
+                    .personCode(personDTO.getCode())
+                    .personName(personDTO.getName())
+                    .build();
+        }
+
+
+        List<PositionEO> positionEOS = new ArrayList<>();
+
+        for (PositionDTO positionDTO : personDTO.getPositions()) {
+            PositionEO positionEO = PositionEO.builder()
+                    .code(positionDTO.getCode())
+                    .name(positionDTO.getName())
+                    .build();
+            positionEOS.add(positionEO);
+        }
+
+        DirectLeaderEO directLeaderEO = null;
+
+        if (personDTO.getDirectLeader() != null) {
+            directLeaderEO = DirectLeaderEO.builder()
+                    .code(personDTO.getDirectLeader().getCode())
+                    .name(personDTO.getDirectLeader().getName())
+                    .build();
+        }
+
+        GrandLeaderEO grandLeaderEO = null;
+
+        if (personDTO.getGrandLeader() != null) {
+            grandLeaderEO = GrandLeaderEO.builder()
+                    .code(personDTO.getGrandLeader().getCode())
+                    .name(personDTO.getGrandLeader().getName())
+                    .build();
+        }
+
+
+        SuposPersonEO suposPersonEO = SuposPersonEO.builder()
+                .code(personDTO.getCode())
+                .name(personDTO.getName())
+                .valid(personDTO.getValid())
+                .gender(genderEO)
+                .status(statusEO)
+                .mainPosition(mainPositionEO)
+                .entryDate(personDTO.getEntryDate())
+                .title(titleEO)
+                .qualification(personDTO.getQualification())
+                .education(educationEO)
+                .major(personDTO.getMajor())
+                .idNumber(personDTO.getIdNumber())
+                .phone(personDTO.getPhone())
+                .email(personDTO.getEmail())
+                .avatarUrl(personDTO.getAvatarUrl())
+                .signUrl(personDTO.getSignUrl())
+                .departments(departmentEOS)
+                .companies(companyEOS)
+                .user(userEO)
+                .positions(positionEOS)
+                .modifyTime(personDTO.getModifyTime())
+                .directLeader(directLeaderEO)
+                .grandLeader(grandLeaderEO)
+                .deleted(0)
+                .build();
+
+        boolean res = suposPersonRepo.save(suposPersonEO);
+
+        return res ? Result.success(personDTO) : Result.error("保存失败");
+    }
+
+    @Override
+    public Result syncPersonsFromSupos(CompanyEnum companyEnum) {
+        PersonPageQueryRequest request = PersonPageQueryRequest.builder()
+                .companyCode(companyEnum.DEFAULT.value)
+                .getAll(true)
+                .build();
+        Result<List<SuposPersonDTO>> listResult = searchPeronFromSupos(request);
+
+        Preconditions.checkArgument(listResult.isSuccess(),"获取人员列表失败");
+
+        for (SuposPersonDTO suposPersonDTO : listResult.getData()) {
+            SavePersonCommand savePersonCommand = new SavePersonCommand(suposPersonDTO);
+            Result res = savePerson(savePersonCommand);
+            Preconditions.checkArgument(res ==null || res.isSuccess(), res.getMessage());
+        }
+
+        return Result.success("同步完成");
     }
 
     @Override

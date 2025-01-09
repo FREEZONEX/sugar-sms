@@ -11,5 +11,16 @@ import java.util.List;
  * @date 2025.01.09 9:36
  */
 public interface SuposPersonRepo {
-    List<SuposPersonEO> find();
+    List<SuposPersonEO> findByCode();
+
+    SuposPersonEO findByCode(String code);
+
+    boolean save(SuposPersonEO suposPersonEO);
+
+    /**
+     * 根据人员编号 判断是否存在
+     * @param code
+     * @return
+     */
+    boolean exist(String code);
 }

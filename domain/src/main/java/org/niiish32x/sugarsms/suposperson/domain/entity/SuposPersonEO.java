@@ -23,7 +23,6 @@ import java.util.List;
 @AllArgsConstructor
 public class SuposPersonEO implements Serializable {
     private static final long serialVersionUID = 1L;
-    private Long id;
 
     private String code;
     private String name;
