@@ -51,44 +51,15 @@ public class SuposPersonServiceImpl implements SuposPersonService {
         Map<String, String> queryMap = new HashMap<>();
 
         try {
-            if (!request.isGetAll()) {
-                queryMap = request.buildQueryMap();
-                HttpResponse response = requestManager.suposApiGet(ApiEnum.PERSON_GET_API_V25.value, headerMap, queryMap);
-                PersonsResponse personsResponse = JSON.parseObject(response.body(), PersonsResponse.class);
-                if (response.isOk()) {
-                    return Result.success(personsResponse.getList());
-                } else {
-                    log.error("Failed to fetch persons from Supos: {}", response.body());
-                    return Result.error(JSON.toJSONString(personsResponse));
-                }
-            }else {
-                PersonsResponse res = new PersonsResponse();
-                res.setList(new ArrayList<>());
-                int pageNo = 1;
-
-                while (true) {
-                    queryMap = request.buildQueryMap();
-                    queryMap.put("pageNo",String.valueOf(pageNo));
-                    System.out.println(JSON.toJSONString(queryMap));
-                    HttpResponse response = requestManager.suposApiGet(ApiEnum.PERSON_GET_API_V25.value, headerMap, queryMap);
-                    PersonsResponse personsResponse = JSON.parseObject(response.body(), PersonsResponse.class);
-
-                    if (!response.isOk()) {
-                        log.error("Failed to fetch persons from Supos: {}", response.body());
-                        return Result.error(JSON.toJSONString(personsResponse));
-                    }
-
-                    if (personsResponse.getList() == null || personsResponse.getList().isEmpty()) {
-                        break;
-                    }
-
-                    res.getList().addAll(personsResponse.getList());
-                    pageNo++;
-                }
-
-                return Result.success(res.getList());
+            queryMap = request.buildQueryMap();
+            HttpResponse response = requestManager.suposApiGet(ApiEnum.PERSON_GET_API_V25.value, headerMap, queryMap);
+            PersonsResponse personsResponse = JSON.parseObject(response.body(), PersonsResponse.class);
+            if (response.isOk()) {
+                return Result.success(personsResponse.getList());
+            } else {
+                log.error("Failed to fetch persons from Supos: {}", response.body());
+                return Result.error(JSON.toJSONString(personsResponse));
             }
-
         }catch (Exception e) {
             log.error("Error occurred while fetching persons from Supos", e);
             return Result.error("An error occurred while fetching persons from Supos");
@@ -283,6 +254,7 @@ public class SuposPersonServiceImpl implements SuposPersonService {
                 .companyCode(companyEnum.DEFAULT.value)
                 .getAll(true)
                 .build();
+
         Result<List<SuposPersonDTO>> listResult = searchPeronFromSupos(request);
 
         Preconditions.checkArgument(listResult.isSuccess(),"获取人员列表失败");
