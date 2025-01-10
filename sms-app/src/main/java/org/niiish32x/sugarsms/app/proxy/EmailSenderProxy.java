@@ -24,18 +24,6 @@ public class EmailSenderProxy {
     @Autowired
     private SessionPool sessionPool;
 
-
-    @Value("${mail.smtp.host}")
-    private String SMTP_HOST ;
-    @Value("${mail.smtp.port}")
-    private String SMTP_PORT ;
-    @Value("${mail.smtp.auth}")
-    private  String SMTP_AUTH ;
-    @Value("${mail.smtp.password}")
-    private  String SMTP_PASSWORD ;
-    @Value("${mail.smtp.starttls.enable}")
-    private  String SMTP_STARTTLS_ENABLE;
-
     public static final String PUBLIC_EMAIL_SUGAR = "techalert@dhampursugar.com";
 
 
