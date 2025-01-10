@@ -23,10 +23,9 @@ import org.niiish32x.sugarsms.api.alert.dto.AlertInfoDTO;
 import org.niiish32x.sugarsms.api.person.dto.SuposPersonDTO;
 import org.niiish32x.sugarsms.api.user.dto.SuposUserDTO;
 import org.niiish32x.sugarsms.common.enums.ApiEnum;
-import org.niiish32x.sugarsms.app.event.AlertEvent;
 import org.niiish32x.sugarsms.api.alert.dto.AlertResponse;
 import org.niiish32x.sugarsms.api.user.dto.RoleSpecDTO;
-import org.niiish32x.sugarsms.common.utils.Retrys;
+import org.niiish32x.sugarsms.event.AlertEvent;
 import org.niiish32x.sugarsms.message.app.external.ZubrixSmsResponse;
 import org.niiish32x.sugarsms.app.proxy.ZubrixSmsProxy;
 import org.niiish32x.sugarsms.app.queue.AlertMessageQueue;
@@ -157,49 +156,6 @@ public class AlertServiceImpl implements AlertService {
     }
 
 
-
-    @Override
-    public void publishAlertEvent() {
-        AlertEvent event = new AlertEvent(this);
-        publisher.publishEvent(event);
-        log.info("发布 报警消息事件");
-    }
-
-
-
-    @Override
-    @Transactional
-    public Result alert(AlertRecordEO record) {
-
-       if (record.getType() == MessageType.SMS) {
-           Result<ZubrixSmsResponse> smsResp = sendMessageService.sendOneZubrixSmsMessage(record.getPhone(), record.getContent());
-           if (smsResp.isSuccess()) {
-               log.info("alert: {} {} 发送成功", record.getAlertId(), record.getPhone());
-               record.setStatus(true);
-               alertRecordRepo.update(record);
-           }else {
-               log.error("alert: {} {} 发送失败", record.getAlertId(), record.getPhone());
-               alertRecordRepo.update(record);
-               return Result.error("发送失败");
-           }
-       } else if (record.getType() == MessageType.EMAIL) {
-           boolean res = sendMessageService.sendEmail(record.getEmail(), SUGAR_ALERT_EMAIL_SUBJECT, record.getContent());
-           if (res) {
-               log.info("alert: {} {} 发送成功", record.getAlertId(), record.getEmail());
-               record.setStatus(true);
-               alertRecordRepo.update(record);
-           }else {
-               log.error("alert: {} {} 发送失败", record.getAlertId(), record.getEmail());
-               alertRecordRepo.update(record);
-               return Result.error("发送失败");
-           }
-       }
-
-
-        return Result.success();
-    }
-
-
     /**
      * 获取所有需要 接收到 通知统治的User
      * @return
@@ -261,17 +217,6 @@ public class AlertServiceImpl implements AlertService {
         }
 
         return alertRecordRepo.remove(ids);
-    }
-
-    @Override
-    public void sendAlert() {
-        log.info("开始 发送alert 报警");
-
-        List<AlertRecordEO> failRecords = alertRecordRepo.findFailRecords();
-
-        for (AlertRecordEO alertRecordEO : failRecords) {
-            CompletableFuture.supplyAsync(()-> alert(alertRecordEO), poolExecutor);
-        }
     }
 
 
@@ -339,6 +284,8 @@ public class AlertServiceImpl implements AlertService {
             }
 
             alertRecordRepo.save(alertRecords);
+
+            AlertEvent alertEvent = new AlertEvent(this);
 
             return Result.success();
         } catch (Exception e) {

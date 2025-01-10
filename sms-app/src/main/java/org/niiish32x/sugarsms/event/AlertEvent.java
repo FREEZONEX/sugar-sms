@@ -1,4 +1,4 @@
-package org.niiish32x.sugarsms.app.event;
+package org.niiish32x.sugarsms.event;
 
 import org.springframework.context.ApplicationEvent;
 

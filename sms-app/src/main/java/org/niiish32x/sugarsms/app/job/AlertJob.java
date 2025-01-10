@@ -79,10 +79,6 @@ public class AlertJob {
         }
     }
 
-//    @Scheduled(fixedDelay = 1000 * 5)
-    void alert() {
-        alertService.sendAlert();
-    }
 
     /**
      * 每周六 凌晨 3点
