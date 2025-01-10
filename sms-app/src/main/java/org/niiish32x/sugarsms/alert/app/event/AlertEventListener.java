@@ -81,9 +81,14 @@ public class AlertEventListener {
             if (smsResp.isSuccess()) {
                 log.info("alert: {} {} 发送成功", record.getAlertId(), record.getPhone());
                 record.setStatus(true);
-                alertRecordRepo.update(record);
+                boolean updateRes = alertRecordRepo.update(record);
+                if (!updateRes) {
+                    log.error("alert: {} {} 更新状态失败", record.getAlertId(), record.getPhone());
+                    return false;
+                }
             }else {
                 log.error("alert: {} {} 发送失败", record.getAlertId(), record.getPhone());
+                map.remove(record.getAlertId() + record.getType().name());
                 return false;
             }
         } else if (record.getType() == MessageType.EMAIL) {
@@ -91,9 +96,14 @@ public class AlertEventListener {
             if (res) {
                 log.info("alert: {} {} 发送成功", record.getAlertId(), record.getEmail());
                 record.setStatus(true);
-                alertRecordRepo.update(record);
+                boolean updateRes = alertRecordRepo.update(record);
+                if (!updateRes) {
+                    log.error("alert: {} {} 更新状态失败", record.getAlertId(), record.getEmail());
+                    return false;
+                }
             }else {
                 log.error("alert: {} {} 发送失败", record.getAlertId(), record.getEmail());
+                map.remove(record.getAlertId() + record.getType().name());
                 return false;
             }
         }
