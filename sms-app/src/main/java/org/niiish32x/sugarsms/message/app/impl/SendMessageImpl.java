@@ -32,7 +32,7 @@ public class SendMessageImpl implements SendMessageService {
     @Autowired
     EmailSenderProxy emailSenderProxy;
 
-    private final RateLimiter rateLimiter = RateLimiter.create(10);
+    private final RateLimiter rateLimiter = RateLimiter.create(5);
 
     @Override
     public Result <ZubrixSmsResponse > sendOneZubrixSmsMessage(String number, String text) {

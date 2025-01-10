@@ -25,8 +25,6 @@ import org.niiish32x.sugarsms.api.user.dto.SuposUserDTO;
 import org.niiish32x.sugarsms.common.enums.ApiEnum;
 import org.niiish32x.sugarsms.api.alert.dto.AlertResponse;
 import org.niiish32x.sugarsms.api.user.dto.RoleSpecDTO;
-import org.niiish32x.sugarsms.event.AlertEvent;
-import org.niiish32x.sugarsms.message.app.external.ZubrixSmsResponse;
 import org.niiish32x.sugarsms.app.proxy.ZubrixSmsProxy;
 import org.niiish32x.sugarsms.app.queue.AlertMessageQueue;
 import org.niiish32x.sugarsms.alert.app.AlertService;
@@ -46,7 +44,6 @@ import org.niiish32x.sugarsms.user.app.external.UserPageQueryRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.*;
@@ -143,7 +140,7 @@ public class AlertServiceImpl implements AlertService {
 
     @Override
     public List<AlertRecordEO> getAllAlertRecords() {
-        return alertRecordRepo.find();
+        return alertRecordRepo.findAll();
     }
 
     @Override
@@ -239,7 +236,7 @@ public class AlertServiceImpl implements AlertService {
             List<Long> existingAlertIds = alertRecordRepo.findExistingAlertIds(alertsIds);
 
             if (existingAlertIds.contains(alertInfoDTO.getId())) {
-                log.info("alertId {} 已经发送过", alertInfoDTO.getId());
+//                log.info("alertId {} 已经发送过", alertInfoDTO.getId());
                 return Result.success();
             }
 
@@ -284,8 +281,6 @@ public class AlertServiceImpl implements AlertService {
             }
 
             alertRecordRepo.save(alertRecords);
-
-            AlertEvent alertEvent = new AlertEvent(this);
 
             return Result.success();
         } catch (Exception e) {

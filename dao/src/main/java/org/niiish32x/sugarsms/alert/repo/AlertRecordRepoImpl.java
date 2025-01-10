@@ -40,13 +40,19 @@ public class AlertRecordRepoImpl implements AlertRecordRepo {
     }
 
     @Override
-    public List<AlertRecordEO> find() {
+    public List<AlertRecordEO> findAll() {
         List<AlertRecordDO> list = alertRecordDAO.lambdaQuery().list();
         return list.stream().map(converter::toEO).collect(Collectors.toList());
     }
 
     @Override
-    public List<AlertRecordEO>  find(Long alertId) {
+    public AlertRecordEO findById(Long id) {
+        alertRecordDAO.lambdaQuery().eq();
+        return null;
+    }
+
+    @Override
+    public List<AlertRecordEO> findByAlertId(Long alertId) {
         List<AlertRecordDO> list = alertRecordDAO.lambdaQuery()
                 .eq(AlertRecordDO::getAlertId, alertId)
                 .list();
@@ -62,7 +68,7 @@ public class AlertRecordRepoImpl implements AlertRecordRepo {
     }
 
     @Override
-    public List<AlertRecordEO> find(MessageType type, boolean status) {
+    public List<AlertRecordEO> findByAlertId(MessageType type, boolean status) {
         List<AlertRecordDO> list = alertRecordDAO.lambdaQuery()
                 .eq(AlertRecordDO::getStatus, status)
                 .eq(AlertRecordDO::getType,type)
@@ -90,9 +96,7 @@ public class AlertRecordRepoImpl implements AlertRecordRepo {
 
     @Override
     public boolean update(AlertRecordEO alertRecordEO) {
-
         AlertRecordDO alertRecordDO = converter.toDO(alertRecordEO);
-
         return alertRecordDAO.updateById(alertRecordDO);
     }
 
