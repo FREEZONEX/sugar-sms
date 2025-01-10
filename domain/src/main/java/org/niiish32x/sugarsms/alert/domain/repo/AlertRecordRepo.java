@@ -13,6 +13,7 @@ import java.util.List;
  */
 
 public interface AlertRecordRepo {
+    List<Long> findByAlertIdsByStatus(boolean status);
 
     List<AlertRecordEO> findAlertsBeforeDays(Integer days);
 
@@ -24,6 +25,8 @@ public interface AlertRecordRepo {
      * @return
      */
     List<AlertRecordEO> findByAlertId(Long alertId);
+
+    AlertRecordEO findById(Long id);
 
     List<Long> findExistingAlertIds(List<Long> alertIds);
 

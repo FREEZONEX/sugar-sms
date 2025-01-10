@@ -15,6 +15,7 @@ import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.ThreadPoolExecutor;
 
@@ -44,6 +45,7 @@ public class AlertEventListener {
     static int maximumPoolSize = 300;
     static int coolPoolSize = 100;
 
+    static ConcurrentHashMap <String,Boolean> map = new ConcurrentHashMap<>();
 
     static RejectedExecutionHandler handler = new ThreadPoolExecutor.CallerRunsPolicy();
 
@@ -54,7 +56,15 @@ public class AlertEventListener {
     public void receiveEvent(AlertEvent alertEvent) {
         log.info("开始发送报警事件");
 
-        for (AlertRecordEO record : alertEvent.getAlertRecordEOS()) {
+        for (Long id : alertEvent.getAlertIds()) {
+            AlertRecordEO record = alertRecordRepo.findById(id);
+
+            if (record.getStatus() || map.containsKey(id + record.getType().name())) {
+                continue;
+            }
+
+            map.putIfAbsent(id + record.getType().name(),true);
+
             CompletableFuture.runAsync(()-> {
                 try {
                     Retrys.doWithRetry(()-> alert(record)  , r -> r ,3 ,1000) ;
@@ -72,10 +82,8 @@ public class AlertEventListener {
                 log.info("alert: {} {} 发送成功", record.getAlertId(), record.getPhone());
                 record.setStatus(true);
                 alertRecordRepo.update(record);
-                return true;
             }else {
                 log.error("alert: {} {} 发送失败", record.getAlertId(), record.getPhone());
-                alertRecordRepo.update(record);
                 return false;
             }
         } else if (record.getType() == MessageType.EMAIL) {
@@ -84,13 +92,13 @@ public class AlertEventListener {
                 log.info("alert: {} {} 发送成功", record.getAlertId(), record.getEmail());
                 record.setStatus(true);
                 alertRecordRepo.update(record);
-                return true;
             }else {
                 log.error("alert: {} {} 发送失败", record.getAlertId(), record.getEmail());
-                alertRecordRepo.update(record);
                 return false;
             }
         }
-        return false;
+
+        map.remove(record.getAlertId() + record.getType().name());
+        return true;
     }
 }

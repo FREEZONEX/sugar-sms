@@ -88,10 +88,10 @@ public class AlertJob {
 
     @Scheduled(fixedDelay = 1000)
     void alert () {
-        List<AlertRecordEO> failRecords = alertRecordRepo.findFailRecords();
-        System.out.println(JSON.toJSONString(failRecords));
-        if (failRecords != null && !failRecords.isEmpty()) {
-            AlertEvent alertEvent = new AlertEvent(this,failRecords);
+        List<Long> alertRecordIds = alertRecordRepo.findByAlertIdsByStatus(false);
+
+        if (alertRecordIds != null && !alertRecordIds.isEmpty()) {
+            AlertEvent alertEvent = new AlertEvent(this,alertRecordIds);
             publisher.publishEvent(alertEvent);
         }
     }

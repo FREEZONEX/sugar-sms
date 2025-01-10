@@ -34,6 +34,11 @@ public class AlertRecordRepoImpl implements AlertRecordRepo {
 
 
     @Override
+    public List<Long> findByAlertIdsByStatus(boolean status) {
+        return alertRecordDAO.findByAlertIdsByStatus(status);
+    }
+
+    @Override
     public List<AlertRecordEO> findAlertsBeforeDays(Integer days) {
         List<AlertRecordDO> list = alertRecordDAO.findAlertBeforeDays(days);
         return list.stream().map(converter::toEO).collect(Collectors.toList());
@@ -51,6 +56,12 @@ public class AlertRecordRepoImpl implements AlertRecordRepo {
                 .eq(AlertRecordDO::getAlertId, alertId)
                 .list();
         return list.stream().map(converter::toEO).collect(Collectors.toList());
+    }
+
+    @Override
+    public AlertRecordEO findById(Long id) {
+        AlertRecordDO recordDO = alertRecordDAO.lambdaQuery().eq(AlertRecordDO::getId, id).one();
+        return converter.toEO(recordDO);
     }
 
     @Override
