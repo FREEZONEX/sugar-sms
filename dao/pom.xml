@@ -15,7 +15,7 @@
         <dependency>
             <groupId>org.niiish32x.sugar-sms</groupId>
             <artifactId>domain</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
+            <version>${project.version}</version>
         </dependency>
 
         <dependency>

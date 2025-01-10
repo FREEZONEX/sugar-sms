@@ -21,16 +21,10 @@ public interface AlertService {
      Result<List<AlertInfoDTO>> getAlertsFromSupos();
 
 
-     void publishAlertEvent();
-
-
-     Result alert(AlertRecordEO record);
-
      Result<List<SuposUserDTO>>  getAlertUsers();
 
      Boolean cleanAlertPastDays(Integer days);
 
-     void sendAlert();
 
      /**
       * 生成 初始化 需要发送的报警消息

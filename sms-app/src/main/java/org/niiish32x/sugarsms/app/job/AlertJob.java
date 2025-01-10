@@ -1,16 +1,20 @@
 package org.niiish32x.sugarsms.app.job;
 
+import com.alibaba.fastjson2.JSON;
 import lombok.extern.slf4j.Slf4j;
 import org.niiish32x.sugarsms.alarm.app.AlarmService;
 import org.niiish32x.sugarsms.alert.app.command.ProductAlertRecordCommand;
+import org.niiish32x.sugarsms.alert.domain.entity.AlertRecordEO;
 import org.niiish32x.sugarsms.alert.domain.repo.AlertRecordRepo;
 
 import org.niiish32x.sugarsms.api.alert.dto.AlertInfoDTO;
 import org.niiish32x.sugarsms.app.queue.AlertMessageQueue;
 import org.niiish32x.sugarsms.alert.app.AlertService;
 import org.niiish32x.sugarsms.common.result.Result;
+import org.niiish32x.sugarsms.alert.app.event.AlertEvent;
 import org.niiish32x.sugarsms.manager.thread.GlobalThreadManager;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -42,6 +46,9 @@ public class AlertJob {
 
     @Autowired
     AlarmService alarmService;
+
+    @Autowired
+    ApplicationEventPublisher publisher;
 
     static int maximumPoolSize = 300;
     static int coolPoolSize = 100;
@@ -79,10 +86,16 @@ public class AlertJob {
         }
     }
 
-//    @Scheduled(fixedDelay = 1000 * 5)
-    void alert() {
-        alertService.sendAlert();
+    @Scheduled(fixedDelay = 1000)
+    void alert () {
+        List<AlertRecordEO> failRecords = alertRecordRepo.findFailRecords();
+        System.out.println(JSON.toJSONString(failRecords));
+        if (failRecords != null && !failRecords.isEmpty()) {
+            AlertEvent alertEvent = new AlertEvent(this,failRecords);
+            publisher.publishEvent(alertEvent);
+        }
     }
+
 
     /**
      * 每周六 凌晨 3点

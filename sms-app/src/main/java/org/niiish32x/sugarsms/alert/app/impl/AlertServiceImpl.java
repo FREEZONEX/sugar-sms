@@ -23,11 +23,8 @@ import org.niiish32x.sugarsms.api.alert.dto.AlertInfoDTO;
 import org.niiish32x.sugarsms.api.person.dto.SuposPersonDTO;
 import org.niiish32x.sugarsms.api.user.dto.SuposUserDTO;
 import org.niiish32x.sugarsms.common.enums.ApiEnum;
-import org.niiish32x.sugarsms.app.event.AlertEvent;
 import org.niiish32x.sugarsms.api.alert.dto.AlertResponse;
 import org.niiish32x.sugarsms.api.user.dto.RoleSpecDTO;
-import org.niiish32x.sugarsms.common.utils.Retrys;
-import org.niiish32x.sugarsms.message.app.external.ZubrixSmsResponse;
 import org.niiish32x.sugarsms.app.proxy.ZubrixSmsProxy;
 import org.niiish32x.sugarsms.app.queue.AlertMessageQueue;
 import org.niiish32x.sugarsms.alert.app.AlertService;
@@ -47,7 +44,6 @@ import org.niiish32x.sugarsms.user.app.external.UserPageQueryRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.*;
@@ -144,7 +140,7 @@ public class AlertServiceImpl implements AlertService {
 
     @Override
     public List<AlertRecordEO> getAllAlertRecords() {
-        return alertRecordRepo.find();
+        return alertRecordRepo.findAll();
     }
 
     @Override
@@ -154,49 +150,6 @@ public class AlertServiceImpl implements AlertService {
         HttpResponse response = requestManager.suposApiGet(ApiEnum.ALERT_API.value, headerMap, queryMap);
         AlertResponse alertResponse = JSON.parseObject(response.body(), AlertResponse.class);
         return alertResponse.getCode() == 200 ? Result.success(alertResponse.getAlerts())  : Result.error("查询报警信息失败") ;
-    }
-
-
-
-    @Override
-    public void publishAlertEvent() {
-        AlertEvent event = new AlertEvent(this);
-        publisher.publishEvent(event);
-        log.info("发布 报警消息事件");
-    }
-
-
-
-    @Override
-    @Transactional
-    public Result alert(AlertRecordEO record) {
-
-       if (record.getType() == MessageType.SMS) {
-           Result<ZubrixSmsResponse> smsResp = sendMessageService.sendOneZubrixSmsMessage(record.getPhone(), record.getContent());
-           if (smsResp.isSuccess()) {
-               log.info("alert: {} {} 发送成功", record.getAlertId(), record.getPhone());
-               record.setStatus(true);
-               alertRecordRepo.update(record);
-           }else {
-               log.error("alert: {} {} 发送失败", record.getAlertId(), record.getPhone());
-               alertRecordRepo.update(record);
-               return Result.error("发送失败");
-           }
-       } else if (record.getType() == MessageType.EMAIL) {
-           boolean res = sendMessageService.sendEmail(record.getEmail(), SUGAR_ALERT_EMAIL_SUBJECT, record.getContent());
-           if (res) {
-               log.info("alert: {} {} 发送成功", record.getAlertId(), record.getEmail());
-               record.setStatus(true);
-               alertRecordRepo.update(record);
-           }else {
-               log.error("alert: {} {} 发送失败", record.getAlertId(), record.getEmail());
-               alertRecordRepo.update(record);
-               return Result.error("发送失败");
-           }
-       }
-
-
-        return Result.success();
     }
 
 
@@ -263,17 +216,6 @@ public class AlertServiceImpl implements AlertService {
         return alertRecordRepo.remove(ids);
     }
 
-    @Override
-    public void sendAlert() {
-        log.info("开始 发送alert 报警");
-
-        List<AlertRecordEO> failRecords = alertRecordRepo.findFailRecords();
-
-        for (AlertRecordEO alertRecordEO : failRecords) {
-            CompletableFuture.supplyAsync(()-> alert(alertRecordEO), poolExecutor);
-        }
-    }
-
 
     @Override
     public Result productAlertRecord(ProductAlertRecordCommand command) {
@@ -294,7 +236,7 @@ public class AlertServiceImpl implements AlertService {
             List<Long> existingAlertIds = alertRecordRepo.findExistingAlertIds(alertsIds);
 
             if (existingAlertIds.contains(alertInfoDTO.getId())) {
-                log.info("alertId {} 已经发送过", alertInfoDTO.getId());
+//                log.info("alertId {} 已经发送过", alertInfoDTO.getId());
                 return Result.success();
             }
 
