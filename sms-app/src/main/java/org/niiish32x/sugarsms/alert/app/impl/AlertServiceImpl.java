@@ -60,8 +60,6 @@ import java.util.concurrent.*;
 @Slf4j
 public class AlertServiceImpl implements AlertService {
 
-    private final String SUGAR_ALERT_EMAIL_SUBJECT = "sugar-plant-alert";
-
     static int maximumPoolSize = 300;
     static int coolPoolSize = 100;
 
@@ -138,10 +136,6 @@ public class AlertServiceImpl implements AlertService {
     @Autowired
     SuposPersonRepo suposPersonRepo;
 
-    @Override
-    public List<AlertRecordEO> getAllAlertRecords() {
-        return alertRecordRepo.findAll();
-    }
 
     @Override
     public Result <List<AlertInfoDTO>> getAlertsFromSupos() {

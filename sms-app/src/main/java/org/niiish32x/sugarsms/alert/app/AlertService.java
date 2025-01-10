@@ -16,8 +16,6 @@ import java.util.List;
  */
 public interface AlertService {
 
-     List<AlertRecordEO> getAllAlertRecords();
-
      Result<List<AlertInfoDTO>> getAlertsFromSupos();
 
 

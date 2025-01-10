@@ -26,14 +26,4 @@ public class AlertController {
         return alertService.getAlertsFromSupos();
     }
 
-    @RequestMapping("/alert/notify/sugarsms")
-    public Result notifySugarsms(){
-        return null;
-    }
-
-    @RequestMapping("/alert/record/test")
-    public List<AlertRecordEO> testAlert() {
-        return alertService.getAllAlertRecords();
-    }
-
 }
