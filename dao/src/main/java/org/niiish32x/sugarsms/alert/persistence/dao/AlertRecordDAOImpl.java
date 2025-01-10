@@ -18,12 +18,17 @@ import java.util.List;
 @Component
 public class AlertRecordDAOImpl extends ServiceImpl<AlertRecordMapper, AlertRecordDO> implements AlertRecordDAO{
     @Override
-    public List<AlertRecordDO> findAlertBeforeDays(@Param("days") Integer days){
+    public List<AlertRecordDO> findAlertBeforeDays(Integer days){
         return getBaseMapper().findAlertBeforeDays(days);
     }
 
     @Override
     public AlertRecordDO findWithLimitByAlertId(Long alertId, Integer limit) {
         return getBaseMapper().findWithLimitByAlertId(alertId,limit);
+    }
+
+    @Override
+    public List<Long> findByAlertIdsByStatus(boolean status) {
+        return getBaseMapper().findByAlertIdsByStatus(status);
     }
 }

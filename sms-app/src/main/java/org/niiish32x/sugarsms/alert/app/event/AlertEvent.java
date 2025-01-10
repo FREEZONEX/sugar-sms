@@ -17,10 +17,11 @@ import java.util.List;
 @Getter
 public class AlertEvent extends ApplicationEvent {
 
-    private List<AlertRecordEO> alertRecordEOS;
 
-    public AlertEvent(Object source, List<AlertRecordEO> alertRecordEOS) {
+    private List<Long> alertIds;
+
+    public AlertEvent(Object source,List<Long> alertIds) {
         super(source);
-        this.alertRecordEOS = alertRecordEOS;
+        this.alertIds = alertIds;
     }
 }
