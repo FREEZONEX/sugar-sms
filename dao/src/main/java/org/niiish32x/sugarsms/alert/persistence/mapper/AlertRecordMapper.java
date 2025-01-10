@@ -17,6 +17,20 @@ import java.util.List;
 public interface AlertRecordMapper extends BaseMapper<AlertRecordDO> {
 
     /**
+     * 根据status 获取alertIds (主要是对于频繁查询语句进行优化)
+     * 走覆盖索引减少 回表查询 \ 只查对应列 检索速度
+     * @param status
+     * @return
+     *
+     * seLect_type: simple
+     * type: index
+     * key: idx_status \ key_len:2
+     * extra: using index
+     */
+    @Select("select id from alert_record where status = #{status}")
+    List<Long> findByAlertIdsByStatus(@Param("status") boolean status);
+
+    /**
      * 获取距离当前时间 days 所有 alert数据
      * @return
      */
