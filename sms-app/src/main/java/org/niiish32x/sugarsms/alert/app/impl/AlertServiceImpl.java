@@ -271,7 +271,8 @@ public class AlertServiceImpl implements AlertService {
 
             List<AlertRecordEO> alertRecords = new ArrayList<>();
             for (SuposUserDTO userDTO : userDTOS) {
-                alertRecords = prepareAlertRecord(userDTO, alertInfoDTO, text);
+                CompletableFuture<List<AlertRecordEO>> listCompletableFuture = CompletableFuture.supplyAsync(() -> prepareAlertRecord(userDTO, alertInfoDTO, text), poolExecutor);
+                alertRecords.addAll(listCompletableFuture.get());
             }
 
             alertRecordRepo.save(alertRecords);
@@ -295,8 +296,13 @@ public class AlertServiceImpl implements AlertService {
 
         personEO = PERSON_CACHE.getIfPresent(userDTO.getPersonCode());
 
-        if (personEO == null || personEO.getUser().getModifyTime() != userDTO.getModifyTime()) {
+        if (personEO == null) {
             personEO = suposPersonRepo.findByCode(userDTO.getPersonCode());
+        }else if (personEO.getUser().getModifyTime() != userDTO.getModifyTime()) {
+            /**
+             * User 并非最新的User 删除本地缓存
+             */
+            PERSON_CACHE.invalidate(userDTO.getPersonCode());
         }
 
         if (personEO == null || personEO.getUser().getModifyTime() != userDTO.getModifyTime() ) {
@@ -319,8 +325,6 @@ public class AlertServiceImpl implements AlertService {
                         log.error("保存用户信息失败: {}", savePerson.getMessage());
 
                     }
-
-
                 }
             }
 
