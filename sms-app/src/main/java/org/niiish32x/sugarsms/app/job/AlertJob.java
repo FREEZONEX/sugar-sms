@@ -18,6 +18,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.RejectedExecutionHandler;
@@ -61,15 +62,20 @@ public class AlertJob {
 
     @Scheduled(fixedDelay = 1000 * 10)
     void getAlert() {
+
+        log.info(">>>>>>>>>>>>>>> start get Alert >>>>>>>>>>>>>>>>>>>>>>>>>>");
+
         try {
             Result<List<AlertInfoDTO>> alertsResp = alertService.getAlertsFromSupos();
 
             if (!alertsResp.isSuccess()) {
-                log.error("alert api 获取异常: {}", alertsResp.getMessage());
+                log.error("alert api fetch error: {}", alertsResp.getMessage());
                 return;
             }
 
             List<AlertInfoDTO> alertInfoDTOS = alertsResp.getData();
+
+            log.info("alert get: {}", JSON.toJSONString(alertInfoDTOS));
 
             if (alertInfoDTOS == null || alertInfoDTOS.isEmpty()) {
                 return;
@@ -82,18 +88,26 @@ public class AlertJob {
 
             CompletableFuture.allOf();
         } catch (Exception e) {
-            log.error("定时任务执行过程中发生异常", e);
+            log.error("cron running error {} \n {}", e.getMessage(),e.getStackTrace());
         }
+
+        log.info(">>>>>>>>>>>>>>> finish  get Alert  >>>>>>>>>>>>>>>>>>>>>>>>>>");
     }
 
-    @Scheduled(fixedDelay = 1000)
+    @Scheduled(fixedDelay = 2 * 1000)
     void alert () {
+        log.info(">>>>>>>>>>>>>>>>>>> start send alert >>>>>>>>>>>>>>>>>>>");
+
         List<Long> alertRecordIds = alertRecordRepo.findByAlertIdsByStatus(false);
+
+        log.info("alerts Record Ids {}", JSON.toJSONString(alertRecordIds));
 
         if (alertRecordIds != null && !alertRecordIds.isEmpty()) {
             AlertEvent alertEvent = new AlertEvent(this,alertRecordIds);
             publisher.publishEvent(alertEvent);
         }
+
+        log.info(">>>>>>>>>>>>>>>>>>> finish send Alert >>>>>>>>>>>>>>>>>>>");
     }
 
 

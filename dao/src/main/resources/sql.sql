@@ -17,7 +17,6 @@ CREATE TABLE `alert_record` (   `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 
                                 index idx_status(status),
                                 index idx_alert_id(alert_id),
                                 index idx_type(type),
-                                unique idx_uni_alert_id_type_username(alert_id,type,username),
                                 PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='报警消息记录表';
 
@@ -53,7 +52,6 @@ CREATE TABLE `alarm` (
                          `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
                          index idx_deleted(deleted),
                          index idx_limit_value(limit_value),
-                         unique idx_uni_alarm_id(alarm_id),
                          index idx_attribute_en_name(attribute_en_name)
 
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='报警信息表';

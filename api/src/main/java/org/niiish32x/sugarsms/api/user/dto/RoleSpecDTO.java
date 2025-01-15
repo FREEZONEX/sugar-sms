@@ -15,9 +15,11 @@ import java.util.Date;
 @Data
 public class RoleSpecDTO {
 
-    @JSONField(name = "roleCode")
+//    @JSONField(name = "roleCode")
+    @JSONField(name = "code") // 印度环境为旧环境  roleCode 对应字段为 code
     private String roleCode;
-    @JSONField(name = "roleName")
+//    @JSONField(name = "roleName")
+    @JSONField(name = "name") // 印度环境为旧环境  roleName 对应字段为 name
     private String roleName;
     @JSONField(name = "description")
     private String description;

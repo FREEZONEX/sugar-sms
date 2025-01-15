@@ -145,7 +145,7 @@ public class AlertServiceImpl implements AlertService {
         Map<String, String> queryMap = new HashMap<>();
         HttpResponse response = requestManager.suposApiGet(ApiEnum.ALERT_API.value, headerMap, queryMap);
         AlertResponse alertResponse = JSON.parseObject(response.body(), AlertResponse.class);
-        return alertResponse.getCode() == 200 ? Result.success(alertResponse.getAlerts())  : Result.error("查询报警信息失败") ;
+        return alertResponse.getCode() == 200 ? Result.success(alertResponse.getAlerts())  : Result.error("get Alarm error") ;
     }
 
 
@@ -165,6 +165,9 @@ public class AlertServiceImpl implements AlertService {
 
         // 获取角色列表并处理异常
         Result<List<RoleSpecDTO>> roleListFromSupos = userService.getRoleListFromSupos(CompanyEnum.DEFAULT.value);
+
+        log.info("role list get {}",JSON.toJSONString(roleListFromSupos));
+
         if (!roleListFromSupos.isSuccess()) {
             return Result.error("Failed to get role list from Supos: " + roleListFromSupos.getMessage());
         }
@@ -221,7 +224,7 @@ public class AlertServiceImpl implements AlertService {
         try {
             Result<List<SuposUserDTO>> alertUsersResult = getAlertUsers();
             if (!alertUsersResult.isSuccess() || alertUsersResult.getData() == null) {
-                log.error("获取告警用户失败: {}", alertUsersResult.getMessage());
+                log.error("error: Obtain the user information anomaly for the alarm that is about to be sent.  : {}", alertUsersResult.getMessage());
                 return Result.error(alertUsersResult.getMessage());
             }
 
@@ -251,7 +254,7 @@ public class AlertServiceImpl implements AlertService {
                                 .build());
 
                 if (!alarmsFromSupos.isSuccess() || alarmsFromSupos.getData() == null || alarmsFromSupos.getData().isEmpty()) {
-                    log.error("获取alarmsFromSupos 报警详情信息异常或为空: {}", alarmsFromSupos.getMessage());
+                    log.error("error: The details of alarms from supos are either abnormal or empty when retrieved : {}", alarmsFromSupos.getMessage());
                     return Result.error(alarmsFromSupos.getMessage());
                 }
 
@@ -281,8 +284,8 @@ public class AlertServiceImpl implements AlertService {
 
             return Result.success();
         } catch (Exception e) {
-            log.error("处理告警记录时发生异常: {}", e.getMessage(), e);
-            return Result.error("处理告警记录时发生异常: " + e.getMessage());
+            log.error("An exception occurred while processing the alarm records : {}", e.getMessage(), e);
+            return Result.error("An exception occurred while processing the alarm records : " + e.getMessage());
         } catch (Throwable e) {
             throw new RuntimeException(e);
         }
@@ -320,14 +323,14 @@ public class AlertServiceImpl implements AlertService {
                     Result<List<SuposPersonDTO>> peronFromSupos = suposPersonService.searchPeronFromSupos(request);
 
                     if (!peronFromSupos.isSuccess() || peronFromSupos.getData() == null || peronFromSupos.getData().isEmpty()) {
-                        log.error("获取用户信息失败: {}", userDTO.getPersonCode());
+                        log.error("Failed to obtain user information : {}", userDTO.getPersonCode());
                     }
 
 
                     SavePersonCommand savePersonCommand = new SavePersonCommand(peronFromSupos.getData().get(0));
                     Result savePerson = suposPersonService.savePerson(savePersonCommand);
                     if (!savePerson.isSuccess()) {
-                        log.error("保存用户信息失败: {}", savePerson.getMessage());
+                        log.error("Failed to save user information : {}", savePerson.getMessage());
                     }
                 }
             }
