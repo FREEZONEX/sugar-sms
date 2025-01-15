@@ -1,7 +1,7 @@
 
 use sugar_sms;
 
-drop table alert_record;
+drop table if exists alert_record;
 
 CREATE TABLE `alert_record` (   `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '自增主键',
                                 `alert_id` bigint(20) NOT NULL ,
@@ -25,7 +25,7 @@ drop table alarm;
 
 
 use sugar_sms;
-drop table alarm;
+drop table if exists alarm;
 CREATE TABLE `alarm` (
                          `id`  bigint(20)  NOT NULL AUTO_INCREMENT PRIMARY KEY COMMENT '自增主键',
                          `alarm_id`  VARCHAR(255)  DEFAULT  NULL COMMENT '报警消息的Id',
@@ -59,7 +59,7 @@ CREATE TABLE `alarm` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='报警信息表';
 
 use sugar_sms;
-drop table supos_person;
+drop table if exists supos_person ;
 CREATE TABLE `supos_person` (
                           `id`  bigint(20)  NOT NULL AUTO_INCREMENT PRIMARY KEY COMMENT '自增主键，唯一标识每条记录',
                           `code` VARCHAR(255)   NOT NULL ,
