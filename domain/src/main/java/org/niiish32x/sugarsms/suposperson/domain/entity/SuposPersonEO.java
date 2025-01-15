@@ -51,9 +51,9 @@ public class SuposPersonEO implements Serializable {
     private DirectLeaderEO directLeader;
     private GrandLeaderEO grandLeader;
     /**
-     * 软删除标志位  0未删除 1表示删除
+     * 软删除标志位  false未删除 true表示删除
      */
-    private Integer deleted;
+    private Boolean deleted;
 
     private Date createTime;
 

@@ -50,7 +50,10 @@ public class SuposPersonImpl implements SuposPersonRepo {
     @Override
     public boolean save(SuposPersonEO suposPersonEO) {
         SuposPersonDO suposPersonDO = converter.toDO(suposPersonEO);
-        List<SuposPersonDO> list = suposPersonDAO.lambdaQuery().eq(SuposPersonDO::getCode, suposPersonDO.getCode()).list();
+        List<SuposPersonDO> list = suposPersonDAO.lambdaQuery()
+                .eq(SuposPersonDO::getCode, suposPersonDO.getCode())
+                .eq(SuposPersonDO::getDeleted,suposPersonDO.getDeleted())
+                .list();
 
         if (list != null && !list.isEmpty()) {
             SuposPersonDO existPerson = list.get(0);
@@ -88,6 +91,19 @@ public class SuposPersonImpl implements SuposPersonRepo {
 
 
         return suposPersonDAO.save(suposPersonDO);
+    }
+
+    @Override
+    public boolean softRemove(SuposPersonEO suposPersonEO) {
+        SuposPersonDO suposPersonDO = converter.toDO(suposPersonEO);
+        if (suposPersonEO != null) {
+            LambdaUpdateWrapper<SuposPersonDO> wrapper = Wrappers.<SuposPersonDO>lambdaUpdate()
+                    .eq(SuposPersonDO::getCode, suposPersonDO.getCode())
+                    .set(SuposPersonDO::getDeleted, 1);
+            return suposPersonDAO.update(null, wrapper);
+        }
+
+        return false;
     }
 
     @Override

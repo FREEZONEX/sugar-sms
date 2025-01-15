@@ -36,6 +36,7 @@ public interface SuposPersonConverter {
     @Mapping(target = "positions" , expression = "java(JSON.toJSONString(suposPersonEO.getPositions()))")
     @Mapping(target = "directLeader", expression = "java(JSON.toJSONString(suposPersonEO.getDirectLeader()))")
     @Mapping(target = "grandLeader", expression = "java(JSON.toJSONString(suposPersonEO.getGrandLeader()))")
+    @Mapping(target = "deleted", expression = "java(suposPersonEO.getDeleted()  ? 1 : 0)")
     SuposPersonDO toDO (SuposPersonEO suposPersonEO) ;
 
 
@@ -50,6 +51,7 @@ public interface SuposPersonConverter {
     @Mapping(target = "positions" , source = "positions", qualifiedByName = "parsePositionsToEO")
     @Mapping(target = "directLeader",  source = "directLeader", qualifiedByName = "parseDirectLeaderToEO")
     @Mapping(target = "grandLeader", source = "grandLeader", qualifiedByName = "parseGrandLeaderToEO")
+    @Mapping(target = "deleted", expression = "java(suposPersonDO.getDeleted() == 0 ? false : true)")
     SuposPersonEO toEO (SuposPersonDO suposPersonDO);
 
     @Named("parseGenderToEO")

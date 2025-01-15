@@ -44,6 +44,7 @@ import org.niiish32x.sugarsms.user.app.external.UserPageQueryRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.*;
@@ -79,10 +80,10 @@ public class AlertServiceImpl implements AlertService {
             .build();
 
     /**
-     * 缓存报警用户信息 30秒后 过期
+     * 缓存报警用户信息 5秒后 过期
      */
     private static final Cache<String,List<SuposUserDTO>> USER_CACHE = CacheBuilder.newBuilder()
-            .expireAfterWrite(30, TimeUnit.SECONDS)
+            .expireAfterWrite(5, TimeUnit.SECONDS)
             .initialCapacity(10)
             .maximumSize(30)
             .build();
@@ -90,10 +91,10 @@ public class AlertServiceImpl implements AlertService {
     /**
      * 缓存人员信息
      * PersonCode --- SuposPersonEO
-     * 写入后保存 5分钟
+     * 写入后保存 10秒
      */
     private static final Cache<String,SuposPersonEO> PERSON_CACHE = CacheBuilder.newBuilder()
-            .expireAfterWrite(5, TimeUnit.MINUTES)
+            .expireAfterWrite(10, TimeUnit.SECONDS)
             .initialCapacity(200)
             .maximumSize(1000)
             .build();
@@ -135,6 +136,7 @@ public class AlertServiceImpl implements AlertService {
 
     @Autowired
     SuposPersonRepo suposPersonRepo;
+
 
 
     @Override
@@ -286,6 +288,7 @@ public class AlertServiceImpl implements AlertService {
         }
     }
 
+
     private List<AlertRecordEO> prepareAlertRecord(SuposUserDTO userDTO, AlertInfoDTO alertInfoDTO, String text) {
         List<AlertRecordEO> alertRecords = new ArrayList<>();
 
@@ -296,18 +299,19 @@ public class AlertServiceImpl implements AlertService {
 
         personEO = PERSON_CACHE.getIfPresent(userDTO.getPersonCode());
 
-        if (personEO == null) {
+        if (personEO == null ) {
             personEO = suposPersonRepo.findByCode(userDTO.getPersonCode());
-        }else if (personEO.getUser().getModifyTime() != userDTO.getModifyTime()) {
+        }else if (personEO.getUser().getModifyTime() != null &&  personEO.getUser().getModifyTime() != userDTO.getModifyTime()) {
             /**
              * User 并非最新的User 删除本地缓存
              */
             PERSON_CACHE.invalidate(userDTO.getPersonCode());
+            suposPersonRepo.softRemove(personEO);
         }
 
-        if (personEO == null || personEO.getUser().getModifyTime() != userDTO.getModifyTime() ) {
+        if (personEO == null || personEO.getDeleted() || personEO.getUser().getModifyTime() != userDTO.getModifyTime() ) {
             synchronized (this){
-                if (personEO == null) {
+                if (personEO == null || personEO.getDeleted()) {
                     PersonPageQueryRequest request = PersonPageQueryRequest.builder()
                             .companyCode(CompanyEnum.DEFAULT.value)
                             .hasBoundUser(true)
@@ -319,11 +323,11 @@ public class AlertServiceImpl implements AlertService {
                         log.error("获取用户信息失败: {}", userDTO.getPersonCode());
                     }
 
+
                     SavePersonCommand savePersonCommand = new SavePersonCommand(peronFromSupos.getData().get(0));
                     Result savePerson = suposPersonService.savePerson(savePersonCommand);
                     if (!savePerson.isSuccess()) {
                         log.error("保存用户信息失败: {}", savePerson.getMessage());
-
                     }
                 }
             }

@@ -17,6 +17,8 @@ public interface SuposPersonRepo {
 
     boolean save(SuposPersonEO suposPersonEO);
 
+    boolean softRemove(SuposPersonEO suposPersonEO);
+
     /**
      * 根据人员编号 判断是否存在
      * @param code

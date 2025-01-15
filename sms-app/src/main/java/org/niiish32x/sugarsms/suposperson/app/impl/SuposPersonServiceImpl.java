@@ -241,7 +241,7 @@ public class SuposPersonServiceImpl implements SuposPersonService {
                 .modifyTime(personDTO.getModifyTime())
                 .directLeader(directLeaderEO)
                 .grandLeader(grandLeaderEO)
-                .deleted(0)
+                .deleted(false)
                 .build();
 
         boolean res = suposPersonRepo.save(suposPersonEO);
