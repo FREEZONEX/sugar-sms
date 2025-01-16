@@ -1,16 +1,22 @@
 package org.niiish32x.sugarsms.app.job;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.util.concurrent.RateLimiter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.niiish32x.sugarsms.alarm.app.AlarmService;
 import org.niiish32x.sugarsms.alert.app.command.ProduceAlertRecordCommand;
+import org.niiish32x.sugarsms.alert.domain.entity.AlertRecordEO;
 import org.niiish32x.sugarsms.alert.domain.repo.AlertRecordRepo;
 
 import org.niiish32x.sugarsms.api.alert.dto.AlertInfoDTO;
 import org.niiish32x.sugarsms.alert.app.AlertService;
+import org.niiish32x.sugarsms.api.user.dto.SuposUserDTO;
+import org.niiish32x.sugarsms.app.disruptor.alert.event.AlertEvent;
 import org.niiish32x.sugarsms.app.disruptor.alert.event.AlertRecordEvent;
 import org.niiish32x.sugarsms.app.disruptor.alert.producer.DisruptorMqAlertProduceService;
 import org.niiish32x.sugarsms.common.result.Result;
-import org.niiish32x.sugarsms.alert.app.event.AlertEvent;
 import org.niiish32x.sugarsms.manager.thread.GlobalThreadManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
@@ -18,9 +24,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.RejectedExecutionHandler;
-import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.*;
 
 /**
  * AlertJob
@@ -32,6 +36,14 @@ import java.util.concurrent.ThreadPoolExecutor;
 @Slf4j
 @Component
 public class AlertJob {
+
+    private static final Cache<String,Integer> ALERT_SEND_MAP = CacheBuilder.newBuilder()
+            .expireAfterAccess(10, TimeUnit.MINUTES)
+            .initialCapacity(1000)
+            .build();
+
+    private final String EMAIL_ALERT_KEY = "ALERT_EMAIL_%s";
+    private final String SMS_ALERT_KEY = "ALERT_SMS_%s";
 
     @Autowired
     AlertService alertService;
@@ -50,14 +62,6 @@ public class AlertJob {
     @Autowired
     DisruptorMqAlertProduceService disruptorMqAlertProduceService;
 
-    static int maximumPoolSize = 300;
-    static int coolPoolSize = 100;
-
-
-    static RejectedExecutionHandler handler = new ThreadPoolExecutor.CallerRunsPolicy();
-
-    private static final ThreadPoolExecutor poolExecutor = GlobalThreadManager.getInstance().allocPool(coolPoolSize, maximumPoolSize,
-            10 * 60 * 1000, 3000, "sugar-sms-alert-pool", true ,handler);
 
     @Scheduled(fixedDelay = 1000 * 10)
     void getAlert() {
@@ -88,14 +92,76 @@ public class AlertJob {
         }
     }
 
-//    @Scheduled(fixedDelay = 1000)
-    void alert () {
-        List<Long> alertRecordIds = alertRecordRepo.findByAlertIdsByStatus(false);
+    @Scheduled(fixedDelay = 2 * 1000)
+    void alertSms () throws InterruptedException {
 
-        if (alertRecordIds != null && !alertRecordIds.isEmpty()) {
-            AlertEvent alertEvent = new AlertEvent(this,alertRecordIds);
-            publisher.publishEvent(alertEvent);
+        log.info(">>>>>>>>>>> start Sms alert >>>>>>>>>>>>>>>>>");
+
+        /**
+         * 先查Ids 再一条条根据去查 避免过多数据加载到内存
+         */
+        List<Long> alertRecordIds = alertRecordRepo.findPendingSendSmsAlertIds(100);
+        RateLimiter limiter =  RateLimiter.create(30);
+
+        if (alertRecordIds == null || alertRecordIds.isEmpty()) {
+            return;
         }
+
+        for (Long id : alertRecordIds) {
+            String key = String.format(SMS_ALERT_KEY, id);
+
+            if (ALERT_SEND_MAP.getIfPresent(key) != null ) {
+                continue;
+            }
+
+            limiter.tryAcquire();
+            disruptorMqAlertProduceService.produceAlertEvent(
+                    AlertEvent.builder()
+                            .alertRecordId(id)
+                            .build()
+            );
+
+            ALERT_SEND_MAP.put(key,1);
+        }
+
+        log.info(">>>>>>>>>>> finish Sms alert >>>>>>>>>>>>>>>>>");
+    }
+
+    /**
+     * email 邮件支持 最大连接数 远远小于 sms 要严格限制 流量
+     */
+    @Scheduled(fixedDelay = 5 * 1000)
+    void alertEmail () throws InterruptedException {
+
+        log.info(">>>>>>>>>>> start email alert >>>>>>>>>>>>>>>>>");
+
+        List<Long> alertRecordIds = alertRecordRepo.findPendingSendEmailAlertIds(10);
+
+        if (alertRecordIds == null || alertRecordIds.isEmpty()) {
+            return;
+        }
+
+
+        RateLimiter limiter =  RateLimiter.create(5);
+
+        for (Long id : alertRecordIds) {
+            String key = String.format(EMAIL_ALERT_KEY, id);
+
+            if (ALERT_SEND_MAP.getIfPresent(key) != null ) {
+                continue;
+            }
+
+            limiter.tryAcquire(1);
+            disruptorMqAlertProduceService.produceAlertEvent(
+                    AlertEvent.builder()
+                            .alertRecordId(id)
+                            .build()
+            );
+
+            ALERT_SEND_MAP.put(key,1);
+        }
+
+        log.info(">>>>>>>>>>> finish email alert >>>>>>>>>>>>>>>>>");
     }
 
 
