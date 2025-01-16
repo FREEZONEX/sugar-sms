@@ -1,9 +1,7 @@
 package org.niiish32x.sugarsms.alert.persistence.dao;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import org.apache.ibatis.annotations.Param;
 import org.niiish32x.sugarsms.alert.AlertRecordDO;
-import org.niiish32x.sugarsms.alert.domain.entity.AlertRecordEO;
 import org.niiish32x.sugarsms.alert.persistence.mapper.AlertRecordMapper;
 import org.springframework.stereotype.Component;
 
@@ -30,5 +28,15 @@ public class AlertRecordDAOImpl extends ServiceImpl<AlertRecordMapper, AlertReco
     @Override
     public List<Long> findByAlertIdsByStatus(boolean status) {
         return getBaseMapper().findByAlertIdsByStatus(status);
+    }
+
+    @Override
+    public List<Long> findAlertIdsByTypeAndStatus(String type, boolean status) {
+        return getBaseMapper().findAlertIdsByTypeAndStatus(type,status);
+    }
+
+    @Override
+    public boolean updateStatusById(Long alertId, boolean status) {
+        return getBaseMapper().updateStatusById(alertId,status);
     }
 }

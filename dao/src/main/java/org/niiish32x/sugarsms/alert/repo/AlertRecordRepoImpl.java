@@ -1,17 +1,14 @@
 package org.niiish32x.sugarsms.alert.repo;
 
-import cn.hutool.cron.timingwheel.SystemTimer;
 import org.niiish32x.sugarsms.alert.AlertRecordDO;
 import org.niiish32x.sugarsms.alert.domain.entity.AlertRecordEO;
 import org.niiish32x.sugarsms.alert.domain.entity.MessageType;
 import org.niiish32x.sugarsms.alert.domain.repo.AlertRecordRepo;
 import org.niiish32x.sugarsms.alert.persistence.converter.AlertRecordConverter;
 import org.niiish32x.sugarsms.alert.persistence.dao.AlertRecordDAO;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Resource;
-import java.sql.Time;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -32,6 +29,16 @@ public class AlertRecordRepoImpl implements AlertRecordRepo {
     @Resource
     private AlertRecordDAO alertRecordDAO;
 
+
+    @Override
+    public List<Long> findPendingSendEmailAlertIds() {
+        return alertRecordDAO.findAlertIdsByTypeAndStatus(MessageType.EMAIL.name(), false);
+    }
+
+    @Override
+    public List<Long> findPendingSendSmsAlertIds() {
+        return alertRecordDAO.findAlertIdsByTypeAndStatus(MessageType.SMS.name(), false);
+    }
 
     @Override
     public List<Long> findByAlertIdsByStatus(boolean status) {
@@ -175,6 +182,11 @@ public class AlertRecordRepoImpl implements AlertRecordRepo {
     @Override
     public AlertRecordEO findWithLimitByAlertId(Long alertId, Integer limit) {
         return converter.toEO(alertRecordDAO.findWithLimitByAlertId(alertId,limit));
+    }
+
+    @Override
+    public boolean updateStatusById(Long alertId, boolean status) {
+        return alertRecordDAO.updateStatusById(alertId,status);
     }
 
 }
