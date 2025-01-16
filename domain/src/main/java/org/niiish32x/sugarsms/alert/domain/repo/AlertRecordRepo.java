@@ -13,6 +13,10 @@ import java.util.List;
  */
 
 public interface AlertRecordRepo {
+    List<Long> findPendingSendEmailAlertIds(int recordCounts);
+
+    List<Long> findPendingSendSmsAlertIds(int recordCounts);
+
     List<Long> findByAlertIdsByStatus(boolean status);
 
     List<AlertRecordEO> findAlertsBeforeDays(Integer days);
@@ -73,4 +77,6 @@ public interface AlertRecordRepo {
     Boolean remove(List <Long> ids);
 
     AlertRecordEO findWithLimitByAlertId(Long alertId,Integer limit);
+
+    boolean updateStatusById(Long alertId, boolean status);
 }

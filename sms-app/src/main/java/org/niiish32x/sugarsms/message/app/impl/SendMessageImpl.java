@@ -42,10 +42,6 @@ public class SendMessageImpl implements SendMessageService {
 
 
 
-    @Override
-    public boolean sendEmail() {
-        return emailSenderProxy.sendTextEmail(EmailSenderProxy.PUBLIC_EMAIL_SUGAR,"1159417019@qq.com","test","测试");
-    }
 
     @Override
     public boolean sendEmail(String toMail, String subject, String text) {

@@ -11,10 +11,10 @@ import org.niiish32x.sugarsms.api.alert.dto.AlertInfoDTO;
  */
 
 @Data
-public class ProductAlertRecordCommand {
+public class ProduceAlertRecordCommand {
     private final AlertInfoDTO alertInfoDTO;
 
-    public ProductAlertRecordCommand(AlertInfoDTO alertInfoDTO) {
+    public ProduceAlertRecordCommand(AlertInfoDTO alertInfoDTO) {
         if (alertInfoDTO == null) {
             throw new IllegalArgumentException("alertInfoDTO cannot be null");
         }

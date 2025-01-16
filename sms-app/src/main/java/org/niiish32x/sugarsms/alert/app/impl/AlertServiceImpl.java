@@ -14,7 +14,7 @@ import org.niiish32x.sugarsms.alarm.app.command.SaveAlarmCommand;
 import org.niiish32x.sugarsms.alarm.app.external.AlarmRequest;
 import org.niiish32x.sugarsms.alarm.domain.entity.AlarmEO;
 import org.niiish32x.sugarsms.alarm.domain.repo.AlarmRepo;
-import org.niiish32x.sugarsms.alert.app.command.ProductAlertRecordCommand;
+import org.niiish32x.sugarsms.alert.app.command.ProduceAlertRecordCommand;
 import org.niiish32x.sugarsms.alert.domain.entity.AlertRecordEO;
 import org.niiish32x.sugarsms.alert.domain.entity.MessageType;
 import org.niiish32x.sugarsms.alert.domain.repo.AlertRecordRepo;
@@ -26,7 +26,6 @@ import org.niiish32x.sugarsms.common.enums.ApiEnum;
 import org.niiish32x.sugarsms.api.alert.dto.AlertResponse;
 import org.niiish32x.sugarsms.api.user.dto.RoleSpecDTO;
 import org.niiish32x.sugarsms.app.proxy.ZubrixSmsProxy;
-import org.niiish32x.sugarsms.app.queue.AlertMessageQueue;
 import org.niiish32x.sugarsms.alert.app.AlertService;
 import org.niiish32x.sugarsms.suposperson.app.SuposPersonService;
 import org.niiish32x.sugarsms.message.app.SendMessageService;
@@ -44,7 +43,6 @@ import org.niiish32x.sugarsms.user.app.external.UserPageQueryRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.*;
@@ -110,8 +108,6 @@ public class AlertServiceImpl implements AlertService {
     @Resource
     AlertRecordRepo alertRecordRepo;
 
-    @Autowired
-    AlertMessageQueue alertMessageQueue;
 
 
     @Autowired
@@ -214,7 +210,7 @@ public class AlertServiceImpl implements AlertService {
 
 
     @Override
-    public Result productAlertRecord(ProductAlertRecordCommand command) {
+    public Result productAlertRecord(ProduceAlertRecordCommand command) {
 
         AlertInfoDTO alertInfoDTO = command.getAlertInfoDTO();
 

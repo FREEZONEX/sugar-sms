@@ -14,8 +14,5 @@ public interface SendMessageService {
     Result <ZubrixSmsResponse> sendOneZubrixSmsMessage(String number, String text);
 
 
-
-    boolean sendEmail() ;
-
     boolean sendEmail(String toMail,String subject,String text) ;
 }
