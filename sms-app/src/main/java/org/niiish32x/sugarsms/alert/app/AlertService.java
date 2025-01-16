@@ -1,7 +1,6 @@
 package org.niiish32x.sugarsms.alert.app;
 
-import org.niiish32x.sugarsms.alert.app.command.ProductAlertRecordCommand;
-import org.niiish32x.sugarsms.alert.domain.entity.AlertRecordEO;
+import org.niiish32x.sugarsms.alert.app.command.ProduceAlertRecordCommand;
 import org.niiish32x.sugarsms.api.alert.dto.AlertInfoDTO;
 import org.niiish32x.sugarsms.api.user.dto.SuposUserDTO;
 import org.niiish32x.sugarsms.common.result.Result;
@@ -28,5 +27,5 @@ public interface AlertService {
       * 生成 初始化 需要发送的报警消息
       * @return
       */
-     Result productAlertRecord(ProductAlertRecordCommand alertInfoDTOS);
+     Result productAlertRecord(ProduceAlertRecordCommand alertInfoDTOS);
 }
