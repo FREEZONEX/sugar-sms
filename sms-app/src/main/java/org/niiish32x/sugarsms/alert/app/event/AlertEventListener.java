@@ -26,6 +26,7 @@ import java.util.concurrent.ThreadPoolExecutor;
  * @date 2024.12.15 14:18
  */
 
+@Deprecated
 @Component
 @Slf4j
 public class AlertEventListener {
@@ -45,12 +46,13 @@ public class AlertEventListener {
     static int maximumPoolSize = 300;
     static int coolPoolSize = 100;
 
-    static ConcurrentHashMap <String,Boolean> map = new ConcurrentHashMap<>();
-
     static RejectedExecutionHandler handler = new ThreadPoolExecutor.CallerRunsPolicy();
 
     private static final ThreadPoolExecutor poolExecutor = GlobalThreadManager.getInstance().allocPool(coolPoolSize, maximumPoolSize,
             10 * 60 * 1000, 3000, "sugar-sms-alert-pool", true ,handler);
+
+
+    static ConcurrentHashMap <String,Boolean> map = new ConcurrentHashMap<>();
 
     @EventListener
     public void receiveEvent(AlertEvent alertEvent) {

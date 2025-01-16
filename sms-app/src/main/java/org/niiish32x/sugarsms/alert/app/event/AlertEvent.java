@@ -14,6 +14,7 @@ import java.util.List;
  * @date 2024.12.15 14:17
  */
 
+@Deprecated
 @Getter
 public class AlertEvent extends ApplicationEvent {
 
