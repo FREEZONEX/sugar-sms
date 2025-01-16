@@ -5,7 +5,7 @@ import com.lmax.disruptor.YieldingWaitStrategy;
 import com.lmax.disruptor.dsl.Disruptor;
 import com.lmax.disruptor.dsl.ProducerType;
 import org.niiish32x.sugarsms.app.disruptor.alert.consumer.DisruptorMqAlertRecordConsumer;
-import org.niiish32x.sugarsms.app.disruptor.alert.consumer.DisruptorMqConsumer;
+import org.niiish32x.sugarsms.app.disruptor.alert.consumer.DisruptorMqAlertConsumer;
 import org.niiish32x.sugarsms.app.disruptor.alert.event.AlertMessgaeEventFactory;
 import org.niiish32x.sugarsms.app.disruptor.alert.event.AlertEvent;
 import org.niiish32x.sugarsms.app.disruptor.alert.event.AlertRecordEvent;
@@ -44,6 +44,9 @@ public class DisruptorQueueManager {
 
     @Autowired
     DisruptorMqAlertRecordConsumer disruptorMqAlertRecordConsumer;
+
+    @Autowired
+    DisruptorMqAlertConsumer disruptorMqAlertConsumer;
 
     @Bean
     public RingBuffer<AlertRecordEvent> alertRecordRingBuffer() {
@@ -107,7 +110,7 @@ public class DisruptorQueueManager {
         );
 
         // 设置事件业务处理器---消费者
-        disruptor.handleEventsWith(new DisruptorMqConsumer());
+        disruptor.handleEventsWith(disruptorMqAlertConsumer);
 
         // 启动disruptor线程
         disruptor.start();

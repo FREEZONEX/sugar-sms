@@ -8,6 +8,8 @@ import org.niiish32x.sugarsms.app.disruptor.alert.producer.DisruptorMqAlertProdu
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.concurrent.CountDownLatch;
+
 /**
  * DisruptorMqServiceImpl
  *
@@ -20,29 +22,24 @@ import org.springframework.stereotype.Component;
 public class DisruptorMqAlertProduceServiceImpl implements DisruptorMqAlertProduceService {
 
     @Autowired
-    private RingBuffer<AlertEvent> ringBuffer;
+    private RingBuffer<AlertEvent> alertEventRingBuffer;
 
 
     @Autowired
     private RingBuffer<AlertRecordEvent> alertRecordEventRingBuffer;
 
-    public void produce(String text) {
-
-        long next = ringBuffer.next();
-
-        try {
-            AlertEvent message = ringBuffer.get(next);
-            message.setMessage(text);
-        }finally {
-            ringBuffer.publish(next);
-        }
-
-    }
-
 
     @Override
-    public boolean produce(AlertEvent alertEvent) {
-        return false;
+    public void produceAlertEvent(AlertEvent alertEvent) {
+        long next = alertEventRingBuffer.next();
+
+        try {
+            AlertEvent message = alertEventRingBuffer.get(next);
+            message.setAlertRecordId(alertEvent.getAlertRecordId());
+            alertEventRingBuffer.publish(next);
+        }catch (Exception e){
+            log.error("produce AlertEvent error: " + e.getMessage());
+        }
     }
 
     @Override
@@ -53,7 +50,7 @@ public class DisruptorMqAlertProduceServiceImpl implements DisruptorMqAlertProdu
             AlertRecordEvent event = alertRecordEventRingBuffer.get(next);
             event.setAlertInfoDTO(alertRecordEvent.getAlertInfoDTO());
         }catch (Exception e){
-            log.error("produce AlertRecordEvent error");
+            log.error("produce AlertRecordEvent error: " + e.getMessage());
             return false;
         }
 

@@ -30,7 +30,7 @@ public class DisruptorMqAlertRecordConsumer implements EventHandler<AlertRecordE
 
         try {
             Retrys.doWithRetry(() ->
-                    alertService.productAlertRecord(new ProduceAlertRecordCommand(alertInfoDTO)), result -> result.isSuccess() , 3, 1000);
+                    alertService.productAlertRecord(new ProduceAlertRecordCommand(alertInfoDTO)), result -> result.isSuccess() , 3, 3 * 1000);
         } catch (Throwable e) {
             throw new RuntimeException(e);
         }
