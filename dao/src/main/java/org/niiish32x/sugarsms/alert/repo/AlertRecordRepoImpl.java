@@ -31,13 +31,13 @@ public class AlertRecordRepoImpl implements AlertRecordRepo {
 
 
     @Override
-    public List<Long> findPendingSendEmailAlertIds() {
-        return alertRecordDAO.findAlertIdsByTypeAndStatus(MessageType.EMAIL.name(), false);
+    public List<Long> findPendingSendEmailAlertIds(int recordCounts) {
+        return alertRecordDAO.findAlertIdsByTypeAndStatus(MessageType.EMAIL.name(), false,recordCounts);
     }
 
     @Override
-    public List<Long> findPendingSendSmsAlertIds() {
-        return alertRecordDAO.findAlertIdsByTypeAndStatus(MessageType.SMS.name(), false);
+    public List<Long> findPendingSendSmsAlertIds(int recordCounts) {
+        return alertRecordDAO.findAlertIdsByTypeAndStatus(MessageType.SMS.name(), false,recordCounts);
     }
 
     @Override

@@ -31,8 +31,8 @@ public class AlertRecordDAOImpl extends ServiceImpl<AlertRecordMapper, AlertReco
     }
 
     @Override
-    public List<Long> findAlertIdsByTypeAndStatus(String type, boolean status) {
-        return getBaseMapper().findAlertIdsByTypeAndStatus(type,status);
+    public List<Long> findAlertIdsByTypeAndStatus(String type, boolean status,int limit) {
+        return getBaseMapper().findAlertIdsByTypeAndStatus(type,status,limit);
     }
 
     @Override

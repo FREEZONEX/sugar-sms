@@ -27,11 +27,11 @@ public interface AlertRecordMapper extends BaseMapper<AlertRecordDO> {
      * key: idx_status \ key_len:2
      * extra: using index
      */
-    @Select("select id from alert_record where status = #{status}")
+    @Select("select id from alert_record where status = #{status} ")
     List<Long> findByAlertIdsByStatus(@Param("status") boolean status);
 
-    @Select("select id from alert_record where type = #{type} and status = #{status}")
-    List<Long> findAlertIdsByTypeAndStatus(@Param("type") String type, @Param("status") boolean status);
+    @Select("select id from alert_record where type = #{type} and status = #{status} limit #{limit}")
+    List<Long> findAlertIdsByTypeAndStatus(@Param("type") String type, @Param("status") boolean status,@Param("limit") int limit);
 
     /**
      * 获取距离当前时间 days 所有 alert数据

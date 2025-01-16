@@ -13,9 +13,9 @@ import java.util.List;
  */
 
 public interface AlertRecordRepo {
-    List<Long> findPendingSendEmailAlertIds();
+    List<Long> findPendingSendEmailAlertIds(int recordCounts);
 
-    List<Long> findPendingSendSmsAlertIds();
+    List<Long> findPendingSendSmsAlertIds(int recordCounts);
 
     List<Long> findByAlertIdsByStatus(boolean status);
 
