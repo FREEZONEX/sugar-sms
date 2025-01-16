@@ -1,15 +1,14 @@
 package org.niiish32x.sugarsms.app.job;
 
-import com.alibaba.fastjson2.JSON;
 import lombok.extern.slf4j.Slf4j;
 import org.niiish32x.sugarsms.alarm.app.AlarmService;
-import org.niiish32x.sugarsms.alert.app.command.ProductAlertRecordCommand;
-import org.niiish32x.sugarsms.alert.domain.entity.AlertRecordEO;
+import org.niiish32x.sugarsms.alert.app.command.ProduceAlertRecordCommand;
 import org.niiish32x.sugarsms.alert.domain.repo.AlertRecordRepo;
 
 import org.niiish32x.sugarsms.api.alert.dto.AlertInfoDTO;
-import org.niiish32x.sugarsms.app.queue.AlertMessageQueue;
 import org.niiish32x.sugarsms.alert.app.AlertService;
+import org.niiish32x.sugarsms.app.disruptor.alert.event.AlertRecordEvent;
+import org.niiish32x.sugarsms.app.disruptor.alert.producer.DisruptorMqAlertProduceService;
 import org.niiish32x.sugarsms.common.result.Result;
 import org.niiish32x.sugarsms.alert.app.event.AlertEvent;
 import org.niiish32x.sugarsms.manager.thread.GlobalThreadManager;
@@ -37,8 +36,6 @@ public class AlertJob {
     @Autowired
     AlertService alertService;
 
-    @Autowired
-    AlertMessageQueue alertMessageQueue;
 
     @Autowired
     AlertRecordRepo alertRecordRepo;
@@ -49,6 +46,9 @@ public class AlertJob {
 
     @Autowired
     ApplicationEventPublisher publisher;
+
+    @Autowired
+    DisruptorMqAlertProduceService disruptorMqAlertProduceService;
 
     static int maximumPoolSize = 300;
     static int coolPoolSize = 100;
@@ -77,16 +77,18 @@ public class AlertJob {
 
 
             for (AlertInfoDTO alertInfoDTO : alertInfoDTOS) {
-                CompletableFuture.runAsync(() -> alertService.productAlertRecord(new ProductAlertRecordCommand(alertInfoDTO)),poolExecutor) ;
+                disruptorMqAlertProduceService.produceAlertRecordEvent(
+                        AlertRecordEvent.builder()
+                                .alertInfoDTO(alertInfoDTO)
+                                .build()
+                );
             }
-
-            CompletableFuture.allOf();
         } catch (Exception e) {
             log.error("定时任务执行过程中发生异常", e);
         }
     }
 
-    @Scheduled(fixedDelay = 1000)
+//    @Scheduled(fixedDelay = 1000)
     void alert () {
         List<Long> alertRecordIds = alertRecordRepo.findByAlertIdsByStatus(false);
 
