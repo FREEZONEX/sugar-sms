@@ -25,13 +25,13 @@ import org.niiish32x.sugarsms.api.alarm.dto.AlarmDTO;
 import org.niiish32x.sugarsms.api.alert.dto.AlertInfoDTO;
 import org.niiish32x.sugarsms.api.person.dto.SuposPersonDTO;
 import org.niiish32x.sugarsms.api.user.dto.SuposUserDTO;
+import org.niiish32x.sugarsms.app.proxy.AlertContentBuilder;
 import org.niiish32x.sugarsms.common.enums.ApiEnum;
 import org.niiish32x.sugarsms.api.alert.dto.AlertResponse;
 import org.niiish32x.sugarsms.api.user.dto.RoleSpecDTO;
 import org.niiish32x.sugarsms.app.proxy.ZubrixSmsProxy;
 import org.niiish32x.sugarsms.alert.app.AlertService;
 import org.niiish32x.sugarsms.suposperson.app.SuposPersonService;
-import org.niiish32x.sugarsms.message.app.SendMessageService;
 import org.niiish32x.sugarsms.suposperson.app.command.SavePersonCommand;
 import org.niiish32x.sugarsms.suposperson.app.external.PersonPageQueryRequest;
 import org.niiish32x.sugarsms.suposperson.domain.entity.SuposPersonEO;
@@ -234,6 +234,76 @@ public class AlertServiceImpl implements AlertService {
         return alertRecordRepo.remove(ids);
     }
 
+    @Override
+    public boolean productAlertRecord(AlertEO alertEO) {
+
+        try {
+            Result<List<SuposUserDTO>> alertUsersResult = getAlertUsers();
+            if (!alertUsersResult.isSuccess() || alertUsersResult.getData() == null) {
+                log.error("获取告警用户失败: {}", alertUsersResult.getMessage());
+                return false;
+            }
+
+            List<SuposUserDTO> userDTOS = alertUsersResult.getData();
+
+            AlarmEO alarmEO = null;
+
+            alarmEO = ALARM_CACHE.getIfPresent(alertEO.getSourcePropertyName());
+
+            if (alarmEO == null) {
+                alarmEO = alarmRepo.findWithAttributeEnName(alertEO.getSourcePropertyName());
+            }
+
+            if (alarmEO == null) {
+                Result<List<AlarmDTO>> alarmsFromSupos = alarmService.getAlarmsFromSupos(
+                        AlarmRequest.builder()
+                                .attributeEnName(alertEO.getSourcePropertyName())
+                                .build());
+
+                if (!alarmsFromSupos.isSuccess() || alarmsFromSupos.getData() == null || alarmsFromSupos.getData().isEmpty()) {
+                    log.error("获取alarmsFromSupos 报警详情信息异常或为空: {}", alarmsFromSupos.getMessage());
+                    return false;
+                }
+
+                AlarmDTO alarmDTO = alarmsFromSupos.getData().get(0);
+                SaveAlarmCommand saveAlarmCommand = new SaveAlarmCommand(alarmDTO);
+                Result<Boolean> saveRes = alarmService.save(saveAlarmCommand);
+
+                if (!saveRes.isSuccess()) {
+                    log.error("保存alarmsFromSupos 报警详情信息异常: {}", saveRes.getMessage());
+                    return false;
+                }
+
+                alarmEO = alarmRepo.findWithAttributeEnName(alertEO.getSourcePropertyName());
+            }
+
+            ALARM_CACHE.put(alertEO.getSourcePropertyName(), alarmEO);
+
+            String text = zubrixSmsProxy.formatTextContent(AlertContentBuilder.builder()
+                            .sourcePropertyName(alertEO.getSourcePropertyName())
+                            .newValue(alertEO.getNewValue())
+                            .source(alertEO.getSource())
+                            .startDataTimestamp(alertEO.getStartDataTimestamp())
+                            .limitValue(alarmEO.getLimitValue())
+                    .build());
+
+            List<AlertRecordEO> alertRecords = new ArrayList<>();
+            for (SuposUserDTO userDTO : userDTOS) {
+                CompletableFuture<List<AlertRecordEO>> listCompletableFuture = CompletableFuture.supplyAsync(() -> prepareAlertRecord(userDTO, alertEO, text), poolExecutor);
+                alertRecords.addAll(listCompletableFuture.get());
+            }
+
+            alertRecordRepo.save(alertRecords);
+
+            return true;
+        } catch (Exception e) {
+            log.error("处理告警记录时发生异常: {}", e.getMessage(), e);
+            return false;
+        } catch (Throwable e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 
     @Override
     public Result productAlertRecord(ProduceAlertRecordCommand command) {
@@ -310,7 +380,72 @@ public class AlertServiceImpl implements AlertService {
         }
     }
 
+    private List<AlertRecordEO> prepareAlertRecord(SuposUserDTO userDTO, AlertEO alertEO, String text) {
+        List<AlertRecordEO> alertRecords = new ArrayList<>();
 
+        String phoneNumber = null;
+        String email = null;
+
+        SuposPersonEO personEO = null;
+
+        personEO = PERSON_CACHE.getIfPresent(userDTO.getPersonCode());
+
+        if (personEO == null ) {
+            personEO = suposPersonRepo.findByCode(userDTO.getPersonCode());
+        }else if (personEO.getUser().getModifyTime() != null &&  personEO.getUser().getModifyTime() != userDTO.getModifyTime()) {
+            /**
+             * User 并非最新的User 删除本地缓存
+             */
+            PERSON_CACHE.invalidate(userDTO.getPersonCode());
+            suposPersonRepo.softRemove(personEO);
+        }
+
+        if (personEO == null || personEO.getDeleted() || personEO.getUser().getModifyTime() != userDTO.getModifyTime() ) {
+            synchronized (this){
+                if (personEO == null || personEO.getDeleted()) {
+                    PersonPageQueryRequest request = PersonPageQueryRequest.builder()
+                            .companyCode(CompanyEnum.DEFAULT.value)
+                            .hasBoundUser(true)
+                            .username(userDTO.getUsername())
+                            .build();
+                    Result<List<SuposPersonDTO>> peronFromSupos = suposPersonService.searchPeronFromSupos(request);
+
+                    if (!peronFromSupos.isSuccess() || peronFromSupos.getData() == null || peronFromSupos.getData().isEmpty()) {
+                        log.error("获取用户信息失败: {}", userDTO.getPersonCode());
+                    }
+
+
+                    SavePersonCommand savePersonCommand = new SavePersonCommand(peronFromSupos.getData().get(0));
+                    Result savePerson = suposPersonService.savePerson(savePersonCommand);
+                    if (!savePerson.isSuccess()) {
+                        log.error("保存用户信息失败: {}", savePerson.getMessage());
+                    }
+                }
+            }
+
+            personEO = suposPersonRepo.findByCode(userDTO.getPersonCode());
+        }
+
+        Preconditions.checkArgument(personEO != null, "personEO is null " + userDTO.getUsername());
+        PERSON_CACHE.put(userDTO.getPersonCode(), personEO);
+        phoneNumber = personEO.getPhone() == null ? null : personEO.getPhone().trim();
+        email =  personEO.getEmail() == null ? null : personEO.getEmail().trim();
+
+        // 验证手机号
+        if ( StringUtils.isNotBlank(phoneNumber) && isValidPhoneNumber(Objects.requireNonNull(phoneNumber))) {
+            alertRecords.add(buildAlertRecordEO(alertEO.getAlertId(), userDTO.getUsername(), phoneNumber, null, MessageType.SMS, text, false));
+        }
+
+        // 验证邮箱
+        if (StringUtils.isNotBlank(email) && isValidEmail(email)) {
+            alertRecords.add(buildAlertRecordEO(alertEO.getAlertId(), userDTO.getUsername(), null, email, MessageType.EMAIL, text, false));
+        }
+
+        return alertRecords;
+    }
+
+
+    @Deprecated
     private List<AlertRecordEO> prepareAlertRecord(SuposUserDTO userDTO, AlertInfoDTO alertInfoDTO, String text) {
         List<AlertRecordEO> alertRecords = new ArrayList<>();
 
@@ -364,23 +499,24 @@ public class AlertServiceImpl implements AlertService {
 
         // 验证手机号
         if ( StringUtils.isNotBlank(phoneNumber) && isValidPhoneNumber(Objects.requireNonNull(phoneNumber))) {
-            alertRecords.add(buildAlertRecordEO(alertInfoDTO, userDTO.getUsername(), phoneNumber, null, MessageType.SMS, text, false));
+            alertRecords.add(buildAlertRecordEO(alertInfoDTO.getId(), userDTO.getUsername(), phoneNumber, null, MessageType.SMS, text, false));
         }
 
         // 验证邮箱
         if (StringUtils.isNotBlank(email) && isValidEmail(email)) {
-            alertRecords.add(buildAlertRecordEO(alertInfoDTO, userDTO.getUsername(), null, email, MessageType.EMAIL, text, false));
+            alertRecords.add(buildAlertRecordEO(alertInfoDTO.getId(), userDTO.getUsername(), null, email, MessageType.EMAIL, text, false));
         }
 
         return alertRecords;
     }
 
 
-    private AlertRecordEO buildAlertRecordEO(AlertInfoDTO alertInfoDTO,String username,String phone,String email,MessageType type,String text,Boolean status) {
+
+    private AlertRecordEO buildAlertRecordEO(Long alertId,String username,String phone,String email,MessageType type,String text,Boolean status) {
         if (type == MessageType.SMS) {
             return AlertRecordEO.builder()
                     .type(MessageType.SMS)
-                    .alertId(alertInfoDTO.getId())
+                    .alertId(alertId)
                     .username(username)
                     .content(text)
                     .sendTime(new Date())
@@ -390,7 +526,7 @@ public class AlertServiceImpl implements AlertService {
         }else {
             return AlertRecordEO.builder()
                     .type(MessageType.EMAIL)
-                    .alertId(alertInfoDTO.getId())
+                    .alertId(alertId)
                     .username(username)
                     .content(text)
                     .sendTime(new Date())

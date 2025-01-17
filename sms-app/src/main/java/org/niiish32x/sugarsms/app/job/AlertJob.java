@@ -7,9 +7,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.niiish32x.sugarsms.alarm.app.AlarmService;
 import org.niiish32x.sugarsms.alert.app.command.ProduceAlertRecordCommand;
+import org.niiish32x.sugarsms.alert.app.command.SaveAlertCommand;
+import org.niiish32x.sugarsms.alert.domain.entity.AlertEO;
 import org.niiish32x.sugarsms.alert.domain.entity.AlertRecordEO;
 import org.niiish32x.sugarsms.alert.domain.repo.AlertRecordRepo;
 
+import org.niiish32x.sugarsms.alert.domain.repo.AlertRepo;
 import org.niiish32x.sugarsms.api.alert.dto.AlertInfoDTO;
 import org.niiish32x.sugarsms.alert.app.AlertService;
 import org.niiish32x.sugarsms.api.user.dto.SuposUserDTO;
@@ -63,27 +66,35 @@ public class AlertJob {
     DisruptorMqAlertProduceService disruptorMqAlertProduceService;
 
 
+    @Autowired
+    AlertRepo alertRepo;
+
+//    @Scheduled(fixedDelay = 1000 * 10)
+    void getAlert(){
+        Result<List<AlertInfoDTO>> alertsResp = alertService.getAlertsFromSupos();
+
+        if (!alertsResp.isSuccess()) {
+            log.error("alert api 获取异常: {}", alertsResp.getMessage());
+            return;
+        }
+
+        List<AlertInfoDTO> alertInfoDTOS = alertsResp.getData();
+
+        for (AlertInfoDTO alertInfoDTO : alertInfoDTOS) {
+            alertService.saveAlert(new SaveAlertCommand(alertInfoDTO));
+        }
+    }
+
     @Scheduled(fixedDelay = 1000 * 10)
-    void getAlert() {
+    void generateRecord() {
         try {
-            Result<List<AlertInfoDTO>> alertsResp = alertService.getAlertsFromSupos();
 
-            if (!alertsResp.isSuccess()) {
-                log.error("alert api 获取异常: {}", alertsResp.getMessage());
-                return;
-            }
+            List<AlertEO> unFinishedAlerts = alertRepo.findUnFinishedAlerts(2);
 
-            List<AlertInfoDTO> alertInfoDTOS = alertsResp.getData();
-
-            if (alertInfoDTOS == null || alertInfoDTOS.isEmpty()) {
-                return;
-            }
-
-
-            for (AlertInfoDTO alertInfoDTO : alertInfoDTOS) {
+            for (AlertEO alertEO: unFinishedAlerts) {
                 disruptorMqAlertProduceService.produceAlertRecordEvent(
                         AlertRecordEvent.builder()
-                                .alertInfoDTO(alertInfoDTO)
+                                .alertEO(alertEO)
                                 .build()
                 );
             }
@@ -92,7 +103,7 @@ public class AlertJob {
         }
     }
 
-    @Scheduled(fixedDelay = 2 * 1000)
+//    @Scheduled(fixedDelay = 2 * 1000)
     void alertSms () throws InterruptedException {
 
         log.info(">>>>>>>>>>> start Sms alert >>>>>>>>>>>>>>>>>");
@@ -130,7 +141,7 @@ public class AlertJob {
     /**
      * email 邮件支持 最大连接数 远远小于 sms 要严格限制 流量
      */
-    @Scheduled(fixedDelay = 5 * 1000)
+//    @Scheduled(fixedDelay = 5 * 1000)
     void alertEmail () throws InterruptedException {
 
         log.info(">>>>>>>>>>> start email alert >>>>>>>>>>>>>>>>>");

@@ -2,6 +2,8 @@ package org.niiish32x.sugarsms.alert.domain.repo;
 
 import org.niiish32x.sugarsms.alert.domain.entity.AlertEO;
 
+import java.util.List;
+
 /**
  * AlertRepo
  *
@@ -10,4 +12,6 @@ import org.niiish32x.sugarsms.alert.domain.entity.AlertEO;
  */
 public interface AlertRepo {
     boolean saveOrUpdate(AlertEO alertEO);
+
+    List<AlertEO> findUnFinishedAlerts(int nums);
 }

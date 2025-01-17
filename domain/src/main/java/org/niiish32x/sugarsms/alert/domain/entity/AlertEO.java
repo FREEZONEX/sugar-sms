@@ -32,5 +32,6 @@ public class AlertEO {
     private String newValue;
     private Integer valType;
     private String oldValue;
+    private long startDataTimestamp;
     private boolean finishGenerateAlertRecord;
 }

@@ -11,6 +11,10 @@ import org.niiish32x.sugarsms.alert.persistence.dao.AlertRecordDAO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
 /**
  * AlertRepoImpl
  *
@@ -51,5 +55,19 @@ public class AlertRepoImpl implements AlertRepo {
         }
 
         return alertDAO.save(alertDO);
+    }
+
+    @Override
+    public List<AlertEO> findUnFinishedAlerts(int nums) {
+
+        List<AlertDO> list = alertDAO.lambdaQuery().eq(AlertDO::getFinishGenerateAlertRecord, 0).list();
+
+        if (list == null || list.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        list = list.subList(0, nums);
+
+        return list.stream().map(converter::toEO).collect(Collectors.toList());
     }
 }

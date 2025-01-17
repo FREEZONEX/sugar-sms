@@ -1,7 +1,9 @@
 package org.niiish32x.sugarsms.alert.app;
 
+import javafx.scene.control.Alert;
 import org.niiish32x.sugarsms.alert.app.command.ProduceAlertRecordCommand;
 import org.niiish32x.sugarsms.alert.app.command.SaveAlertCommand;
+import org.niiish32x.sugarsms.alert.domain.entity.AlertEO;
 import org.niiish32x.sugarsms.api.alert.dto.AlertInfoDTO;
 import org.niiish32x.sugarsms.api.user.dto.SuposUserDTO;
 import org.niiish32x.sugarsms.common.result.Result;
@@ -22,8 +24,11 @@ public interface AlertService {
 
      Result<List<SuposUserDTO>>  getAlertUsers();
 
+
      Boolean cleanAlertPastDays(Integer days);
 
+
+     boolean productAlertRecord(AlertEO alertEO);
 
      /**
       * 生成 初始化 需要发送的报警消息
