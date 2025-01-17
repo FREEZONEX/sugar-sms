@@ -20,10 +20,6 @@ public class AlertRecordDAOImpl extends ServiceImpl<AlertRecordMapper, AlertReco
         return getBaseMapper().findAlertBeforeDays(days);
     }
 
-    @Override
-    public AlertRecordDO findWithLimitByAlertId(Long alertId, Integer limit) {
-        return getBaseMapper().findWithLimitByAlertId(alertId,limit);
-    }
 
     @Override
     public List<Long> findByAlertIdsByStatus(boolean status) {

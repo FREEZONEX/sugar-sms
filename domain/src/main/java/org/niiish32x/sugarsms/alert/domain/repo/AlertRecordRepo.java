@@ -76,7 +76,5 @@ public interface AlertRecordRepo {
      */
     Boolean remove(List <Long> ids);
 
-    AlertRecordEO findWithLimitByAlertId(Long alertId,Integer limit);
-
     boolean updateStatusById(Long alertId, boolean status);
 }

@@ -180,11 +180,6 @@ public class AlertRecordRepoImpl implements AlertRecordRepo {
     }
 
     @Override
-    public AlertRecordEO findWithLimitByAlertId(Long alertId, Integer limit) {
-        return converter.toEO(alertRecordDAO.findWithLimitByAlertId(alertId,limit));
-    }
-
-    @Override
     public boolean updateStatusById(Long alertId, boolean status) {
         return alertRecordDAO.updateStatusById(alertId,status);
     }
