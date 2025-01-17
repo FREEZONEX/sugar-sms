@@ -52,5 +52,7 @@ public class AlertDO implements Serializable {
     private Integer valType;
     @TableField(value = "old_value")
     private String oldValue;
+    @TableField(value = "finish_generate_alert_record")
+    private Integer finishGenerateAlertRecord;
 
 }
