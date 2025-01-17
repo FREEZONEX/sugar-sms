@@ -5,7 +5,9 @@ import com.alibaba.fastjson2.TypeReference;
 import org.apache.commons.lang3.StringUtils;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.Named;
 import org.mapstruct.factory.Mappers;
+import org.niiish32x.sugarsms.alarm.domain.entity.AlarmEO;
 import org.niiish32x.sugarsms.alert.AlertRecordDO;
 import org.niiish32x.sugarsms.alert.domain.entity.AlertRecordEO;
 import org.niiish32x.sugarsms.alert.domain.entity.MessageType;
@@ -24,22 +26,31 @@ public interface AlertRecordConverter {
 
     @Mapping(target = "type",expression = "java(alertRecordEO.getType().name())")
     @Mapping(target = "status" , expression = "java(alertRecordEO.getStatus() ? 1 : 0)")
+    @Mapping(target = "alarm", expression = "java(JSON.toJSONString(alertRecordEO.getAlarm()))")
     AlertRecordDO toDO(AlertRecordEO alertRecordEO);
 
-    @Mapping(target = "type",expression = "java(parseMessageTypeTDO(alertRecordDO))")
+    @Mapping(target = "type", source = "type",qualifiedByName = "parseMessageTypeToEO")
     @Mapping(target = "status", expression = "java(alertRecordDO.getStatus() == 1 ? true : false)")
+    @Mapping(target = "alarm", source = "alarm" , qualifiedByName = "parseAlarmToEO")
     AlertRecordEO toEO(AlertRecordDO alertRecordDO);
 
-    default MessageType parseMessageTypeTDO (AlertRecordDO alertRecordDO) {
-        if (StringUtils.equals(alertRecordDO.getType(), "SMS")) {
+
+    @Named("parseMessageTypeToEO")
+    default MessageType parseMessageTypeToEO (String type) {
+        if (StringUtils.equals(type , "SMS")) {
             return MessageType.SMS;
         }
 
-        if (StringUtils.equals(alertRecordDO.getType(),"EMAIL")){
+        if (StringUtils.equals(type , "EMAIL")){
             return MessageType.EMAIL;
         }
 
         return null;
+    }
+
+    @Named("parseAlarmToEO")
+    default AlarmEO parseAlarmToEO(String alarm) {
+        return JSON.parseObject(alarm, AlarmEO.class);
     }
 
 }
