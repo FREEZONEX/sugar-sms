@@ -4,8 +4,8 @@ import com.alibaba.fastjson2.annotation.JSONField;
 import lombok.Data;
 
 /**
- * AlertMessageDTO
- *
+ * AlertInfoDTO
+ * 实时报警
  * @author shenghao ni
  * @date 2024.12.10 9:57
  */

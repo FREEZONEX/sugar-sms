@@ -42,7 +42,7 @@ public class AlertDO implements Serializable {
     private String sourceShowName;
     @TableField(value = "source_property_name")
     private String sourcePropertyName;
-    @TableField(value = "source_property_show_name")
+    @TableField(value = "source_prop_show_name")
     private String sourcePropShowName;
     @TableField(value = "description")
     private String description;

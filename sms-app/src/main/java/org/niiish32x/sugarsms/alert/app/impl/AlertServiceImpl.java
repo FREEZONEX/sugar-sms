@@ -15,9 +15,12 @@ import org.niiish32x.sugarsms.alarm.app.external.AlarmRequest;
 import org.niiish32x.sugarsms.alarm.domain.entity.AlarmEO;
 import org.niiish32x.sugarsms.alarm.domain.repo.AlarmRepo;
 import org.niiish32x.sugarsms.alert.app.command.ProduceAlertRecordCommand;
+import org.niiish32x.sugarsms.alert.app.command.SaveAlertCommand;
+import org.niiish32x.sugarsms.alert.domain.entity.AlertEO;
 import org.niiish32x.sugarsms.alert.domain.entity.AlertRecordEO;
 import org.niiish32x.sugarsms.alert.domain.entity.MessageType;
 import org.niiish32x.sugarsms.alert.domain.repo.AlertRecordRepo;
+import org.niiish32x.sugarsms.alert.domain.repo.AlertRepo;
 import org.niiish32x.sugarsms.api.alarm.dto.AlarmDTO;
 import org.niiish32x.sugarsms.api.alert.dto.AlertInfoDTO;
 import org.niiish32x.sugarsms.api.person.dto.SuposPersonDTO;
@@ -126,13 +129,11 @@ public class AlertServiceImpl implements AlertService {
     @Resource
     SuposRequestManager requestManager;
 
-
-    @Resource
-    SendMessageService sendMessageService;
-
     @Autowired
     SuposPersonRepo suposPersonRepo;
 
+    @Autowired
+    AlertRepo alertRepo;
 
 
     @Override
@@ -142,6 +143,31 @@ public class AlertServiceImpl implements AlertService {
         HttpResponse response = requestManager.suposApiGet(ApiEnum.ALERT_API.value, headerMap, queryMap);
         AlertResponse alertResponse = JSON.parseObject(response.body(), AlertResponse.class);
         return alertResponse.getCode() == 200 ? Result.success(alertResponse.getAlerts())  : Result.error("查询报警信息失败") ;
+    }
+
+    @Override
+    public Result<Boolean> saveAlert(SaveAlertCommand command) {
+        AlertInfoDTO alertInfoDTO = command.getAlertInfoDTO();
+
+        AlertEO alertEO = AlertEO.builder()
+                .alertId(alertInfoDTO.getId())
+                .alertName(alertInfoDTO.getAlertName())
+                .showName(alertInfoDTO.getShowName())
+                .priority(alertInfoDTO.getPriority())
+                .source(alertInfoDTO.getSource())
+                .sourceShowName(alertInfoDTO.getSourceShowName())
+                .sourcePropertyName(alertInfoDTO.getSourcePropertyName())
+                .sourcePropShowName(alertInfoDTO.getSourcePropShowName())
+                .description(alertInfoDTO.getDescription())
+                .newValue(alertInfoDTO.getNewValue())
+                .valType(alertInfoDTO.getValType())
+                .oldValue(alertInfoDTO.getOldValue())
+                .finishGenerateAlertRecord(false)
+                .build();
+
+        boolean res = alertRepo.saveOrUpdate(alertEO);
+
+        return res ? Result.success(true) : Result.error("save alert error! alertId: "+alertEO.getAlertId());
     }
 
 
