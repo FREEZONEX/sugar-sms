@@ -17,7 +17,6 @@ CREATE TABLE `alert_record` (   `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 
                                 index idx_status(status),
                                 index idx_alert_id(alert_id),
                                 index idx_type(type),
-                                unique idx_uni_alert_id_type_username(alert_id,type,username),
                                 PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='报警消息记录表';
 
