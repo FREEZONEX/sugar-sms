@@ -40,7 +40,7 @@ public class AlertRecordRepoImpl implements AlertRecordRepo {
                 // 未发送完成
                 .eq(AlertRecordDO::getStatus, 0)
                 // 未过期
-                .eq(AlertRecordDO::getExpire, 0)
+//                .eq(AlertRecordDO::getExpire, 0)
                 .list();
 
         List<AlertRecordDO> alertRecordDOS = list.subList(0, Math.min(recordCounts, list.size()));
@@ -55,7 +55,7 @@ public class AlertRecordRepoImpl implements AlertRecordRepo {
                 // 未发送完成
                 .eq(AlertRecordDO::getStatus, 0)
                 // 未过期
-                .eq(AlertRecordDO::getExpire, 0)
+//                .eq(AlertRecordDO::getExpire, 0)
                 .list();
 
         List<AlertRecordDO> alertRecordDOS = list.subList(0, Math.min(recordCounts, list.size()));
