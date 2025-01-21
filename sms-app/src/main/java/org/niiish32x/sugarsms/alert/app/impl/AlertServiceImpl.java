@@ -2,6 +2,7 @@ package org.niiish32x.sugarsms.alert.app.impl;
 
 import cn.hutool.http.HttpResponse;
 import com.alibaba.fastjson2.JSON;
+import com.alibaba.fastjson2.JSONArray;
 import com.google.common.base.Preconditions;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
@@ -23,13 +24,11 @@ import org.niiish32x.sugarsms.alert.domain.entity.MessageType;
 import org.niiish32x.sugarsms.alert.domain.repo.AlertRecordRepo;
 import org.niiish32x.sugarsms.alert.domain.repo.AlertRepo;
 import org.niiish32x.sugarsms.api.alarm.dto.AlarmDTO;
-import org.niiish32x.sugarsms.api.alert.dto.AlertInfoDTO;
-import org.niiish32x.sugarsms.api.alert.dto.AlertRecordDTO;
+import org.niiish32x.sugarsms.api.alert.dto.*;
 import org.niiish32x.sugarsms.api.person.dto.SuposPersonDTO;
 import org.niiish32x.sugarsms.api.user.dto.SuposUserDTO;
 import org.niiish32x.sugarsms.app.proxy.AlertContentBuilder;
 import org.niiish32x.sugarsms.common.enums.ApiEnum;
-import org.niiish32x.sugarsms.api.alert.dto.AlertResponse;
 import org.niiish32x.sugarsms.api.user.dto.RoleSpecDTO;
 import org.niiish32x.sugarsms.app.proxy.ZubrixSmsProxy;
 import org.niiish32x.sugarsms.alert.app.AlertService;
@@ -400,6 +399,47 @@ public class AlertServiceImpl implements AlertService {
         }
 
         return Result.success(alertRecordDTOS);
+    }
+
+    @Override
+    public Result ackAlerts() {
+        Map<String, String> headerMap = new HashMap<>();
+        Map<String, String> queryMap = new HashMap<>();
+
+        Map<String,Object> jsonMap = new HashMap<>();
+
+        List<AlertEO> alertEOS = alertRepo.find();
+
+        if (alertEOS == null || alertEOS.isEmpty()) {
+            return Result.success("无记录 不需要确认");
+        }
+
+        AlertAckRequest alertAckRequest = AlertAckRequest.builder()
+                .ackAll("true") // 确认所有
+                .userName("admin")
+                .build();
+
+        List <String> fullNamesParamlist = new ArrayList<>();
+
+        for (AlertEO alertEO : alertEOS) {
+            String s = alertEO.getAlertId() +  alertEO.getAlertName();
+            fullNamesParamlist.add(s);
+        }
+
+        jsonMap.put("ackAll",true);
+        jsonMap.put("userName",alertAckRequest.getUserName());
+
+
+        jsonMap.put("fullNames",fullNamesParamlist);
+
+        HttpResponse response = requestManager.suposApiPost(ApiEnum.ALERT_ACK_POST_API.value, headerMap, queryMap,JSON.toJSONString(jsonMap));
+
+        if (response.getStatus() == 200) {
+            return Result.success("确认报警完成");
+        }
+
+        AlertAckResponse alertAckResponse = JSON.parseObject(response.body(), AlertAckResponse.class);
+        return Result.error(JSON.toJSONString(alertAckResponse)) ;
     }
 
     private List<AlertRecordEO> prepareAlertRecord(SuposUserDTO userDTO, AlertEO alertEO, AlarmEO alarmEO) {

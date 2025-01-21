@@ -95,7 +95,7 @@ public class SuposRequestManager implements Serializable {
 
         HttpRequest request = new HttpRequest(suposRequest.getUrl())
                 .addHeaders(suposRequest.headerMap)
-                .body(suposRequest.body)
+                .body(body)
                 .formStr(suposRequest.queryMap)
                 .setMethod(Method.POST);
 

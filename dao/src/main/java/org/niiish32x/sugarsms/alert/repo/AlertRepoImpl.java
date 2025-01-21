@@ -78,6 +78,12 @@ public class AlertRepoImpl implements AlertRepo {
     }
 
     @Override
+    public List<AlertEO> find() {
+        List<AlertDO> list = alertDAO.lambdaQuery().list();
+        return list.stream().map(converter::toEO).collect(Collectors.toList());
+    }
+
+    @Override
     public AlertEO findByAlertId(Long alertId) {
         AlertDO one = alertDAO.lambdaQuery().eq(AlertDO::getAlertId, alertId).one();
         return converter.toEO(one);

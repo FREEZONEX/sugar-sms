@@ -38,4 +38,7 @@ public interface AlertService {
      Result productAlertRecord(ProduceAlertRecordCommand alertInfoDTOS);
 
      Result <List<AlertRecordDTO>> queryAlertRecords();
+
+     // 确认 实时报警信息
+     Result  ackAlerts();
 }
