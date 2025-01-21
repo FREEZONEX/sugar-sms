@@ -4,6 +4,7 @@ import com.lmax.disruptor.EventHandler;
 import org.niiish32x.sugarsms.alert.app.AlertService;
 import org.niiish32x.sugarsms.alert.app.command.ProduceAlertRecordCommand;
 import org.niiish32x.sugarsms.alert.domain.entity.AlertEO;
+import org.niiish32x.sugarsms.alert.domain.repo.AlertRepo;
 import org.niiish32x.sugarsms.api.alert.dto.AlertInfoDTO;
 import org.niiish32x.sugarsms.app.disruptor.alert.event.AlertRecordEvent;
 import org.niiish32x.sugarsms.common.utils.Retrys;
@@ -25,6 +26,9 @@ public class DisruptorMqAlertRecordConsumer implements EventHandler<AlertRecordE
     @Resource
     AlertService alertService;
 
+    @Autowired
+    AlertRepo alertRepo;
+
     @Override
     public void onEvent(AlertRecordEvent event, long sequence, boolean endOfBatch) throws Exception {
         AlertEO alertEO = event.getAlertEO();
@@ -35,5 +39,8 @@ public class DisruptorMqAlertRecordConsumer implements EventHandler<AlertRecordE
         } catch (Throwable e) {
             throw new RuntimeException(e);
         }
+
+        alertEO.setFinishGenerateAlertRecord(true);
+        alertRepo.saveOrUpdate(alertEO);
     }
 }
