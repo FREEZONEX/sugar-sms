@@ -113,8 +113,6 @@ public class AlertJob {
     @Scheduled(fixedDelay = 2 * 1000)
     void alertSms () throws InterruptedException {
 
-        log.info(">>>>>>>>>>> start Sms alert >>>>>>>>>>>>>>>>>");
-
         /**
          * 先查Ids 再一条条根据去查 避免过多数据加载到内存
          */
@@ -124,6 +122,8 @@ public class AlertJob {
         if (alertRecordIds == null || alertRecordIds.isEmpty()) {
             return;
         }
+
+        log.info(">>>>>>>>>>> start Sms alert >>>>>>>>>>>>>>>>>");
 
         for (Long id : alertRecordIds) {
             String key = String.format(SMS_ALERT_KEY, id);
