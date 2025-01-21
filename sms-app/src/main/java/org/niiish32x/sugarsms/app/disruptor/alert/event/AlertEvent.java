@@ -21,5 +21,6 @@ import org.niiish32x.sugarsms.alert.domain.entity.MessageType;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AlertEvent {
+    // 这里id 是记录的Id 即主键Id
     private Long alertRecordId;
 }

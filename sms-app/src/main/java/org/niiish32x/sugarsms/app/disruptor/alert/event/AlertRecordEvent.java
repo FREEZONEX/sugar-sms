@@ -11,6 +11,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.niiish32x.sugarsms.alert.domain.entity.AlertEO;
 import org.niiish32x.sugarsms.api.alert.dto.AlertInfoDTO;
 
 /**
@@ -22,5 +23,5 @@ import org.niiish32x.sugarsms.api.alert.dto.AlertInfoDTO;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AlertRecordEvent {
-   private AlertInfoDTO alertInfoDTO;
+   private AlertEO alertEO;
 }

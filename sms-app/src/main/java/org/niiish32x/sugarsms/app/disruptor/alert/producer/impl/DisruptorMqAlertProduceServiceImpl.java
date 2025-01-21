@@ -48,7 +48,7 @@ public class DisruptorMqAlertProduceServiceImpl implements DisruptorMqAlertProdu
 
         try {
             AlertRecordEvent event = alertRecordEventRingBuffer.get(next);
-            event.setAlertInfoDTO(alertRecordEvent.getAlertInfoDTO());
+            event.setAlertEO(alertRecordEvent.getAlertEO());
         }catch (Exception e){
             log.error("produce AlertRecordEvent error: " + e.getMessage());
             return false;

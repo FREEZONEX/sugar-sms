@@ -32,12 +32,33 @@ public class AlertRecordRepoImpl implements AlertRecordRepo {
 
     @Override
     public List<Long> findPendingSendEmailAlertIds(int recordCounts) {
-        return alertRecordDAO.findAlertIdsByTypeAndStatus(MessageType.EMAIL.name(), false,recordCounts);
+
+        List<AlertRecordDO> list = alertRecordDAO.lambdaQuery()
+                .eq(AlertRecordDO::getType, MessageType.EMAIL.name())
+                // 未发送完成
+                .eq(AlertRecordDO::getStatus, 0)
+                // 未过期
+                .eq(AlertRecordDO::getExpire, 0)
+                .list();
+
+        List<AlertRecordDO> alertRecordDOS = list.subList(0, Math.min(recordCounts, list.size()));
+
+        return alertRecordDOS.stream().map(AlertRecordDO::getId).collect(Collectors.toList());
     }
 
     @Override
     public List<Long> findPendingSendSmsAlertIds(int recordCounts) {
-        return alertRecordDAO.findAlertIdsByTypeAndStatus(MessageType.SMS.name(), false,recordCounts);
+        List<AlertRecordDO> list = alertRecordDAO.lambdaQuery()
+                .eq(AlertRecordDO::getType, MessageType.SMS.name())
+                // 未发送完成
+                .eq(AlertRecordDO::getStatus, 0)
+                // 未过期
+                .eq(AlertRecordDO::getExpire, 0)
+                .list();
+
+        List<AlertRecordDO> alertRecordDOS = list.subList(0, Math.min(recordCounts, list.size()));
+
+        return alertRecordDOS.stream().map(AlertRecordDO::getId).collect(Collectors.toList());
     }
 
     @Override
@@ -180,13 +201,13 @@ public class AlertRecordRepoImpl implements AlertRecordRepo {
     }
 
     @Override
-    public AlertRecordEO findWithLimitByAlertId(Long alertId, Integer limit) {
-        return converter.toEO(alertRecordDAO.findWithLimitByAlertId(alertId,limit));
+    public boolean updateStatusById(Long id, boolean status) {
+        return alertRecordDAO.updateStatusById(id,status);
     }
 
     @Override
-    public boolean updateStatusById(Long alertId, boolean status) {
-        return alertRecordDAO.updateStatusById(alertId,status);
+    public boolean updateExpireById(Long id, boolean expire) {
+        return alertRecordDAO.updateExpireById(id,expire);
     }
 
 }

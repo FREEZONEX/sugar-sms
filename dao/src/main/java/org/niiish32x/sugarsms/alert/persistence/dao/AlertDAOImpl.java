@@ -5,6 +5,8 @@ import org.niiish32x.sugarsms.alert.AlertDO;
 import org.niiish32x.sugarsms.alert.persistence.mapper.AlertMapper;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 /**
  * AlertDAOImpl
  *
@@ -13,4 +15,8 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class AlertDAOImpl extends ServiceImpl<AlertMapper, AlertDO> implements AlertDAO {
+    @Override
+    public List<AlertDO> findUnFinishedAlertsWithLimits(int limit) {
+        return getBaseMapper().findUnFinishedAlertsWithLimits(limit);
+    }
 }

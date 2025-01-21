@@ -52,4 +52,5 @@ public class AlertRecordEO implements Serializable {
 
     private Date updateTime;
 
+    private Boolean expire;
 }

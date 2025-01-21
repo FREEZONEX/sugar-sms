@@ -2,9 +2,11 @@ package org.niiish32x.sugarsms.app.disruptor.alert.consumer;
 
 import com.lmax.disruptor.EventHandler;
 import lombok.extern.slf4j.Slf4j;
+import org.niiish32x.sugarsms.alert.domain.entity.AlertEO;
 import org.niiish32x.sugarsms.alert.domain.entity.AlertRecordEO;
 import org.niiish32x.sugarsms.alert.domain.entity.MessageType;
 import org.niiish32x.sugarsms.alert.domain.repo.AlertRecordRepo;
+import org.niiish32x.sugarsms.alert.domain.repo.AlertRepo;
 import org.niiish32x.sugarsms.app.disruptor.alert.event.AlertEvent;
 import org.niiish32x.sugarsms.common.result.Result;
 import org.niiish32x.sugarsms.common.utils.Retrys;
@@ -12,6 +14,8 @@ import org.niiish32x.sugarsms.message.app.SendMessageService;
 import org.niiish32x.sugarsms.message.app.external.ZubrixSmsResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.time.Instant;
 
 /**
  * DisruptorMqConsumer
@@ -31,10 +35,29 @@ public class DisruptorMqAlertConsumer implements EventHandler<AlertEvent> {
     @Autowired
     AlertRecordRepo alertRecordRepo;
 
+    @Autowired
+    AlertRepo alertRepo;
+
     @Override
     public void onEvent(AlertEvent alertEvent, long l, boolean b) throws Exception {
         Long id = alertEvent.getAlertRecordId();
         AlertRecordEO alertRecordEO = alertRecordRepo.findById(id);
+
+        Long alertId = alertRecordEO.getAlertId();
+        AlertEO alertEO = alertRepo.findByAlertId(alertId);
+
+        if (alertEO == null){
+            log.error("alert: id:{} alertId:{} alertEO is null", id, alertId);
+            return;
+        }
+
+        long startDataTimestamp = alertEO.getStartDataTimestamp();
+
+        // 超出限制的 间隔时间 不再发送
+        if (!isWithin30Minutes(startDataTimestamp)) {
+            alertRecordRepo.updateExpireById(id,true);
+            return;
+        }
 
         String receiver = alertRecordEO.getType() == MessageType.SMS ? alertRecordEO.getPhone() : alertRecordEO.getEmail();
         String message = alertRecordEO.getContent();
@@ -71,6 +94,17 @@ public class DisruptorMqAlertConsumer implements EventHandler<AlertEvent> {
         }
 
         return true;
+    }
+
+    private boolean isWithin30Minutes(long timestamp) {
+        // 获取当前时间的时间戳（毫秒）
+        long currentTimeMillis = Instant.now().toEpochMilli();
+        // 30 分钟的毫秒数
+        long thirtyMinutesInMillis = 30 * 60 * 1000;
+        // 计算时间差的绝对值
+        long timeDifference = Math.abs(currentTimeMillis - timestamp);
+        // 判断时间差是否在 30 分钟内
+        return timeDifference <= thirtyMinutesInMillis;
     }
 
 }

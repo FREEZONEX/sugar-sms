@@ -14,11 +14,12 @@ import java.util.List;
  */
 public interface AlertRecordDAO extends IService<AlertRecordDO> {
     List<AlertRecordDO> findAlertBeforeDays(@Param("days") Integer days);
-    AlertRecordDO findWithLimitByAlertId(@Param("alertId") Long alertId,@Param("limit") Integer limit);
 
     List<Long> findByAlertIdsByStatus(@Param("status") boolean status);
 
     List<Long> findAlertIdsByTypeAndStatus(@Param("type") String type, @Param("status") boolean status,@Param("limit") int limit);
 
-    boolean updateStatusById(@Param("alertId") Long alertId, @Param("status") boolean status);
+    boolean updateStatusById(@Param("id") Long id, @Param("status") boolean status);
+
+    boolean updateExpireById(@Param("id") Long id, @Param("expire") boolean expire);
 }
