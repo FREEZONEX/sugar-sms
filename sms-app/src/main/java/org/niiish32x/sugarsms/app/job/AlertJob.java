@@ -69,7 +69,7 @@ public class AlertJob {
     @Autowired
     AlertRepo alertRepo;
 
-//    @Scheduled(fixedDelay = 1000 * 10)
+    @Scheduled(fixedDelay = 1000 * 10)
     void getAlert(){
         Result<List<AlertInfoDTO>> alertsResp = alertService.getAlertsFromSupos();
 
@@ -81,22 +81,29 @@ public class AlertJob {
         List<AlertInfoDTO> alertInfoDTOS = alertsResp.getData();
 
         for (AlertInfoDTO alertInfoDTO : alertInfoDTOS) {
+            if (alertRepo.findByAlertId(alertInfoDTO.getId()) != null) {
+                continue;
+            }
             alertService.saveAlert(new SaveAlertCommand(alertInfoDTO));
         }
     }
 
-    @Scheduled(fixedDelay = 1000 * 10)
+    @Scheduled(fixedDelay = 1000 * 5)
     void generateRecord() {
         try {
 
-            List<AlertEO> unFinishedAlerts = alertRepo.findUnFinishedAlerts(2);
+            List<AlertEO> unFinishedAlerts = alertRepo.findUnFinishedAlerts(5);
 
             for (AlertEO alertEO: unFinishedAlerts) {
-                disruptorMqAlertProduceService.produceAlertRecordEvent(
-                        AlertRecordEvent.builder()
-                                .alertEO(alertEO)
-                                .build()
-                );
+                alertService.productAlertRecord(alertEO);
+//                disruptorMqAlertProduceService.produceAlertRecordEvent(
+//                        AlertRecordEvent.builder()
+//                                .alertEO(alertEO)
+//                                .build()
+//                );
+
+                alertEO.setFinishGenerateAlertRecord(true);
+                alertRepo.saveOrUpdate(alertEO);
             }
         } catch (Exception e) {
             log.error("定时任务执行过程中发生异常", e);
