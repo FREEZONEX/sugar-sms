@@ -5,6 +5,7 @@ import org.niiish32x.sugarsms.alert.app.command.ProduceAlertRecordCommand;
 import org.niiish32x.sugarsms.alert.app.command.SaveAlertCommand;
 import org.niiish32x.sugarsms.alert.domain.entity.AlertEO;
 import org.niiish32x.sugarsms.api.alert.dto.AlertInfoDTO;
+import org.niiish32x.sugarsms.api.alert.dto.AlertRecordDTO;
 import org.niiish32x.sugarsms.api.user.dto.SuposUserDTO;
 import org.niiish32x.sugarsms.common.result.Result;
 
@@ -35,4 +36,6 @@ public interface AlertService {
       * @return
       */
      Result productAlertRecord(ProduceAlertRecordCommand alertInfoDTOS);
+
+     Result <List<AlertRecordDTO>> queryAlertRecords();
 }

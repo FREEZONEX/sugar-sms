@@ -54,5 +54,6 @@ public class AlertDO implements Serializable {
     private String oldValue;
     @TableField(value = "finish_generate_alert_record")
     private Integer finishGenerateAlertRecord;
-
+    @TableField(value = "start_data_timestamp")
+    private long startDataTimestamp;
 }

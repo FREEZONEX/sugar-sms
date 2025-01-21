@@ -50,7 +50,8 @@ public class AlertRepoImpl implements AlertRepo {
                     .set(AlertDO::getNewValue, alertDO.getNewValue())
                     .set(AlertDO::getValType, alertDO.getValType())
                     .set(AlertDO::getOldValue, alertDO.getOldValue())
-                    .set(AlertDO::getFinishGenerateAlertRecord, alertDO.getFinishGenerateAlertRecord());
+                    .set(AlertDO::getFinishGenerateAlertRecord, alertDO.getFinishGenerateAlertRecord())
+                    .set(AlertDO::getStartDataTimestamp, alertDO.getStartDataTimestamp());
             return alertDAO.update(existAlertDO,wrapper);
         }
 

@@ -14,6 +14,7 @@ import org.niiish32x.sugarsms.alarm.app.command.SaveAlarmCommand;
 import org.niiish32x.sugarsms.alarm.app.external.AlarmRequest;
 import org.niiish32x.sugarsms.alarm.domain.entity.AlarmEO;
 import org.niiish32x.sugarsms.alarm.domain.repo.AlarmRepo;
+import org.niiish32x.sugarsms.alert.app.assmbler.AlertRecordAssembler;
 import org.niiish32x.sugarsms.alert.app.command.ProduceAlertRecordCommand;
 import org.niiish32x.sugarsms.alert.app.command.SaveAlertCommand;
 import org.niiish32x.sugarsms.alert.domain.entity.AlertEO;
@@ -23,6 +24,7 @@ import org.niiish32x.sugarsms.alert.domain.repo.AlertRecordRepo;
 import org.niiish32x.sugarsms.alert.domain.repo.AlertRepo;
 import org.niiish32x.sugarsms.api.alarm.dto.AlarmDTO;
 import org.niiish32x.sugarsms.api.alert.dto.AlertInfoDTO;
+import org.niiish32x.sugarsms.api.alert.dto.AlertRecordDTO;
 import org.niiish32x.sugarsms.api.person.dto.SuposPersonDTO;
 import org.niiish32x.sugarsms.api.user.dto.SuposUserDTO;
 import org.niiish32x.sugarsms.app.proxy.AlertContentBuilder;
@@ -136,6 +138,8 @@ public class AlertServiceImpl implements AlertService {
     AlertRepo alertRepo;
 
 
+    AlertRecordAssembler alertRecordAssembler = AlertRecordAssembler.INSTANCE;
+
     @Override
     public Result <List<AlertInfoDTO>> getAlertsFromSupos() {
         Map<String, String> headerMap = new HashMap<>();
@@ -162,6 +166,7 @@ public class AlertServiceImpl implements AlertService {
                 .newValue(alertInfoDTO.getNewValue())
                 .valType(alertInfoDTO.getValType())
                 .oldValue(alertInfoDTO.getOldValue())
+                .startDataTimestamp(alertInfoDTO.getStartDataTimestamp())
                 .finishGenerateAlertRecord(false)
                 .build();
 
@@ -380,6 +385,21 @@ public class AlertServiceImpl implements AlertService {
         } catch (Throwable e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    public Result<List<AlertRecordDTO>> queryAlertRecords() {
+        List<AlertRecordEO> alertRecordEOS = alertRecordRepo.find();
+
+        List<AlertRecordDTO> alertRecordDTOS = new ArrayList<>();
+
+
+        for (AlertRecordEO alertRecordEO : alertRecordEOS) {
+            AlertRecordDTO dto = alertRecordAssembler.toDTO(alertRecordEO);
+            alertRecordDTOS.add(dto);
+        }
+
+        return Result.success(alertRecordDTOS);
     }
 
     private List<AlertRecordEO> prepareAlertRecord(SuposUserDTO userDTO, AlertEO alertEO, AlarmEO alarmEO) {
