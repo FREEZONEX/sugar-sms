@@ -1,5 +1,7 @@
 package org.niiish32x.sugarsms.alert.repo;
 
+import com.google.common.base.Preconditions;
+import com.sun.prism.null3d.NULL3DPipeline;
 import org.niiish32x.sugarsms.alert.AlertRecordDO;
 import org.niiish32x.sugarsms.alert.domain.entity.AlertRecordEO;
 import org.niiish32x.sugarsms.alert.domain.entity.MessageType;
@@ -137,6 +139,40 @@ public class AlertRecordRepoImpl implements AlertRecordRepo {
     public boolean save(List<AlertRecordEO> alertRecordEOS) {
         List<AlertRecordDO> list = alertRecordEOS.stream().map(converter::toDO).collect(Collectors.toList());
         return alertRecordDAO.saveBatch(list);
+    }
+
+    @Override
+    public boolean saveUniByReceiver(List<AlertRecordEO> alertRecordEOS) {
+
+        for (AlertRecordEO alertRecordEO : alertRecordEOS) {
+            AlertRecordDO alertRecordDO = converter.toDO(alertRecordEO);
+
+            AlertRecordDO existAlertDO = null;
+
+            if (alertRecordEO.getType() == MessageType.SMS) {
+                existAlertDO = alertRecordDAO.lambdaQuery()
+                        .eq(AlertRecordDO::getAlertId, alertRecordDO.getAlertId())
+                        .eq(AlertRecordDO::getType, alertRecordDO.getType())
+                        .eq(AlertRecordDO::getPhone, alertRecordDO.getPhone()).one();
+            }
+
+            if (alertRecordEO.getType() == MessageType.EMAIL){
+                existAlertDO = alertRecordDAO.lambdaQuery()
+                        .eq(AlertRecordDO::getAlertId, alertRecordDO.getAlertId())
+                        .eq(AlertRecordDO::getType, alertRecordDO.getType())
+                        .eq(AlertRecordDO::getEmail, alertRecordDO.getEmail()).one();
+            }
+
+
+            if (existAlertDO != null) {
+                return true;
+            }
+
+            boolean saveRes = alertRecordDAO.save(alertRecordDO);
+            Preconditions.checkArgument(saveRes, "保存失败");
+        }
+
+        return true;
     }
 
     @Override
