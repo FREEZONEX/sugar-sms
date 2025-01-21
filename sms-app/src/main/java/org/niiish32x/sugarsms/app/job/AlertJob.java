@@ -41,7 +41,7 @@ import java.util.concurrent.*;
 public class AlertJob {
 
     private static final Cache<String,Integer> ALERT_SEND_MAP = CacheBuilder.newBuilder()
-            .expireAfterAccess(10, TimeUnit.MINUTES)
+            .expireAfterAccess(30, TimeUnit.MINUTES)
             .initialCapacity(1000)
             .build();
 
