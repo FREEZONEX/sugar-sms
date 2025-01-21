@@ -53,11 +53,11 @@ public class DisruptorMqAlertConsumer implements EventHandler<AlertEvent> {
 
         long startDataTimestamp = alertEO.getStartDataTimestamp();
 
-        // 超出限制的 间隔时间 不再发送
-        if (!isWithin30Minutes(startDataTimestamp)) {
-            alertRecordRepo.updateExpireById(id,true);
-            return;
-        }
+//        // 超出限制的 间隔时间 不再发送
+//        if (!isWithin30Minutes(startDataTimestamp)) {
+//            alertRecordRepo.updateExpireById(id,true);
+//            return;
+//        }
 
         String receiver = alertRecordEO.getType() == MessageType.SMS ? alertRecordEO.getPhone() : alertRecordEO.getEmail();
         String message = alertRecordEO.getContent();
