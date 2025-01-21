@@ -13,5 +13,10 @@ import java.util.List;
 public interface AlertRepo {
     boolean saveOrUpdate(AlertEO alertEO);
 
+    List<AlertEO> find(AlertEO alertEO);
+
+    AlertEO findByAlertId(Long alertId);
+
+
     List<AlertEO> findUnFinishedAlerts(int nums);
 }

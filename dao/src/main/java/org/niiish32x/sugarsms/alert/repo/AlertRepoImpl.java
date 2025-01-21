@@ -58,6 +58,31 @@ public class AlertRepoImpl implements AlertRepo {
     }
 
     @Override
+    public List<AlertEO> find(AlertEO alertEO) {
+        AlertDO alertDO = converter.toDO(alertEO);
+        List<AlertDO> list = alertDAO.lambdaQuery()
+                .eq(AlertDO::getAlertId,alertDO.getAlertId())
+                .eq(AlertDO::getAlertName,alertDO.getAlertName())
+                .eq(AlertDO::getShowName,alertDO.getShowName())
+                .eq(AlertDO::getPriority,alertDO.getPriority())
+                .eq(AlertDO::getSource,alertDO.getSource())
+                .eq(AlertDO::getSourceShowName,alertDO.getSourceShowName())
+                .eq(AlertDO::getSourcePropShowName,alertDO.getSourcePropShowName())
+                .eq(AlertDO::getDescription,alertDO.getDescription())
+                .eq(AlertDO::getNewValue,alertDO.getNewValue())
+                .eq(AlertDO::getValType,alertDO.getValType())
+                .eq(AlertDO::getOldValue,alertDO.getOldValue())
+                .list();
+        return list.stream().map(converter::toEO).collect(Collectors.toList()) ;
+    }
+
+    @Override
+    public AlertEO findByAlertId(Long alertId) {
+        AlertDO one = alertDAO.lambdaQuery().eq(AlertDO::getAlertId, alertId).one();
+        return converter.toEO(one);
+    }
+
+    @Override
     public List<AlertEO> findUnFinishedAlerts(int nums) {
 
         List<AlertDO> list = alertDAO.lambdaQuery().eq(AlertDO::getFinishGenerateAlertRecord, 0).list();
@@ -66,7 +91,7 @@ public class AlertRepoImpl implements AlertRepo {
             return new ArrayList<>();
         }
 
-        list = list.subList(0, nums);
+        list = list.subList(0, Math.min(nums, list.size()));
 
         return list.stream().map(converter::toEO).collect(Collectors.toList());
     }
