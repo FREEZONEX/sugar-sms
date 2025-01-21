@@ -3,6 +3,7 @@ package org.niiish32x.sugarsms.alert.app;
 import org.niiish32x.sugarsms.alert.domain.entity.AlertRecordEO;
 import org.niiish32x.sugarsms.api.alert.dto.AlertRecordDTO;
 import org.niiish32x.sugarsms.common.result.Result;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -30,6 +31,11 @@ public class AlertController {
     @RequestMapping("/alerts")
     public Result getAlert() {
         return alertService.getAlertsFromSupos();
+    }
+
+    @PostMapping("/alerts/ack")
+    public Result ackAlert() {
+        return alertService.ackAlerts();
     }
 
 }

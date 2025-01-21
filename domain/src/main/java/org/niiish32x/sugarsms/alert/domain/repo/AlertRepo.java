@@ -15,6 +15,8 @@ public interface AlertRepo {
 
     List<AlertEO> find(AlertEO alertEO);
 
+    List<AlertEO> find();
+
     AlertEO findByAlertId(Long alertId);
 
 
