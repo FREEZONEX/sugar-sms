@@ -148,10 +148,10 @@ public class AlertJob {
     /**
      * email 邮件支持 最大连接数 远远小于 sms 要严格限制 流量
      */
-//    @Scheduled(fixedDelay = 5 * 1000)
+    @Scheduled(fixedDelay = 2 * 1000)
     void alertEmail () throws InterruptedException {
 
-        log.info(">>>>>>>>>>> start email alert >>>>>>>>>>>>>>>>>");
+
 
         List<Long> alertRecordIds = alertRecordRepo.findPendingSendEmailAlertIds(10);
 
@@ -159,8 +159,9 @@ public class AlertJob {
             return;
         }
 
+        log.info(">>>>>>>>>>> start email alert >>>>>>>>>>>>>>>>>");
 
-        RateLimiter limiter =  RateLimiter.create(5);
+        RateLimiter limiter =  RateLimiter.create(2);
 
         for (Long id : alertRecordIds) {
             String key = String.format(EMAIL_ALERT_KEY, id);
