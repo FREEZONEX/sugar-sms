@@ -295,7 +295,7 @@ public class AlertServiceImpl implements AlertService {
                 alertRecords.addAll(listCompletableFuture.get());
             }
 
-            alertRecordRepo.save(alertRecords);
+            alertRecordRepo.saveUniByReceiver(alertRecords);
 
             return true;
         } catch (Exception e) {

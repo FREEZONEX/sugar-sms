@@ -49,6 +49,13 @@ public interface AlertRecordRepo {
     boolean save(List<AlertRecordEO> alertRecordEOS);
 
     /**
+     * 从数据层约束 同一 alertId 同一接收者(相同email 或 sms) 只存一条记录 即最后也只会单发一次
+     * @param alertRecordEOS
+     * @return
+     */
+    boolean saveUniByReceiver(List<AlertRecordEO> alertRecordEOS);
+
+    /**
      * 找到所有发送失败的记录
      * @return
      */
