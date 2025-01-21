@@ -279,17 +279,19 @@ public class AlertServiceImpl implements AlertService {
 
             ALARM_CACHE.put(alertEO.getSourcePropertyName(), alarmEO);
 
-            String text = zubrixSmsProxy.formatTextContent(AlertContentBuilder.builder()
-                            .sourcePropertyName(alertEO.getSourcePropertyName())
-                            .newValue(alertEO.getNewValue())
-                            .source(alertEO.getSource())
-                            .startDataTimestamp(alertEO.getStartDataTimestamp())
-                            .limitValue(alarmEO.getLimitValue())
-                    .build());
+//            String text = zubrixSmsProxy.formatTextContent(AlertContentBuilder.builder()
+//                            .sourcePropertyName(alertEO.getSourcePropertyName())
+//                            .newValue(alertEO.getNewValue())
+//                            .source(alertEO.getSource())
+//                            .startDataTimestamp(alertEO.getStartDataTimestamp())
+//                            .limitValue(alarmEO.getLimitValue())
+//                    .build());
 
             List<AlertRecordEO> alertRecords = new ArrayList<>();
             for (SuposUserDTO userDTO : userDTOS) {
-                CompletableFuture<List<AlertRecordEO>> listCompletableFuture = CompletableFuture.supplyAsync(() -> prepareAlertRecord(userDTO, alertEO, text), poolExecutor);
+                AlarmEO finalAlarmEO = alarmEO;
+                CompletableFuture<List<AlertRecordEO>> listCompletableFuture = CompletableFuture.supplyAsync(() -> prepareAlertRecord(userDTO, alertEO, finalAlarmEO), poolExecutor);
+                listCompletableFuture.join();
                 alertRecords.addAll(listCompletableFuture.get());
             }
 
@@ -380,7 +382,16 @@ public class AlertServiceImpl implements AlertService {
         }
     }
 
-    private List<AlertRecordEO> prepareAlertRecord(SuposUserDTO userDTO, AlertEO alertEO, String text) {
+    private List<AlertRecordEO> prepareAlertRecord(SuposUserDTO userDTO, AlertEO alertEO, AlarmEO alarmEO) {
+
+        String text = zubrixSmsProxy.formatTextContent(AlertContentBuilder.builder()
+                .sourcePropertyName(alertEO.getSourcePropertyName())
+                .newValue(alertEO.getNewValue())
+                .source(alertEO.getSource())
+                .startDataTimestamp(alertEO.getStartDataTimestamp())
+                .limitValue(alarmEO.getLimitValue())
+                .build());
+
         List<AlertRecordEO> alertRecords = new ArrayList<>();
 
         String phoneNumber = null;
@@ -433,12 +444,12 @@ public class AlertServiceImpl implements AlertService {
 
         // 验证手机号
         if ( StringUtils.isNotBlank(phoneNumber) && isValidPhoneNumber(Objects.requireNonNull(phoneNumber))) {
-            alertRecords.add(buildAlertRecordEO(alertEO.getAlertId(), userDTO.getUsername(), phoneNumber, null, MessageType.SMS, text, false));
+            alertRecords.add(buildAlertRecordEO(alertEO.getAlertId(), userDTO.getUsername(), phoneNumber, null, MessageType.SMS, text, false,alarmEO));
         }
 
         // 验证邮箱
         if (StringUtils.isNotBlank(email) && isValidEmail(email)) {
-            alertRecords.add(buildAlertRecordEO(alertEO.getAlertId(), userDTO.getUsername(), null, email, MessageType.EMAIL, text, false));
+            alertRecords.add(buildAlertRecordEO(alertEO.getAlertId(), userDTO.getUsername(), null, email, MessageType.EMAIL, text, false,alarmEO));
         }
 
         return alertRecords;
@@ -511,6 +522,34 @@ public class AlertServiceImpl implements AlertService {
     }
 
 
+
+    private AlertRecordEO buildAlertRecordEO(Long alertId,String username,String phone,String email,MessageType type,String text,Boolean status,AlarmEO alarmEO) {
+        if (type == MessageType.SMS) {
+            return AlertRecordEO.builder()
+                    .type(MessageType.SMS)
+                    .alertId(alertId)
+                    .username(username)
+                    .content(text)
+                    .sendTime(new Date())
+                    .phone(phone)
+                    .status(status)
+                    .alarm(alarmEO)
+                    .alarmId(Long.valueOf(alarmEO.getAlarmId()))
+                    .build();
+        }else {
+            return AlertRecordEO.builder()
+                    .type(MessageType.EMAIL)
+                    .alertId(alertId)
+                    .username(username)
+                    .content(text)
+                    .sendTime(new Date())
+                    .email(email)
+                    .status(status)
+                    .alarm(alarmEO)
+                    .alarmId(alarmEO.getId())
+                    .build();
+        }
+    }
 
     private AlertRecordEO buildAlertRecordEO(Long alertId,String username,String phone,String email,MessageType type,String text,Boolean status) {
         if (type == MessageType.SMS) {
