@@ -43,4 +43,7 @@ public interface AlertRecordMapper extends BaseMapper<AlertRecordDO> {
 
     @Update("update alert_record set status = #{status} where id = #{id}")
     boolean updateStatusById(@Param("id") Long id, @Param("status") boolean status);
+
+    @Update("update alert_record set expire = #{expire} where id = #{id}")
+    boolean updateExpireById(@Param("id") Long id, @Param("expire") boolean expire);
 }

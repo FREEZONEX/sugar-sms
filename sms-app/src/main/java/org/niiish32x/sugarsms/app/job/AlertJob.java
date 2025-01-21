@@ -110,7 +110,7 @@ public class AlertJob {
         }
     }
 
-//    @Scheduled(fixedDelay = 2 * 1000)
+    @Scheduled(fixedDelay = 2 * 1000)
     void alertSms () throws InterruptedException {
 
         log.info(">>>>>>>>>>> start Sms alert >>>>>>>>>>>>>>>>>");
@@ -150,7 +150,6 @@ public class AlertJob {
      */
     @Scheduled(fixedDelay = 2 * 1000)
     void alertEmail () throws InterruptedException {
-
 
 
         List<Long> alertRecordIds = alertRecordRepo.findPendingSendEmailAlertIds(10);

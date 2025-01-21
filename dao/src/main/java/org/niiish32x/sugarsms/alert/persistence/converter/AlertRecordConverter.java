@@ -27,11 +27,13 @@ public interface AlertRecordConverter {
     @Mapping(target = "type",expression = "java(alertRecordEO.getType().name())")
     @Mapping(target = "status" , expression = "java(alertRecordEO.getStatus() ? 1 : 0)")
     @Mapping(target = "alarm", expression = "java(JSON.toJSONString(alertRecordEO.getAlarm()))")
+    @Mapping(target = "expire", expression = "java(alertRecordEO.getExpire() ? 1 : 0)")
     AlertRecordDO toDO(AlertRecordEO alertRecordEO);
 
     @Mapping(target = "type", source = "type",qualifiedByName = "parseMessageTypeToEO")
     @Mapping(target = "status", expression = "java(alertRecordDO.getStatus() == 1 ? true : false)")
     @Mapping(target = "alarm", source = "alarm" , qualifiedByName = "parseAlarmToEO")
+    @Mapping(target = "expire", expression = "java(alertRecordDO.getExpire() == 1 ? true : false)")
     AlertRecordEO toEO(AlertRecordDO alertRecordDO);
 
 

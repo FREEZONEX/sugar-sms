@@ -38,6 +38,7 @@ CREATE TABLE `alert_record` (   `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 
                                 `content` TEXT COMMENT '通知的具体内容' ,
                                 `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
                                 `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
+                                `expire` tinyint(1) COMMENT '判断报警是否超时 超时为1 不超时为0',
                                 index idx_status(status),
                                 index idx_alert_id(alert_id),
                                 index idx_type(type),

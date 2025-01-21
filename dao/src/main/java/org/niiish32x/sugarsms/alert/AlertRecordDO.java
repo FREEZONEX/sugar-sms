@@ -73,4 +73,7 @@ public class AlertRecordDO implements Serializable {
     @TableField(value = "update_time")
     private Date updateTime;
 
+    @TableField(value = "expire")
+    private Integer expire;
+
 }

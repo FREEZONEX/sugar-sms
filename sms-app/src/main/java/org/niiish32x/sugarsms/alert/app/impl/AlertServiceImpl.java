@@ -535,6 +535,7 @@ public class AlertServiceImpl implements AlertService {
                     .status(status)
                     .alarm(alarmEO)
                     .alarmId(Long.valueOf(alarmEO.getAlarmId()))
+                    .expire(false)
                     .build();
         }else {
             return AlertRecordEO.builder()
@@ -547,6 +548,7 @@ public class AlertServiceImpl implements AlertService {
                     .status(status)
                     .alarm(alarmEO)
                     .alarmId(alarmEO.getId())
+                    .expire(false)
                     .build();
         }
     }

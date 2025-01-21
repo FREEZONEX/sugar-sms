@@ -32,7 +32,12 @@ public class AlertRecordDAOImpl extends ServiceImpl<AlertRecordMapper, AlertReco
     }
 
     @Override
-    public boolean updateStatusById(Long alertId, boolean status) {
-        return getBaseMapper().updateStatusById(alertId,status);
+    public boolean updateStatusById(Long id, boolean status) {
+        return getBaseMapper().updateStatusById(id,status);
+    }
+
+    @Override
+    public boolean updateExpireById(Long id, boolean expire) {
+        return getBaseMapper().updateExpireById(id,expire);
     }
 }

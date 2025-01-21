@@ -19,5 +19,7 @@ public interface AlertRecordDAO extends IService<AlertRecordDO> {
 
     List<Long> findAlertIdsByTypeAndStatus(@Param("type") String type, @Param("status") boolean status,@Param("limit") int limit);
 
-    boolean updateStatusById(@Param("alertId") Long alertId, @Param("status") boolean status);
+    boolean updateStatusById(@Param("id") Long id, @Param("status") boolean status);
+
+    boolean updateExpireById(@Param("id") Long id, @Param("expire") boolean expire);
 }

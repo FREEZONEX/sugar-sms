@@ -77,4 +77,6 @@ public interface AlertRecordRepo {
     Boolean remove(List <Long> ids);
 
     boolean updateStatusById(Long alertId, boolean status);
+
+    boolean updateExpireById(Long id, boolean expire);
 }
