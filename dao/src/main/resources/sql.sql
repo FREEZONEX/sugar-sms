@@ -18,6 +18,7 @@ CREATE TABLE `alert` (
     `val_type` int,
     `old_value` varchar(255) COMMENT '会有很多为小数的情况直接用字符串存',
     `finish_generate_alert_record` tinyint(1) COMMENT '标记是否已经生成完 消息发送记录 0表示未完成 1表示已完成 ' ,
+    `start_data_timestamp` bigint(100)  ,
     index id_alert_id(alert_id),
     index idx_finish_generate_alert_record(finish_generate_alert_record),
     PRIMARY KEY (`id`)
