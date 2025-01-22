@@ -1,4 +1,6 @@
 
+create database if not exists sugar_sms;
+
 use sugar_sms;
 
 drop table if exists alert;
