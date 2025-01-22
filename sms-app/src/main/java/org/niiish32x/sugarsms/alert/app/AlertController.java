@@ -1,5 +1,6 @@
 package org.niiish32x.sugarsms.alert.app;
 
+import org.niiish32x.sugarsms.alert.app.query.AlertRecordsCountQuery;
 import org.niiish32x.sugarsms.alert.app.query.AlertRecordsQuery;
 import org.niiish32x.sugarsms.alert.domain.entity.AlertRecordEO;
 import org.niiish32x.sugarsms.api.alert.dto.AlertRecordDTO;
@@ -37,6 +38,15 @@ public class AlertController {
             @RequestParam(name = "limit", required = false,defaultValue = "10") long limit
     ) {
         return alertService.searchAlertRecord(new AlertRecordsQuery(page, limit));
+    }
+
+    @RequestMapping("/alerts/records/count")
+    public Result<Long> countAlertRecords(
+            @RequestParam(name = "total" , required = false , defaultValue = "false") boolean total,
+            @RequestParam(name = "status" , required = false,defaultValue = "false")  boolean status
+    ) {
+
+        return alertService.countAlertRecords(new AlertRecordsCountQuery(total,status));
     }
 
     @RequestMapping("/alerts")

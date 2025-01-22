@@ -1,29 +1,15 @@
 package org.niiish32x.sugarsms.app.websocket;
 
-import cn.hutool.core.collection.ConcurrentHashSet;
-import com.alibaba.fastjson2.JSON;
 import lombok.extern.slf4j.Slf4j;
 import org.niiish32x.sugarsms.alert.app.AlertService;
-import org.niiish32x.sugarsms.alert.domain.entity.AlertRecordEO;
 import org.niiish32x.sugarsms.alert.domain.repo.AlertRecordRepo;
-import org.niiish32x.sugarsms.api.alert.dto.AlertRecordDTO;
 import org.niiish32x.sugarsms.app.event.AlertRecordChangeEvent;
-import org.niiish32x.sugarsms.app.event.AlertRecordsGenerateEvent;
-import org.niiish32x.sugarsms.common.result.PageResult;
-import org.niiish32x.sugarsms.common.result.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
-import org.springframework.util.CollectionUtils;
-import org.springframework.web.socket.*;
 
 import javax.websocket.*;
-import javax.websocket.server.PathParam;
 import javax.websocket.server.ServerEndpoint;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 /**

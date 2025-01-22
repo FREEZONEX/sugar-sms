@@ -90,4 +90,6 @@ public interface AlertRecordRepo {
     boolean updateExpireById(Long id, boolean expire);
 
      PageResult<AlertRecordEO> page(long current, long limit);
+
+     Long countAlertRecords(boolean total,boolean status);
 }

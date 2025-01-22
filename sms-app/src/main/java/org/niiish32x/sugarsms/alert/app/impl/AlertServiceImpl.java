@@ -17,6 +17,7 @@ import org.niiish32x.sugarsms.alarm.domain.repo.AlarmRepo;
 import org.niiish32x.sugarsms.alert.app.assmbler.AlertRecordAssembler;
 import org.niiish32x.sugarsms.alert.app.command.ProduceAlertRecordCommand;
 import org.niiish32x.sugarsms.alert.app.command.SaveAlertCommand;
+import org.niiish32x.sugarsms.alert.app.query.AlertRecordsCountQuery;
 import org.niiish32x.sugarsms.alert.app.query.AlertRecordsQuery;
 import org.niiish32x.sugarsms.alert.domain.entity.AlertEO;
 import org.niiish32x.sugarsms.alert.domain.entity.AlertRecordEO;
@@ -33,7 +34,6 @@ import org.niiish32x.sugarsms.common.enums.ApiEnum;
 import org.niiish32x.sugarsms.api.user.dto.RoleSpecDTO;
 import org.niiish32x.sugarsms.app.proxy.ZubrixSmsProxy;
 import org.niiish32x.sugarsms.alert.app.AlertService;
-import org.niiish32x.sugarsms.app.event.AlertRecordsGenerateEvent;
 import org.niiish32x.sugarsms.common.event.EventBus;
 import org.niiish32x.sugarsms.common.result.PageResult;
 import org.niiish32x.sugarsms.suposperson.app.SuposPersonService;
@@ -458,6 +458,11 @@ public class AlertServiceImpl implements AlertService {
         List<AlertRecordDTO> alertRecordDTOS = pageRes.getList().stream().map(alertRecordAssembler::toDTO).collect(Collectors.toList());
 
         return Result.success(PageResult.of(pageRes.getCount(),alertRecordDTOS));
+    }
+
+    @Override
+    public Result<Long> countAlertRecords(AlertRecordsCountQuery query) {
+        return Result.success(alertRecordRepo.countAlertRecords(query.getTotal(),query.getStatus())) ;
     }
 
     private List<AlertRecordEO> prepareAlertRecord(SuposUserDTO userDTO, AlertEO alertEO, AlarmEO alarmEO) {

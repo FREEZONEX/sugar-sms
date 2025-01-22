@@ -1,6 +1,7 @@
 package org.niiish32x.sugarsms.alert.repo;
 
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.common.base.Preconditions;
@@ -255,9 +256,22 @@ public class AlertRecordRepoImpl implements AlertRecordRepo {
     public PageResult<AlertRecordEO> page(long current, long limit) {
         Page<AlertRecordDO>  page = Page.of(current,limit);
         Page<AlertRecordDO> pageRes = alertRecordDAO.page(page);
-
         List<AlertRecordEO> alertRecordEOList = pageRes.getRecords().stream().map(converter::toEO).collect(Collectors.toList());
         return PageResult.of(pageRes.getTotal(),alertRecordEOList);
+    }
+
+    @Override
+    public Long countAlertRecords(boolean total ,boolean status) {
+
+        if (total) {
+            return alertRecordDAO.count();
+        }
+
+        LambdaQueryWrapper<AlertRecordDO> wrapper = Wrappers.<AlertRecordDO>lambdaQuery()
+                .eq(AlertRecordDO::getStatus, status ? 1 : 0);
+
+        long count = alertRecordDAO.count(wrapper);
+        return count;
     }
 
 
