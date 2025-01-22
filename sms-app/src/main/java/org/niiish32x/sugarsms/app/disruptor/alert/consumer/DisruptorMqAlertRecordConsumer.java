@@ -7,6 +7,8 @@ import org.niiish32x.sugarsms.alert.domain.entity.AlertEO;
 import org.niiish32x.sugarsms.alert.domain.repo.AlertRepo;
 import org.niiish32x.sugarsms.api.alert.dto.AlertInfoDTO;
 import org.niiish32x.sugarsms.app.disruptor.alert.event.AlertRecordEvent;
+import org.niiish32x.sugarsms.app.event.AlertRecordChangeEvent;
+import org.niiish32x.sugarsms.common.event.EventBus;
 import org.niiish32x.sugarsms.common.utils.Retrys;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -42,5 +44,6 @@ public class DisruptorMqAlertRecordConsumer implements EventHandler<AlertRecordE
 
         alertEO.setFinishGenerateAlertRecord(true);
         alertRepo.saveOrUpdate(alertEO);
+        EventBus.publishEvent(new AlertRecordChangeEvent(this));
     }
 }
