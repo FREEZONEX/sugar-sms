@@ -45,6 +45,5 @@ public class DisruptorMqAlertRecordConsumer implements EventHandler<AlertRecordE
 
         alertEO.setFinishGenerateAlertRecord(true);
         alertRepo.saveOrUpdate(alertEO);
-        EventBus.publishEvent(new AlertRecordChangeEvent(this, String.format(">>>> batch alert record generate  alertId:%s  alertName:%s >>>>",alertEO.getAlertId(),alertEO.getAlertName())));
     }
 }

@@ -306,6 +306,7 @@ public class AlertServiceImpl implements AlertService {
 
             alertRecordRepo.saveUniByReceiver(alertRecords);
 
+            EventBus.publishEvent(new AlertRecordChangeEvent(this, String.format(">>>> batch alert record generate  alertId:%s  alertName:%s >>>>",alertEO.getAlertId(),alertEO.getAlertName())));
 
             return true;
         } catch (Exception e) {
