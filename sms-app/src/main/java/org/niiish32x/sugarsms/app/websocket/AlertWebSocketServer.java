@@ -1,17 +1,30 @@
 package org.niiish32x.sugarsms.app.websocket;
 
+import cn.hutool.core.collection.ConcurrentHashSet;
 import com.alibaba.fastjson2.JSON;
 import lombok.extern.slf4j.Slf4j;
 import org.niiish32x.sugarsms.alert.app.AlertService;
+import org.niiish32x.sugarsms.alert.domain.entity.AlertRecordEO;
+import org.niiish32x.sugarsms.alert.domain.repo.AlertRecordRepo;
 import org.niiish32x.sugarsms.api.alert.dto.AlertRecordDTO;
+import org.niiish32x.sugarsms.app.event.AlertRecordChangeEvent;
+import org.niiish32x.sugarsms.app.event.AlertRecordsGenerateEvent;
+import org.niiish32x.sugarsms.common.result.PageResult;
 import org.niiish32x.sugarsms.common.result.Result;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
+import org.springframework.web.socket.*;
 
 import javax.websocket.*;
 import javax.websocket.server.PathParam;
 import javax.websocket.server.ServerEndpoint;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 /**
  * WebSocketServer
@@ -23,11 +36,19 @@ import java.util.List;
 @ServerEndpoint("/api/alert/websocket/{id}")
 @Component
 @Slf4j
-public class AlertWebSocketServer {
+public class AlertWebSocketServer  {
+
+    private Session session;
 
     private static AlertService alertService;
 
+    private static AlertRecordRepo alertRecordRepo;
+
+
     private String id;
+
+
+    private static CopyOnWriteArraySet<AlertWebSocketServer> webSockets = new CopyOnWriteArraySet<>();
 
     /**
      * springboot 管理的是单例  和 websocket 多对象冲突
@@ -39,34 +60,24 @@ public class AlertWebSocketServer {
         AlertWebSocketServer.alertService = alertService;
     }
 
+    @Autowired
+    public void setAlertRecordRepo(AlertRecordRepo alertRecordRepo) {
+        AlertWebSocketServer.alertRecordRepo = alertRecordRepo;
+    }
+
     @OnOpen
-    public void onOpen(Session session, @PathParam("id") String id) {
-        try {
-            session.getBasicRemote().sendText("open connect success");
-        }catch (Exception e) {
-            log.error("websocket onOpen error ",e);
-        }
-
+    public void onOpen(Session session) {
+        this.session = session;
+        webSockets.add(this);
     }
 
-    @OnClose
-    public void onClose() {
 
+    @EventListener(classes = AlertRecordChangeEvent.class)
+    void onAlertRecordChangeEvent(AlertRecordChangeEvent event) {
+        sendMessage("records change");
     }
 
-    /**
-     * 接收消息
-     */
-    @OnMessage
-    public void onMessage(String message,Session session)  {
-        Result<List<AlertRecordDTO>> listResult = alertService.queryAlertRecords();
-
-        try {
-            session.getBasicRemote().sendText(JSON.toJSONString(listResult));
-        }catch (Exception e) {
-            log.error("websocket onMessage error ",e);
-        }
-
+    public void sendMessage(String msg) {
+        webSockets.forEach(webSocketServer -> webSocketServer.session.getAsyncRemote().sendText(msg));
     }
-
 }
