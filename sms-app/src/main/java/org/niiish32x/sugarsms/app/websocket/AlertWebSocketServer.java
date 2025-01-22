@@ -41,7 +41,12 @@ public class AlertWebSocketServer {
 
     @OnOpen
     public void onOpen(Session session, @PathParam("id") String id) {
-        System.out.println("连接建立");
+        try {
+            session.getBasicRemote().sendText("open connect success");
+        }catch (Exception e) {
+            log.error("websocket onOpen error ",e);
+        }
+
     }
 
     @OnClose
@@ -57,10 +62,9 @@ public class AlertWebSocketServer {
         Result<List<AlertRecordDTO>> listResult = alertService.queryAlertRecords();
 
         try {
-            System.out.println(message);
             session.getBasicRemote().sendText(JSON.toJSONString(listResult));
         }catch (Exception e) {
-            System.out.println(e);
+            log.error("websocket onMessage error ",e);
         }
 
     }
