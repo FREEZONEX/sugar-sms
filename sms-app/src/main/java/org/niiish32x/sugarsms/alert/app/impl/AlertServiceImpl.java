@@ -307,8 +307,6 @@ public class AlertServiceImpl implements AlertService {
             alertRecordRepo.saveUniByReceiver(alertRecords);
 
 
-            EventBus.publishEvent(new AlertRecordChangeEvent(this));
-
             return true;
         } catch (Exception e) {
             log.error("处理告警记录时发生异常: {}", e.getMessage(), e);

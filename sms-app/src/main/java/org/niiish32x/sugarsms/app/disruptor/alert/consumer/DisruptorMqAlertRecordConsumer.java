@@ -1,6 +1,7 @@
 package org.niiish32x.sugarsms.app.disruptor.alert.consumer;
 
 import com.lmax.disruptor.EventHandler;
+import org.apache.commons.lang3.StringUtils;
 import org.niiish32x.sugarsms.alert.app.AlertService;
 import org.niiish32x.sugarsms.alert.app.command.ProduceAlertRecordCommand;
 import org.niiish32x.sugarsms.alert.domain.entity.AlertEO;
@@ -44,6 +45,6 @@ public class DisruptorMqAlertRecordConsumer implements EventHandler<AlertRecordE
 
         alertEO.setFinishGenerateAlertRecord(true);
         alertRepo.saveOrUpdate(alertEO);
-        EventBus.publishEvent(new AlertRecordChangeEvent(this));
+        EventBus.publishEvent(new AlertRecordChangeEvent(this, String.format(">>>> batch alert record generate  alertId:%s  alertName:%s >>>>",alertEO.getAlertId(),alertEO.getAlertName())));
     }
 }

@@ -13,7 +13,9 @@ import org.springframework.context.ApplicationEvent;
 
 @Getter
 public class AlertRecordChangeEvent extends ApplicationEvent {
-    public AlertRecordChangeEvent(Object source) {
+    String message;
+    public AlertRecordChangeEvent(Object source,String message) {
         super(source);
+        this.message = message;
     }
 }

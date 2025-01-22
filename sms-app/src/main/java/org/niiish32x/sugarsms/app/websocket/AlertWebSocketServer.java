@@ -60,7 +60,7 @@ public class AlertWebSocketServer  {
 
     @EventListener(classes = AlertRecordChangeEvent.class)
     void onAlertRecordChangeEvent(AlertRecordChangeEvent event) {
-        sendMessage("records change");
+        sendMessage(event.getMessage());
     }
 
     public void sendMessage(String msg) {

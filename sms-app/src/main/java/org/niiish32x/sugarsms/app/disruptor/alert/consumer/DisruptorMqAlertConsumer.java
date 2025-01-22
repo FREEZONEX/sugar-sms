@@ -8,6 +8,8 @@ import org.niiish32x.sugarsms.alert.domain.entity.MessageType;
 import org.niiish32x.sugarsms.alert.domain.repo.AlertRecordRepo;
 import org.niiish32x.sugarsms.alert.domain.repo.AlertRepo;
 import org.niiish32x.sugarsms.app.disruptor.alert.event.AlertEvent;
+import org.niiish32x.sugarsms.app.event.AlertRecordChangeEvent;
+import org.niiish32x.sugarsms.common.event.EventBus;
 import org.niiish32x.sugarsms.common.result.Result;
 import org.niiish32x.sugarsms.common.utils.Retrys;
 import org.niiish32x.sugarsms.message.app.SendMessageService;
@@ -69,6 +71,7 @@ public class DisruptorMqAlertConsumer implements EventHandler<AlertEvent> {
             throw new RuntimeException(e);
         }
 
+        EventBus.publishEvent(new AlertRecordChangeEvent(this,String.format(">>> alert send success! alertId: %s username: %s messageType: %s",alertRecordEO.getAlertId(),alertRecordEO.getUsername(),alertRecordEO.getType().name())));
     }
 
     boolean alert(Long id ,MessageType messageType,String message,String receiver) {
