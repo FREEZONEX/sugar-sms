@@ -22,9 +22,9 @@ public class Startup implements InitializingBean {
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        log.info("start ack all old alerts");
-        // 确认所有消息 防止重启后一次性发送过多
-        alertService.ackAlerts();
-        log.info("finish ack all old alerts");
+//        log.info("start ack all old alerts");
+//        // 确认所有消息 防止重启后一次性发送过多
+//        alertService.ackAlerts();
+//        log.info("finish ack all old alerts");
     }
 }
