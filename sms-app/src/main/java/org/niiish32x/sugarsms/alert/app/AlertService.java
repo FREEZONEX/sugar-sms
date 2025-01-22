@@ -6,6 +6,7 @@ import org.niiish32x.sugarsms.alert.app.command.SaveAlertCommand;
 import org.niiish32x.sugarsms.alert.app.query.AlertRecordsCountQuery;
 import org.niiish32x.sugarsms.alert.app.query.AlertRecordsQuery;
 import org.niiish32x.sugarsms.alert.domain.entity.AlertEO;
+import org.niiish32x.sugarsms.alert.domain.entity.MessageType;
 import org.niiish32x.sugarsms.api.alert.dto.AlertInfoDTO;
 import org.niiish32x.sugarsms.api.alert.dto.AlertRecordDTO;
 import org.niiish32x.sugarsms.api.user.dto.SuposUserDTO;
@@ -21,6 +22,7 @@ import java.util.List;
  * @date 2024.12.10 9:56
  */
 public interface AlertService {
+     boolean alert(Long id , MessageType messageType, String message, String receiver);
 
      Result<List<AlertInfoDTO>> getAlertsFromSupos();
 

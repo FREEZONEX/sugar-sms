@@ -36,6 +36,8 @@ import org.niiish32x.sugarsms.app.proxy.ZubrixSmsProxy;
 import org.niiish32x.sugarsms.alert.app.AlertService;
 import org.niiish32x.sugarsms.common.event.EventBus;
 import org.niiish32x.sugarsms.common.result.PageResult;
+import org.niiish32x.sugarsms.message.app.SendMessageService;
+import org.niiish32x.sugarsms.message.app.external.ZubrixSmsResponse;
 import org.niiish32x.sugarsms.suposperson.app.SuposPersonService;
 import org.niiish32x.sugarsms.suposperson.app.command.SavePersonCommand;
 import org.niiish32x.sugarsms.suposperson.app.external.PersonPageQueryRequest;
@@ -67,6 +69,8 @@ import java.util.stream.Collectors;
 @Service
 @Slf4j
 public class AlertServiceImpl implements AlertService {
+
+    private final String SUGAR_ALERT_EMAIL_SUBJECT = "sugar-plant-alert";
 
     static int maximumPoolSize = 300;
     static int coolPoolSize = 100;
@@ -106,6 +110,10 @@ public class AlertServiceImpl implements AlertService {
             .maximumSize(1000)
             .build();
 
+
+    @Autowired
+    SendMessageService sendMessageService;
+
     AlarmAssembler alarmAssembler = AlarmAssembler.INSTANCE;
 
     @Autowired
@@ -143,6 +151,34 @@ public class AlertServiceImpl implements AlertService {
 
 
     AlertRecordAssembler alertRecordAssembler = AlertRecordAssembler.INSTANCE;
+
+    @Override
+    public boolean alert(Long id, MessageType messageType, String message, String receiver) {
+        boolean res = false;
+
+        if (messageType == MessageType.SMS) {
+            Result<ZubrixSmsResponse> smsResp = sendMessageService.sendOneZubrixSmsMessage(receiver, message);
+            res = smsResp.isSuccess();
+        } else if (messageType == MessageType.EMAIL) {
+            res = sendMessageService.sendEmail(receiver, SUGAR_ALERT_EMAIL_SUBJECT, message);
+        }
+
+        if (res) {
+            boolean updateRes = alertRecordRepo.updateStatusById(id,true);
+            if (!updateRes) {
+                log.error("alert: id:{} {} 更新状态失败", id , receiver);
+                return false;
+            }
+        }else {
+            log.error("alert: id:{} {} 发送失败", id, receiver);
+            return false;
+        }
+
+
+        EventBus.publishEvent(new AlertRecordChangeEvent(this,String.format(">>> alert send success!  messageType:%s  receiver:%s",messageType.name(),receiver)));
+
+        return true;
+    }
 
     @Override
     public Result <List<AlertInfoDTO>> getAlertsFromSupos() {

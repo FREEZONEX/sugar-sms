@@ -2,6 +2,7 @@ package org.niiish32x.sugarsms.app.disruptor.alert.consumer;
 
 import com.lmax.disruptor.EventHandler;
 import lombok.extern.slf4j.Slf4j;
+import org.niiish32x.sugarsms.alert.app.AlertService;
 import org.niiish32x.sugarsms.alert.domain.entity.AlertEO;
 import org.niiish32x.sugarsms.alert.domain.entity.AlertRecordEO;
 import org.niiish32x.sugarsms.alert.domain.entity.MessageType;
@@ -40,6 +41,9 @@ public class DisruptorMqAlertConsumer implements EventHandler<AlertEvent> {
     @Autowired
     AlertRepo alertRepo;
 
+    @Autowired
+    AlertService alertService;
+
     @Override
     public void onEvent(AlertEvent alertEvent, long l, boolean b) throws Exception {
         Long id = alertEvent.getAlertRecordId();
@@ -66,12 +70,12 @@ public class DisruptorMqAlertConsumer implements EventHandler<AlertEvent> {
         MessageType messageType = alertRecordEO.getType();
 
         try {
-            Retrys.doWithRetry(()-> alert(id,messageType,message,receiver)  , r -> r ,3 ,1000) ;
+            Retrys.doWithRetry(()-> alertService.alert(id,messageType,message,receiver)  , r -> r ,3 ,1000) ;
         } catch (Throwable e) {
             throw new RuntimeException(e);
         }
 
-        EventBus.publishEvent(new AlertRecordChangeEvent(this,String.format(">>> alert send success! alertId: %s username: %s messageType: %s",alertRecordEO.getAlertId(),alertRecordEO.getUsername(),alertRecordEO.getType().name())));
+
     }
 
     boolean alert(Long id ,MessageType messageType,String message,String receiver) {
