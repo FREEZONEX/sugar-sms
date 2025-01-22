@@ -1,13 +1,18 @@
 package org.niiish32x.sugarsms.alert.repo;
 
+
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.common.base.Preconditions;
 import com.sun.prism.null3d.NULL3DPipeline;
+import org.apache.commons.lang3.StringUtils;
 import org.niiish32x.sugarsms.alert.AlertRecordDO;
 import org.niiish32x.sugarsms.alert.domain.entity.AlertRecordEO;
 import org.niiish32x.sugarsms.alert.domain.entity.MessageType;
 import org.niiish32x.sugarsms.alert.domain.repo.AlertRecordRepo;
 import org.niiish32x.sugarsms.alert.persistence.converter.AlertRecordConverter;
 import org.niiish32x.sugarsms.alert.persistence.dao.AlertRecordDAO;
+import org.niiish32x.sugarsms.common.result.PageResult;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Resource;
@@ -245,5 +250,15 @@ public class AlertRecordRepoImpl implements AlertRecordRepo {
     public boolean updateExpireById(Long id, boolean expire) {
         return alertRecordDAO.updateExpireById(id,expire);
     }
+
+    @Override
+    public PageResult<AlertRecordEO> page(long current, long limit) {
+        Page<AlertRecordDO>  page = Page.of(current,limit);
+        Page<AlertRecordDO> pageRes = alertRecordDAO.page(page);
+
+        List<AlertRecordEO> alertRecordEOList = pageRes.getRecords().stream().map(converter::toEO).collect(Collectors.toList());
+        return PageResult.of(pageRes.getTotal(),alertRecordEOList);
+    }
+
 
 }
