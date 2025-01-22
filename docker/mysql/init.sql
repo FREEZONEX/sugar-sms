@@ -1,4 +1,6 @@
 
+create database if not exists sugar_sms;
+
 use sugar_sms;
 
 drop table if exists alert;
@@ -59,7 +61,7 @@ CREATE TABLE `alarm` (
                          `enable` TINYINT(1) NOT NULL DEFAULT 0 COMMENT '0表示false，1表示true',
                          `operator` VARCHAR(50) DEFAULT NULL,
                          `limit_value` VARCHAR(255) DEFAULT NULL,
-                         `dead_band` DECIMAL(10, 2) DEFAULT NULL,  -- 根据double类型，设置合适的精度和小数位数
+                         `dead_band` DECIMAL(10, 2) DEFAULT NULL,
                          `dead_band_type` VARCHAR(50) DEFAULT NULL,
                          `comment` VARCHAR(255) DEFAULT NULL,
                          `alarm_type` VARCHAR(50) DEFAULT NULL,
