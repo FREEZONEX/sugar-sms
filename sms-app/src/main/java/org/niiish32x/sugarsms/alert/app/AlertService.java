@@ -1,6 +1,5 @@
 package org.niiish32x.sugarsms.alert.app;
 
-import javafx.scene.control.Alert;
 import org.niiish32x.sugarsms.alert.app.command.ProduceAlertRecordCommand;
 import org.niiish32x.sugarsms.alert.app.command.SaveAlertCommand;
 import org.niiish32x.sugarsms.alert.app.query.AlertRecordsCountQuery;
