@@ -1,7 +1,9 @@
 package org.niiish32x.sugarsms.alert.domain.repo;
 
+
 import org.niiish32x.sugarsms.alert.domain.entity.AlertRecordEO;
 import org.niiish32x.sugarsms.alert.domain.entity.MessageType;
+import org.niiish32x.sugarsms.common.result.PageResult;
 
 import java.util.List;
 
@@ -86,4 +88,6 @@ public interface AlertRecordRepo {
     boolean updateStatusById(Long alertId, boolean status);
 
     boolean updateExpireById(Long id, boolean expire);
+
+     PageResult<AlertRecordEO> page(long current, long limit);
 }
