@@ -2,7 +2,6 @@ package org.niiish32x.sugarsms.alert.app.impl;
 
 import cn.hutool.http.HttpResponse;
 import com.alibaba.fastjson2.JSON;
-import com.alibaba.fastjson2.JSONArray;
 import com.google.common.base.Preconditions;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
@@ -18,6 +17,7 @@ import org.niiish32x.sugarsms.alarm.domain.repo.AlarmRepo;
 import org.niiish32x.sugarsms.alert.app.assmbler.AlertRecordAssembler;
 import org.niiish32x.sugarsms.alert.app.command.ProduceAlertRecordCommand;
 import org.niiish32x.sugarsms.alert.app.command.SaveAlertCommand;
+import org.niiish32x.sugarsms.alert.app.query.AlertRecordsQuery;
 import org.niiish32x.sugarsms.alert.domain.entity.AlertEO;
 import org.niiish32x.sugarsms.alert.domain.entity.AlertRecordEO;
 import org.niiish32x.sugarsms.alert.domain.entity.MessageType;
@@ -27,11 +27,15 @@ import org.niiish32x.sugarsms.api.alarm.dto.AlarmDTO;
 import org.niiish32x.sugarsms.api.alert.dto.*;
 import org.niiish32x.sugarsms.api.person.dto.SuposPersonDTO;
 import org.niiish32x.sugarsms.api.user.dto.SuposUserDTO;
+import org.niiish32x.sugarsms.app.event.AlertRecordChangeEvent;
 import org.niiish32x.sugarsms.app.proxy.AlertContentBuilder;
 import org.niiish32x.sugarsms.common.enums.ApiEnum;
 import org.niiish32x.sugarsms.api.user.dto.RoleSpecDTO;
 import org.niiish32x.sugarsms.app.proxy.ZubrixSmsProxy;
 import org.niiish32x.sugarsms.alert.app.AlertService;
+import org.niiish32x.sugarsms.app.event.AlertRecordsGenerateEvent;
+import org.niiish32x.sugarsms.common.event.EventBus;
+import org.niiish32x.sugarsms.common.result.PageResult;
 import org.niiish32x.sugarsms.suposperson.app.SuposPersonService;
 import org.niiish32x.sugarsms.suposperson.app.command.SavePersonCommand;
 import org.niiish32x.sugarsms.suposperson.app.external.PersonPageQueryRequest;
@@ -51,6 +55,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.stream.Collectors;
 
 /**
  * AlertServiceImpl
@@ -301,6 +306,9 @@ public class AlertServiceImpl implements AlertService {
 
             alertRecordRepo.saveUniByReceiver(alertRecords);
 
+
+            EventBus.publishEvent(new AlertRecordChangeEvent(this));
+
             return true;
         } catch (Exception e) {
             log.error("处理告警记录时发生异常: {}", e.getMessage(), e);
@@ -440,6 +448,16 @@ public class AlertServiceImpl implements AlertService {
 
         AlertAckResponse alertAckResponse = JSON.parseObject(response.body(), AlertAckResponse.class);
         return Result.error(JSON.toJSONString(alertAckResponse)) ;
+    }
+
+    @Override
+    public Result<PageResult<AlertRecordDTO>> searchAlertRecord(AlertRecordsQuery query) {
+
+        PageResult<AlertRecordEO> pageRes = alertRecordRepo.page(query.getPage(), query.getLimit());
+
+        List<AlertRecordDTO> alertRecordDTOS = pageRes.getList().stream().map(alertRecordAssembler::toDTO).collect(Collectors.toList());
+
+        return Result.success(PageResult.of(pageRes.getCount(),alertRecordDTOS));
     }
 
     private List<AlertRecordEO> prepareAlertRecord(SuposUserDTO userDTO, AlertEO alertEO, AlarmEO alarmEO) {
