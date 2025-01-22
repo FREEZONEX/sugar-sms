@@ -19,7 +19,7 @@ import java.util.concurrent.CopyOnWriteArraySet;
  * @date 2025.01.22 10:47
  */
 
-@ServerEndpoint("/api/alert/websocket/{id}")
+@ServerEndpoint("/api/alert/websocket")
 @Component
 @Slf4j
 public class AlertWebSocketServer  {
@@ -50,6 +50,12 @@ public class AlertWebSocketServer  {
     public void setAlertRecordRepo(AlertRecordRepo alertRecordRepo) {
         AlertWebSocketServer.alertRecordRepo = alertRecordRepo;
     }
+
+    @OnClose
+    public void onClose(){
+        webSockets.remove(this);
+    }
+
 
     @OnOpen
     public void onOpen(Session session) {
