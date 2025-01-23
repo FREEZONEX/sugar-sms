@@ -102,4 +102,10 @@ public class AlertRepoImpl implements AlertRepo {
 
         return list.stream().map(converter::toEO).collect(Collectors.toList());
     }
+
+    @Override
+    public List<AlertEO> findUnFinishedAlerts() {
+        List<AlertDO> list = alertDAO.lambdaQuery().eq(AlertDO::getFinishGenerateAlertRecord, 0).list();
+        return list.stream().map(converter::toEO).collect(Collectors.toList());
+    }
 }

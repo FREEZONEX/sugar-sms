@@ -36,11 +36,18 @@ public class AlertRecordDO implements Serializable {
     @TableField(value = "alert_id")
     private Long alertId;
 
+    @TableField(value = "alert")
+    private String alert;
+
+
     @TableField(value = "alarm_id")
     private Long alarmId;
 
     @TableField(value = "alarm")
     private String alarm;
+
+    @TableField(value = "user")
+    private String user;
 
     @TableField(value = "type")
     private String type;

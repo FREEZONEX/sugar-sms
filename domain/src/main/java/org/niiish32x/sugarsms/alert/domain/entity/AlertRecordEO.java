@@ -11,6 +11,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.niiish32x.sugarsms.alarm.domain.entity.AlarmEO;
+import org.niiish32x.sugarsms.user.domain.entity.UserEO;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -33,6 +34,8 @@ public class AlertRecordEO implements Serializable {
     private Long alarmId;
 
     private AlarmEO alarm;
+
+    private UserEO user;
 
     private MessageType type;
 
