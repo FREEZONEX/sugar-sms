@@ -30,11 +30,13 @@ drop table if exists alert_record;
 
 CREATE TABLE `alert_record` (   `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '自增主键',
                                 `alert_id` bigint(20) NOT NULL  COMMENT  '实时报警记录Id',
+                                `alert` TEXT COMMENT  '整条alert的具体内容 存json',
                                 `alarm_id` bigint(20) NOT NULL Default -1,
                                 `alarm` TEXT COMMENT  '整条alarm的具体内容 存json',
                                 `type` VARCHAR(255) COMMENT '通知类型',
                                 `status` tinyint(1)   COMMENT '0 表示 sms 发送未完成 1 表示 sms 发送已完成 即全部通知到位' ,
                                 `username` VARCHAR(255),
+                                `user` TEXT COMMENT  '整条user的具体内容 存json',
                                 `send_time` datetime COMMENT  '通知成功的时间',
                                 `phone` VARCHAR(255),
                                 `email` VARCHAR(255),
