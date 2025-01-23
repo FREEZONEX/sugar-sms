@@ -26,8 +26,23 @@ public class SuposUserController {
         return  suposUserService.getRoleListFromSupos(companyCode);
     }
 
-    @RequestMapping("/users/company")
-    public Result getCompanyUser(@RequestBody UserPageQueryRequest request) {
+    @RequestMapping("/users")
+    public Result getUserFromSupos(
+            @RequestParam (name =  "keyword" , required = false )  String keyword,
+            @RequestParam (name =  "roleCode" , required = false )  String roleCode,
+            @RequestParam (name =  "companyCode" , required = true, defaultValue = "default_org_company")  String companyCode,
+            @RequestParam (name =  "pageIndex" , required = false , defaultValue = "1")  Integer pageIndex,
+            @RequestParam (name =  "pageSize" , required = false , defaultValue = "10")  Integer pageSize,
+            @RequestParam (name =  "getAll" , required = false , defaultValue = "false")  Boolean getAll
+            ) {
+        UserPageQueryRequest request = new UserPageQueryRequest(
+                keyword,
+                pageIndex,
+                pageSize,
+                roleCode,
+                companyCode,
+                getAll
+        );
         return  suposUserService.getUsersFromSupos(request);
     }
 

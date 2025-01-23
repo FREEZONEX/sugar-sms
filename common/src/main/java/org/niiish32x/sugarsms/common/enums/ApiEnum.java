@@ -7,7 +7,7 @@ package org.niiish32x.sugarsms.common.enums;
  * @date 2024.12.08 18:22
  */
 public enum ApiEnum {
-
+    // https://cloud.supos.com/open/APIs/detail?treeNodeCode=1681&openapiVersionCode=c3bc97b89d05458d8cef7ee0c810dd6b&apisManageCode=25353e4b1c614159ab4ffc3f9ddbb769&clickActive=supOS
     USER_PAGE_GET_API("/open-api/auth/v2/users"),
 
     // https://cloud.supos.com/open/APIs/detail?treeNodeCode=1521&openapiVersionCode=c3bc97b89d05458d8cef7ee0c810dd6b&apisManageCode=25353e4b1c614159ab4ffc3f9ddbb769&clickActive=supOS

@@ -253,22 +253,44 @@ public class AlertServiceImpl implements AlertService {
 
         alertUsers = new ArrayList<>(roleSpecDTOList.size() * 10); // 预估用户数量
 
-        for (RoleSpecDTO roleSpecDTO : roleSpecDTOList) {
-            if (roleSpecDTO == null || !UserRoleEnum.isAlertRole(roleSpecDTO.getRoleCode()) || roleSpecDTO.getValid() == 0) {
+        Result<List<SuposUserDTO>> usersFromSupos = userService.getUsersFromSupos(
+                UserPageQueryRequest.builder()
+                        .getAll(true)
+                        .build()
+        );
+
+
+
+        for (SuposUserDTO userDTO : usersFromSupos.getData()) {
+
+            if (userDTO.getUserRoleList() == null || userDTO.getUserRoleList().isEmpty()) {
                 continue;
             }
 
-            UserPageQueryRequest userPageQueryRequest = UserPageQueryRequest.builder()
-                    .companyCode(CompanyEnum.DEFAULT.value)
-                    .roleCode(roleSpecDTO.getRoleCode())
-                    .getAll(true)
-                    .build();
-            Result<List<SuposUserDTO>> usersFromSupos = userService.getUsersFromSupos(userPageQueryRequest);
-            if (!usersFromSupos.isSuccess()) {
-                return Result.error("Failed to get users from Supos: " + usersFromSupos.getMessage());
+            for (SuposUserRoleDTO roleDTO : userDTO.getUserRoleList()) {
+                 if (UserRoleEnum.isAlertRole(roleDTO.getName())){
+                     alertUsers.add(userDTO);
+                     break;
+                 }
             }
-            alertUsers.addAll(usersFromSupos.getData());
         }
+
+//        for (RoleSpecDTO roleSpecDTO : roleSpecDTOList) {
+//            if (roleSpecDTO == null || !UserRoleEnum.isAlertRole(roleSpecDTO.getRoleCode()) || roleSpecDTO.getValid() == 0) {
+//                continue;
+//            }
+//
+//            UserPageQueryRequest userPageQueryRequest = UserPageQueryRequest.builder()
+//                    .companyCode(CompanyEnum.DEFAULT.value)
+//                    .roleCode(roleSpecDTO.getRoleCode())
+//                    .getAll(true)
+//                    .build();
+//            usersFromSupos = userService.getUsersFromSupos(userPageQueryRequest);
+//            if (!usersFromSupos.isSuccess()) {
+//                return Result.error("Failed to get users from Supos: " + usersFromSupos.getMessage());
+//            }
+//            alertUsers.addAll(usersFromSupos.getData());
+//        }
 
         USER_CACHE.put("alert",alertUsers);
 
