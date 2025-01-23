@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.common.base.Preconditions;
 import com.sun.prism.null3d.NULL3DPipeline;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.niiish32x.sugarsms.alert.AlertRecordDO;
 import org.niiish32x.sugarsms.alert.domain.entity.AlertRecordEO;
@@ -29,6 +30,7 @@ import java.util.stream.Collectors;
 
 
 @Repository
+@Slf4j
 public class AlertRecordRepoImpl implements AlertRecordRepo {
 
 
@@ -159,14 +161,18 @@ public class AlertRecordRepoImpl implements AlertRecordRepo {
                 existAlertDO = alertRecordDAO.lambdaQuery()
                         .eq(AlertRecordDO::getAlertId, alertRecordDO.getAlertId())
                         .eq(AlertRecordDO::getType, alertRecordDO.getType())
-                        .eq(AlertRecordDO::getPhone, alertRecordDO.getPhone()).one();
+                        .eq(AlertRecordDO::getAlarmId, alertRecordDO.getAlarmId())
+                        .eq(AlertRecordDO::getPhone, alertRecordDO.getPhone())
+                        .one();
             }
 
             if (alertRecordEO.getType() == MessageType.EMAIL){
                 existAlertDO = alertRecordDAO.lambdaQuery()
                         .eq(AlertRecordDO::getAlertId, alertRecordDO.getAlertId())
                         .eq(AlertRecordDO::getType, alertRecordDO.getType())
-                        .eq(AlertRecordDO::getEmail, alertRecordDO.getEmail()).one();
+                        .eq(AlertRecordDO::getAlarmId, alertRecordDO.getAlarmId())
+                        .eq(AlertRecordDO::getEmail, alertRecordDO.getEmail())
+                        .one();
             }
 
 
@@ -175,7 +181,10 @@ public class AlertRecordRepoImpl implements AlertRecordRepo {
             }
 
             boolean saveRes = alertRecordDAO.save(alertRecordDO);
-            Preconditions.checkArgument(saveRes, "保存失败");
+            if (!saveRes) {
+                log.error("{} {} save error",alertRecordEO.getAlertId(),alertRecordEO.getType() == MessageType.SMS ? alertRecordEO.getPhone() : alertRecordEO.getEmail());
+            }
+//            Preconditions.checkArgument(saveRes, "保存失败");
         }
 
         return true;

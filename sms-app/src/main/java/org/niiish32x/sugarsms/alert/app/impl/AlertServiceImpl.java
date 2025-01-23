@@ -28,6 +28,7 @@ import org.niiish32x.sugarsms.api.alarm.dto.AlarmDTO;
 import org.niiish32x.sugarsms.api.alert.dto.*;
 import org.niiish32x.sugarsms.api.person.dto.SuposPersonDTO;
 import org.niiish32x.sugarsms.api.user.dto.SuposUserDTO;
+import org.niiish32x.sugarsms.api.user.dto.SuposUserRoleDTO;
 import org.niiish32x.sugarsms.app.event.AlertRecordChangeEvent;
 import org.niiish32x.sugarsms.app.proxy.AlertContentBuilder;
 import org.niiish32x.sugarsms.common.enums.ApiEnum;
@@ -50,6 +51,8 @@ import org.niiish32x.sugarsms.common.request.SuposRequestManager;
 import org.niiish32x.sugarsms.common.result.Result;
 import org.niiish32x.sugarsms.manager.thread.GlobalThreadManager;
 import org.niiish32x.sugarsms.user.app.external.UserPageQueryRequest;
+import org.niiish32x.sugarsms.user.domain.entity.UserEO;
+import org.niiish32x.sugarsms.user.domain.entity.UserRoleEO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
@@ -184,9 +187,14 @@ public class AlertServiceImpl implements AlertService {
     public Result <List<AlertInfoDTO>> getAlertsFromSupos() {
         Map<String, String> headerMap = new HashMap<>();
         Map<String, String> queryMap = new HashMap<>();
-        HttpResponse response = requestManager.suposApiGet(ApiEnum.ALERT_API.value, headerMap, queryMap);
-        AlertResponse alertResponse = JSON.parseObject(response.body(), AlertResponse.class);
-        return alertResponse.getCode() == 200 ? Result.success(alertResponse.getAlerts())  : Result.error("查询报警信息失败") ;
+
+        try {
+            HttpResponse response = requestManager.suposApiGet(ApiEnum.ALERT_API.value, headerMap, queryMap);
+            AlertResponse alertResponse = JSON.parseObject(response.body(), AlertResponse.class);
+            return alertResponse.getCode() == 200 ? Result.success(alertResponse.getAlerts())  : Result.error("get alert info error") ;
+        }catch (Exception e) {
+            return Result.error("get alert info error",e);
+        }
     }
 
     @Override
@@ -232,6 +240,7 @@ public class AlertServiceImpl implements AlertService {
 
         // 获取角色列表并处理异常
         Result<List<RoleSpecDTO>> roleListFromSupos = userService.getRoleListFromSupos(CompanyEnum.DEFAULT.value);
+
         if (!roleListFromSupos.isSuccess()) {
             return Result.error("Failed to get role list from Supos: " + roleListFromSupos.getMessage());
         }
@@ -262,6 +271,8 @@ public class AlertServiceImpl implements AlertService {
 
         USER_CACHE.put("alert",alertUsers);
 
+
+
         return Result.success(alertUsers);
     }
 
@@ -290,6 +301,8 @@ public class AlertServiceImpl implements AlertService {
             }
 
             List<SuposUserDTO> userDTOS = alertUsersResult.getData();
+
+//            log.info("users to info are:\n {} ",JSON.toJSONString(userDTOS));
 
             AlarmEO alarmEO = null;
 
@@ -560,14 +573,43 @@ public class AlertServiceImpl implements AlertService {
         phoneNumber = personEO.getPhone() == null ? null : personEO.getPhone().trim();
         email =  personEO.getEmail() == null ? null : personEO.getEmail().trim();
 
+
+        List<SuposUserRoleDTO> userRoleListDTO = userDTO.getUserRoleList();
+
+        List<UserRoleEO> userRoleEOList = new ArrayList<>();
+
+        for (SuposUserRoleDTO userRoleDTO : userRoleListDTO) {
+            UserRoleEO userRoleEO = UserRoleEO.builder()
+                    .name(userRoleDTO.getName())
+                    .showName(userRoleDTO.getShowName())
+                    .description(userRoleDTO.getDescription())
+                    .total(userRoleDTO.getTotal())
+                    .build();
+            userRoleEOList.add(userRoleEO);
+        }
+
+        UserEO userEO = UserEO.builder()
+                .accountType(userDTO.getAccountType())
+                .avatar(userDTO.getAvatar())
+                .createTime(userDTO.getCreateTime())
+                .lockStatus(userDTO.getLockStatus())
+                .modifyTime(userDTO.getModifyTime())
+                .personCode(userDTO.getPersonCode())
+                .personName(userDTO.getPersonName())
+                .userDesc(userDTO.getUserDesc())
+                .username(userDTO.getUsername())
+                .valid(userDTO.getValid())
+                .userRoleList(userRoleEOList)
+                .build();
+
         // 验证手机号
         if ( StringUtils.isNotBlank(phoneNumber) && isValidPhoneNumber(Objects.requireNonNull(phoneNumber))) {
-            alertRecords.add(buildAlertRecordEO(alertEO.getAlertId(), userDTO.getUsername(), phoneNumber, null, MessageType.SMS, text, false,alarmEO));
+            alertRecords.add(buildAlertRecordEO(alertEO.getAlertId(), userEO,userDTO.getUsername(), phoneNumber, null, MessageType.SMS, text, false,alarmEO));
         }
 
         // 验证邮箱
         if (StringUtils.isNotBlank(email) && isValidEmail(email)) {
-            alertRecords.add(buildAlertRecordEO(alertEO.getAlertId(), userDTO.getUsername(), null, email, MessageType.EMAIL, text, false,alarmEO));
+            alertRecords.add(buildAlertRecordEO(alertEO.getAlertId(), userEO,userDTO.getUsername(), null, email, MessageType.EMAIL, text, false,alarmEO));
         }
 
         return alertRecords;
@@ -641,12 +683,13 @@ public class AlertServiceImpl implements AlertService {
 
 
 
-    private AlertRecordEO buildAlertRecordEO(Long alertId,String username,String phone,String email,MessageType type,String text,Boolean status,AlarmEO alarmEO) {
+    private AlertRecordEO buildAlertRecordEO(Long alertId, UserEO userEO, String username, String phone, String email, MessageType type, String text, Boolean status, AlarmEO alarmEO) {
         if (type == MessageType.SMS) {
             return AlertRecordEO.builder()
                     .type(MessageType.SMS)
                     .alertId(alertId)
                     .username(username)
+                    .user(userEO)
                     .content(text)
                     .sendTime(new Date())
                     .phone(phone)
@@ -660,6 +703,7 @@ public class AlertServiceImpl implements AlertService {
                     .type(MessageType.EMAIL)
                     .alertId(alertId)
                     .username(username)
+                    .user(userEO)
                     .content(text)
                     .sendTime(new Date())
                     .email(email)

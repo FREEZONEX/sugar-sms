@@ -21,4 +21,6 @@ public interface AlertRepo {
 
 
     List<AlertEO> findUnFinishedAlerts(int nums);
+
+    List<AlertEO> findUnFinishedAlerts();
 }
