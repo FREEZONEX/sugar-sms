@@ -11,6 +11,7 @@ import org.niiish32x.sugarsms.alarm.domain.entity.AlarmEO;
 import org.niiish32x.sugarsms.alert.AlertRecordDO;
 import org.niiish32x.sugarsms.alert.domain.entity.AlertRecordEO;
 import org.niiish32x.sugarsms.alert.domain.entity.MessageType;
+import org.niiish32x.sugarsms.user.domain.entity.UserEO;
 
 import java.util.Map;
 
@@ -28,14 +29,21 @@ public interface AlertRecordConverter {
     @Mapping(target = "status" , expression = "java(alertRecordEO.getStatus() ? 1 : 0)")
     @Mapping(target = "alarm", expression = "java(JSON.toJSONString(alertRecordEO.getAlarm()))")
     @Mapping(target = "expire", expression = "java(alertRecordEO.getExpire() ? 1 : 0)")
+    @Mapping(target = "user" , expression = "java(JSON.toJSONString(alertRecordEO.getUser()))")
     AlertRecordDO toDO(AlertRecordEO alertRecordEO);
 
     @Mapping(target = "type", source = "type",qualifiedByName = "parseMessageTypeToEO")
     @Mapping(target = "status", expression = "java(alertRecordDO.getStatus() == 1 ? true : false)")
     @Mapping(target = "alarm", source = "alarm" , qualifiedByName = "parseAlarmToEO")
     @Mapping(target = "expire", expression = "java(alertRecordDO.getExpire() == 1 ? true : false)")
+    @Mapping(target = "user", source = "user" , qualifiedByName = "parseUserToEO")
     AlertRecordEO toEO(AlertRecordDO alertRecordDO);
 
+
+    @Named("parseUserToEO")
+    default UserEO parseUserToEO(String user) {
+        return JSON.parseObject(user, UserEO.class);
+    }
 
     @Named("parseMessageTypeToEO")
     default MessageType parseMessageTypeToEO (String type) {
