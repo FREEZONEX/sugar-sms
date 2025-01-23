@@ -57,6 +57,8 @@ public interface AlertRecordRepo {
      */
     boolean saveUniByReceiver(List<AlertRecordEO> alertRecordEOS);
 
+    boolean saveUniByReceiver(AlertRecordEO  alertRecordEO);
+
     /**
      * 找到所有发送失败的记录
      * @return

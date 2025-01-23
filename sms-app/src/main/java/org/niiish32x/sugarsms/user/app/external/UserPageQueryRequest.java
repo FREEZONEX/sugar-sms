@@ -3,6 +3,7 @@ package org.niiish32x.sugarsms.user.app.external;
 import com.google.common.base.Preconditions;
 import lombok.*;
 import org.apache.commons.lang3.StringUtils;
+import org.niiish32x.sugarsms.common.enums.CompanyEnum;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -35,16 +36,28 @@ public class UserPageQueryRequest {
     private String roleCode;
 
     @NonNull
-    private String companyCode;
+    @Builder.Default
+    private String companyCode = CompanyEnum.DEFAULT.value;
 
     @Builder.Default
-    private Boolean includeDeleted = false;
+    private boolean includeDeleted = false;
 
     /**
      * 该参数为true 则表示全量查询
      */
     @Builder.Default
     private boolean getAll = false;
+
+    public UserPageQueryRequest(String keyword,Integer pageIndex,Integer pageSize,String roleCode,String companyCode,boolean getAll) {
+        this.keyword = keyword;
+        this.pageIndex =  pageIndex;
+        this.pageSize =  pageSize;
+        this.roleCode = roleCode;
+        this.companyCode = companyCode;
+        Preconditions.checkArgument(companyCode != null, "company cannot be null");
+        this.includeDeleted = false;
+        this.getAll = getAll;
+    }
 
     public Map<String, String> buildQueryMap() {
 

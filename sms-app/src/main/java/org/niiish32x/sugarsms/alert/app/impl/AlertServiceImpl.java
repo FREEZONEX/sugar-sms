@@ -37,6 +37,7 @@ import org.niiish32x.sugarsms.app.proxy.ZubrixSmsProxy;
 import org.niiish32x.sugarsms.alert.app.AlertService;
 import org.niiish32x.sugarsms.common.event.EventBus;
 import org.niiish32x.sugarsms.common.result.PageResult;
+import org.niiish32x.sugarsms.common.utils.Retrys;
 import org.niiish32x.sugarsms.message.app.SendMessageService;
 import org.niiish32x.sugarsms.message.app.external.ZubrixSmsResponse;
 import org.niiish32x.sugarsms.suposperson.app.SuposPersonService;
@@ -252,22 +253,44 @@ public class AlertServiceImpl implements AlertService {
 
         alertUsers = new ArrayList<>(roleSpecDTOList.size() * 10); // 预估用户数量
 
-        for (RoleSpecDTO roleSpecDTO : roleSpecDTOList) {
-            if (roleSpecDTO == null || !UserRoleEnum.isAlertRole(roleSpecDTO.getRoleCode()) || roleSpecDTO.getValid() == 0) {
+        Result<List<SuposUserDTO>> usersFromSupos = userService.getUsersFromSupos(
+                UserPageQueryRequest.builder()
+                        .getAll(true)
+                        .build()
+        );
+
+
+
+        for (SuposUserDTO userDTO : usersFromSupos.getData()) {
+
+            if (userDTO.getUserRoleList() == null || userDTO.getUserRoleList().isEmpty()) {
                 continue;
             }
 
-            UserPageQueryRequest userPageQueryRequest = UserPageQueryRequest.builder()
-                    .companyCode(CompanyEnum.DEFAULT.value)
-                    .roleCode(roleSpecDTO.getRoleCode())
-                    .getAll(true)
-                    .build();
-            Result<List<SuposUserDTO>> usersFromSupos = userService.getUsersFromSupos(userPageQueryRequest);
-            if (!usersFromSupos.isSuccess()) {
-                return Result.error("Failed to get users from Supos: " + usersFromSupos.getMessage());
+            for (SuposUserRoleDTO roleDTO : userDTO.getUserRoleList()) {
+                 if (UserRoleEnum.isAlertRole(roleDTO.getName())){
+                     alertUsers.add(userDTO);
+                     break;
+                 }
             }
-            alertUsers.addAll(usersFromSupos.getData());
         }
+
+//        for (RoleSpecDTO roleSpecDTO : roleSpecDTOList) {
+//            if (roleSpecDTO == null || !UserRoleEnum.isAlertRole(roleSpecDTO.getRoleCode()) || roleSpecDTO.getValid() == 0) {
+//                continue;
+//            }
+//
+//            UserPageQueryRequest userPageQueryRequest = UserPageQueryRequest.builder()
+//                    .companyCode(CompanyEnum.DEFAULT.value)
+//                    .roleCode(roleSpecDTO.getRoleCode())
+//                    .getAll(true)
+//                    .build();
+//            usersFromSupos = userService.getUsersFromSupos(userPageQueryRequest);
+//            if (!usersFromSupos.isSuccess()) {
+//                return Result.error("Failed to get users from Supos: " + usersFromSupos.getMessage());
+//            }
+//            alertUsers.addAll(usersFromSupos.getData());
+//        }
 
         USER_CACHE.put("alert",alertUsers);
 
@@ -337,14 +360,6 @@ public class AlertServiceImpl implements AlertService {
 
             ALARM_CACHE.put(alertEO.getSourcePropertyName(), alarmEO);
 
-//            String text = zubrixSmsProxy.formatTextContent(AlertContentBuilder.builder()
-//                            .sourcePropertyName(alertEO.getSourcePropertyName())
-//                            .newValue(alertEO.getNewValue())
-//                            .source(alertEO.getSource())
-//                            .startDataTimestamp(alertEO.getStartDataTimestamp())
-//                            .limitValue(alarmEO.getLimitValue())
-//                    .build());
-
             List<AlertRecordEO> alertRecords = new ArrayList<>();
             for (SuposUserDTO userDTO : userDTOS) {
                 AlarmEO finalAlarmEO = alarmEO;
@@ -353,7 +368,12 @@ public class AlertServiceImpl implements AlertService {
                 alertRecords.addAll(listCompletableFuture.get());
             }
 
-            alertRecordRepo.saveUniByReceiver(alertRecords);
+            for (AlertRecordEO alertRecordEO : alertRecords) {
+                // 记录一定要存进去 不然后续整个链路都会受到影响 宁愿多花一些时间
+                Retrys.doWithRetry(()-> alertRecordRepo.saveUniByReceiver(alertRecordEO) , r -> r ,10 ,2 * 1000);
+            }
+
+//            alertRecordRepo.saveUniByReceiver(alertRecords);
 
             EventBus.publishEvent(new AlertRecordChangeEvent(this, String.format(">>>> batch alert record generate  alertId:%s  alertName:%s >>>>",alertEO.getAlertId(),alertEO.getAlertName())));
 
