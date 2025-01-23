@@ -163,6 +163,7 @@ public class AlertRecordRepoImpl implements AlertRecordRepo {
                         .eq(AlertRecordDO::getType, alertRecordDO.getType())
                         .eq(AlertRecordDO::getAlarmId, alertRecordDO.getAlarmId())
                         .eq(AlertRecordDO::getPhone, alertRecordDO.getPhone())
+                        .eq(AlertRecordDO::getUser, alertRecordDO.getUser())
                         .one();
             }
 
@@ -172,6 +173,7 @@ public class AlertRecordRepoImpl implements AlertRecordRepo {
                         .eq(AlertRecordDO::getType, alertRecordDO.getType())
                         .eq(AlertRecordDO::getAlarmId, alertRecordDO.getAlarmId())
                         .eq(AlertRecordDO::getEmail, alertRecordDO.getEmail())
+                        .eq(AlertRecordDO::getUser, alertRecordDO.getUser())
                         .one();
             }
 
@@ -183,11 +185,46 @@ public class AlertRecordRepoImpl implements AlertRecordRepo {
             boolean saveRes = alertRecordDAO.save(alertRecordDO);
             if (!saveRes) {
                 log.error("{} {} save error",alertRecordEO.getAlertId(),alertRecordEO.getType() == MessageType.SMS ? alertRecordEO.getPhone() : alertRecordEO.getEmail());
+                return false;
             }
 //            Preconditions.checkArgument(saveRes, "保存失败");
         }
 
         return true;
+    }
+
+    @Override
+    public boolean saveUniByReceiver(AlertRecordEO alertRecordEO) {
+        AlertRecordDO alertRecordDO = converter.toDO(alertRecordEO);
+
+        AlertRecordDO existAlertDO = null;
+
+        if (alertRecordEO.getType() == MessageType.SMS) {
+            existAlertDO = alertRecordDAO.lambdaQuery()
+                    .eq(AlertRecordDO::getAlertId, alertRecordDO.getAlertId())
+                    .eq(AlertRecordDO::getType, alertRecordDO.getType())
+                    .eq(AlertRecordDO::getAlarmId, alertRecordDO.getAlarmId())
+                    .eq(AlertRecordDO::getPhone, alertRecordDO.getPhone())
+                    .eq(AlertRecordDO::getUser, alertRecordDO.getUser())
+                    .one();
+        }
+
+        if (alertRecordEO.getType() == MessageType.EMAIL){
+            existAlertDO = alertRecordDAO.lambdaQuery()
+                    .eq(AlertRecordDO::getAlertId, alertRecordDO.getAlertId())
+                    .eq(AlertRecordDO::getType, alertRecordDO.getType())
+                    .eq(AlertRecordDO::getAlarmId, alertRecordDO.getAlarmId())
+                    .eq(AlertRecordDO::getEmail, alertRecordDO.getEmail())
+                    .eq(AlertRecordDO::getUser, alertRecordDO.getUser())
+                    .one();
+        }
+
+
+        if (existAlertDO != null) {
+            return true;
+        }
+
+        return alertRecordDAO.save(alertRecordDO);
     }
 
     @Override

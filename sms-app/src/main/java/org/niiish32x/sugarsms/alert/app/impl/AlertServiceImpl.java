@@ -37,6 +37,7 @@ import org.niiish32x.sugarsms.app.proxy.ZubrixSmsProxy;
 import org.niiish32x.sugarsms.alert.app.AlertService;
 import org.niiish32x.sugarsms.common.event.EventBus;
 import org.niiish32x.sugarsms.common.result.PageResult;
+import org.niiish32x.sugarsms.common.utils.Retrys;
 import org.niiish32x.sugarsms.message.app.SendMessageService;
 import org.niiish32x.sugarsms.message.app.external.ZubrixSmsResponse;
 import org.niiish32x.sugarsms.suposperson.app.SuposPersonService;
@@ -337,14 +338,6 @@ public class AlertServiceImpl implements AlertService {
 
             ALARM_CACHE.put(alertEO.getSourcePropertyName(), alarmEO);
 
-//            String text = zubrixSmsProxy.formatTextContent(AlertContentBuilder.builder()
-//                            .sourcePropertyName(alertEO.getSourcePropertyName())
-//                            .newValue(alertEO.getNewValue())
-//                            .source(alertEO.getSource())
-//                            .startDataTimestamp(alertEO.getStartDataTimestamp())
-//                            .limitValue(alarmEO.getLimitValue())
-//                    .build());
-
             List<AlertRecordEO> alertRecords = new ArrayList<>();
             for (SuposUserDTO userDTO : userDTOS) {
                 AlarmEO finalAlarmEO = alarmEO;
@@ -353,7 +346,12 @@ public class AlertServiceImpl implements AlertService {
                 alertRecords.addAll(listCompletableFuture.get());
             }
 
-            alertRecordRepo.saveUniByReceiver(alertRecords);
+            for (AlertRecordEO alertRecordEO : alertRecords) {
+                // 记录一定要存进去 不然后续整个链路都会受到影响 宁愿多花一些时间
+                Retrys.doWithRetry(()-> alertRecordRepo.saveUniByReceiver(alertRecordEO) , r -> r ,10 ,2 * 1000);
+            }
+
+//            alertRecordRepo.saveUniByReceiver(alertRecords);
 
             EventBus.publishEvent(new AlertRecordChangeEvent(this, String.format(">>>> batch alert record generate  alertId:%s  alertName:%s >>>>",alertEO.getAlertId(),alertEO.getAlertName())));
 
