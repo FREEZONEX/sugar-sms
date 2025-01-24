@@ -91,21 +91,13 @@ public class UserServiceImpl implements UserService {
 
             UsersResponse res = new UsersResponse();
             int pageIndex = 1;
+            queryMap.put("pageSize","500");
+            queryMap.put("pageIndex",String.valueOf(pageIndex));
+            HttpResponse response = requestManager.suposApiGet(ApiEnum.USER_PAGE_GET_API.value, headerMap, queryMap);
+            UsersResponse usersResponse = JSON.parseObject(response.body(), UsersResponse.class);
+            res.getList().addAll(usersResponse.getList());
 
-            while (true) {
-                queryMap.put("pageSize","500");
-                queryMap.put("pageIndex",String.valueOf(pageIndex));
-                HttpResponse response = requestManager.suposApiGet(ApiEnum.USER_PAGE_GET_API.value, headerMap, queryMap);
-
-                UsersResponse usersResponse = JSON.parseObject(response.body(), UsersResponse.class);
-
-                if( usersResponse.getList() == null  || usersResponse.getList().isEmpty()){
-                    break;
-                }
-                res.getList().addAll(usersResponse.getList());
-                pageIndex++;
-            }
-
+            log.info("get user num");
 
             return Result.success(res.getList());
         }
