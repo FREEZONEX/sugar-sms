@@ -572,7 +572,8 @@ public class AlertServiceImpl implements AlertService {
 
                 if (personEO == null || personEO.getDeleted()) {
                     List<String> codesParams = new ArrayList<>();
-                    codesParams.add(personEO.getCode());
+
+                    codesParams.add(userDTO.getPersonCode());
 
                     PersonPageQueryRequest request = PersonPageQueryRequest.builder()
                             .companyCode(CompanyEnum.DEFAULT.value)
