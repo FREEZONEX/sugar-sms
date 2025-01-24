@@ -3,6 +3,24 @@ create database if not exists sugar_sms;
 
 use sugar_sms;
 
+drop table if exists user;
+
+CREATE TABLE `user` (
+                      `id`  bigint(20)  NOT NULL AUTO_INCREMENT PRIMARY KEY COMMENT '自增主键',
+                      `username` VARCHAR(255)  DEFAULT  NULL COMMENT '用户名',
+                      `user_desc` VARCHAR(255)  DEFAULT  NULL ,
+                        `account_type` int DEFAULT 0 ,
+                        `lock_status` int DEFAULT 0 ,
+                        `valid` tinyint(1),
+                        `person_code` VARCHAR(255),
+                        `person_name` VARCHAR(255),
+                        `userRoleList` TEXT,
+                        `avatar` varchar(255) DEFAULT NULL,
+                      `modify_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ,
+                      `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='supos_user';
+
+
 drop table if exists alert;
 
 CREATE TABLE `alert` (
