@@ -233,25 +233,27 @@ public class AlertServiceImpl implements AlertService {
     public Result<List<SuposUserDTO>>  getAlertUsers() {
         List<SuposUserDTO> alertUsers = null;
 
-        alertUsers = USER_CACHE.getIfPresent("alert");
+//        alertUsers = USER_CACHE.getIfPresent("alert");
 
-        if (alertUsers != null) {
-            return Result.success(alertUsers);
-        }
+//        if (alertUsers != null) {
+//            return Result.success(alertUsers);
+//        }
 
         // 获取角色列表并处理异常
-        Result<List<RoleSpecDTO>> roleListFromSupos = userService.getRoleListFromSupos(CompanyEnum.DEFAULT.value);
+//        Result<List<RoleSpecDTO>> roleListFromSupos = userService.getRoleListFromSupos(CompanyEnum.DEFAULT.value);
+//
+//        if (!roleListFromSupos.isSuccess()) {
+//            return Result.error("Failed to get role list from Supos: " + roleListFromSupos.getMessage());
+//        }
+//
+//        List<RoleSpecDTO> roleSpecDTOList = roleListFromSupos.getData();
+//        if (roleSpecDTOList == null || roleSpecDTOList.isEmpty()) {
+//            return Result.success(new ArrayList<>());
+//        }
 
-        if (!roleListFromSupos.isSuccess()) {
-            return Result.error("Failed to get role list from Supos: " + roleListFromSupos.getMessage());
-        }
+//        alertUsers = new ArrayList<>(roleSpecDTOList.size() * 10); // 预估用户数量
 
-        List<RoleSpecDTO> roleSpecDTOList = roleListFromSupos.getData();
-        if (roleSpecDTOList == null || roleSpecDTOList.isEmpty()) {
-            return Result.success(new ArrayList<>());
-        }
-
-        alertUsers = new ArrayList<>(roleSpecDTOList.size() * 10); // 预估用户数量
+        alertUsers = new ArrayList<>( ); // 预估用户数量
 
         Result<List<SuposUserDTO>> usersFromSupos = userService.getUsersFromSupos(
                 UserPageQueryRequest.builder()
@@ -259,6 +261,7 @@ public class AlertServiceImpl implements AlertService {
                         .build()
         );
 
+        log.info(">>> supos user get total number  >>>>>>>>>>> \n {}",usersFromSupos.getData().size());
 
 
         for (SuposUserDTO userDTO : usersFromSupos.getData()) {
@@ -292,7 +295,7 @@ public class AlertServiceImpl implements AlertService {
 //            alertUsers.addAll(usersFromSupos.getData());
 //        }
 
-        USER_CACHE.put("alert",alertUsers);
+//        USER_CACHE.put("alert",alertUsers);
 
 
 
@@ -660,10 +663,12 @@ public class AlertServiceImpl implements AlertService {
         if (personEO == null || personEO.getDeleted() || personEO.getUser().getModifyTime() != userDTO.getModifyTime() ) {
             synchronized (this){
                 if (personEO == null || personEO.getDeleted()) {
+                    List<String> codes = new ArrayList<>();
+                    codes.add(userDTO.getPersonCode());
                     PersonPageQueryRequest request = PersonPageQueryRequest.builder()
                             .companyCode(CompanyEnum.DEFAULT.value)
                             .hasBoundUser(true)
-                            .username(userDTO.getUsername())
+                            .codes(codes)
                             .build();
                     Result<List<SuposPersonDTO>> peronFromSupos = suposPersonService.searchPeronFromSupos(request);
 
