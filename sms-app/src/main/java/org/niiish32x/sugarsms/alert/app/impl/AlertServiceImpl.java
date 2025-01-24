@@ -54,6 +54,7 @@ import org.niiish32x.sugarsms.manager.thread.GlobalThreadManager;
 import org.niiish32x.sugarsms.user.app.external.UserPageQueryRequest;
 import org.niiish32x.sugarsms.user.domain.entity.UserEO;
 import org.niiish32x.sugarsms.user.domain.entity.UserRoleEO;
+import org.niiish32x.sugarsms.user.domain.repo.UserRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
@@ -153,6 +154,8 @@ public class AlertServiceImpl implements AlertService {
     @Autowired
     AlertRepo alertRepo;
 
+    @Autowired
+    UserRepo userRepo;
 
     AlertRecordAssembler alertRecordAssembler = AlertRecordAssembler.INSTANCE;
 
@@ -269,6 +272,36 @@ public class AlertServiceImpl implements AlertService {
             if (userDTO.getUserRoleList() == null || userDTO.getUserRoleList().isEmpty()) {
                 continue;
             }
+
+
+            List<SuposUserRoleDTO> userRoleListDTO = userDTO.getUserRoleList();
+
+            List<UserRoleEO> userRoleEOList = new ArrayList<>();
+
+            for (SuposUserRoleDTO roleDTO : userRoleListDTO) {
+
+                userRoleEOList.add(UserRoleEO.builder()
+                                .total(roleDTO.getTotal())
+                                .name(roleDTO.getName())
+                                .showName(roleDTO.getShowName())
+                                .description(roleDTO.getDescription())
+                        .build());
+
+            }
+
+            boolean saveUserRes = userRepo.save(UserEO.builder()
+                    .username(userDTO.getUsername())
+                    .userDesc(userDTO.getUserDesc())
+                    .accountType(userDTO.getAccountType())
+                    .lockStatus(userDTO.getLockStatus())
+                    .valid(userDTO.getValid())
+                    .personCode(userDTO.getPersonCode())
+                    .personName(userDTO.getPersonName())
+                    .avatar(userDTO.getAvatar())
+                    .modifyTime(userDTO.getModifyTime())
+                    .createTime(userDTO.getCreateTime())
+                    .userRoleList(userRoleEOList)
+                    .build());
 
             for (SuposUserRoleDTO roleDTO : userDTO.getUserRoleList()) {
                  if (UserRoleEnum.isAlertRole(roleDTO.getName())){
