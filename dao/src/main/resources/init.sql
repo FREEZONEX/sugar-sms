@@ -14,7 +14,7 @@ CREATE TABLE `user` (
                         `valid` tinyint(1),
                         `person_code` VARCHAR(255),
                         `person_name` VARCHAR(255),
-                        `userRoleList` TEXT,
+                        `user_role_list` TEXT,
                         `avatar` varchar(255) DEFAULT NULL,
                       `modify_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ,
                       `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
