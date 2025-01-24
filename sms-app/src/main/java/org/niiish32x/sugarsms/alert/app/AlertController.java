@@ -34,10 +34,11 @@ public class AlertController {
 
     @RequestMapping("/alerts/records/search")
     public Result<PageResult<AlertRecordDTO>> searchAlertRecord(
+            @RequestParam(name = "status", required = false) boolean status,
             @RequestParam(name = "page" , required = false,defaultValue = "1") long page,
             @RequestParam(name = "limit", required = false,defaultValue = "10") long limit
     ) {
-        return alertService.searchAlertRecord(new AlertRecordsQuery(page, limit));
+        return alertService.searchAlertRecord(new AlertRecordsQuery( status,page, limit));
     }
 
     @RequestMapping("/alerts/records/count")
