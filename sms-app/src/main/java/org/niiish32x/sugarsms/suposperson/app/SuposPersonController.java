@@ -51,6 +51,11 @@ public class SuposPersonController {
     }
 
 
+    @RequestMapping("/persons/supos/search")
+    public Result searchPersonFromSupos(@RequestBody PersonPageQueryRequest request){
+        return suposPersonService.searchPeronFromSupos(request);
+    }
+
     @RequestMapping("/persons/test")
     public Result test(@RequestBody PersonPageQueryRequest request){
         return suposPersonService.searchPeronFromSupos(request);
