@@ -69,12 +69,21 @@ public class AlertJob {
     @Autowired
     AlertRepo alertRepo;
 
-    @Scheduled(fixedDelay = 1000 * 10)
+    @Scheduled(fixedDelay = 1000)
     void getAlert(){
-        Result<List<AlertInfoDTO>> alertsResp = alertService.getAlertsFromSupos();
+        Result<List<AlertInfoDTO>> alertsResp = null;
+
+        try {
+            // 不行就让服务器 缓个5秒
+            alertsResp   = Retrys.doWithRetry(() -> alertService.getAlertsFromSupos(), r -> r.isSuccess(), 3,  5 * 1000);
+
+        }catch (Throwable e){
+            log.error("getAlert error: {}", alertsResp.getMessage());
+        }
+
 
         if (!alertsResp.isSuccess()) {
-            log.error("alert api 获取异常: {}", alertsResp.getMessage());
+            log.error("getAlert error: {}", alertsResp.getMessage());
             return;
         }
 
