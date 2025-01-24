@@ -660,9 +660,12 @@ public class AlertServiceImpl implements AlertService {
         if (personEO == null || personEO.getDeleted() || personEO.getUser().getModifyTime() != userDTO.getModifyTime() ) {
             synchronized (this){
                 if (personEO == null || personEO.getDeleted()) {
+
+                    List<String> codesParam = new ArrayList<>();
+                    codesParam.add(personEO.getCode());
                     PersonPageQueryRequest request = PersonPageQueryRequest.builder()
                             .companyCode(CompanyEnum.DEFAULT.value)
-                            .hasBoundUser(true)
+                            .codes(codesParam)
                             .username(userDTO.getUsername())
                             .build();
                     Result<List<SuposPersonDTO>> peronFromSupos = suposPersonService.searchPeronFromSupos(request);
@@ -671,11 +674,15 @@ public class AlertServiceImpl implements AlertService {
                         log.error("获取用户信息失败: {}", userDTO.getPersonCode());
                     }
 
+                    List<SuposPersonDTO> personDTOS = peronFromSupos.getData();
 
-                    SavePersonCommand savePersonCommand = new SavePersonCommand(peronFromSupos.getData().get(0));
-                    Result savePerson = suposPersonService.savePerson(savePersonCommand);
-                    if (!savePerson.isSuccess()) {
-                        log.error("保存用户信息失败: {}", savePerson.getMessage());
+                    for (SuposPersonDTO personDTO : personDTOS) {
+                        SavePersonCommand savePersonCommand = new SavePersonCommand(personDTO);
+                        Result savePersonRes = suposPersonService.savePerson(savePersonCommand);
+
+                        if (!savePersonRes.isSuccess()) {
+                            log.error("save {} person error: {}", personDTO.getCode(),savePersonRes.getMessage());
+                        }
                     }
                 }
             }
