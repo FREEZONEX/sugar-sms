@@ -3,6 +3,7 @@ package org.niiish32x.sugarsms.suposperson.app.external;
 import com.google.common.base.Preconditions;
 import lombok.*;
 import org.apache.commons.lang3.StringUtils;
+import org.niiish32x.sugarsms.common.enums.CompanyEnum;
 
 import java.util.HashMap;
 import java.util.List;
@@ -28,10 +29,11 @@ public class PersonPageQueryRequest {
     @Builder.Default
     private int pageNo = 1;
     // 每页返回的元素数量
-    private int pageSize;
+    @Builder.Default
+    private int pageSize = 20;
     // 公司编码，必填项
     @NonNull
-    private String companyCode;
+    private String companyCode = CompanyEnum.DEFAULT.value;
     // 部门编码
     private String departmentCode;
     // 岗位编码
@@ -70,8 +72,13 @@ public class PersonPageQueryRequest {
         addNonBlankField(queryMap, "companyCode", this::getCompanyCode);
         addNonBlankField(queryMap, "departmentCode", this::getDepartmentCode);
         addNonBlankField(queryMap, "positionCode", this::getPositionCode);
-        addNonBlankField(queryMap,"hasBoundUser",() -> String.valueOf(this.hasBoundUser));
+
         addNonBlankField(queryMap,"username",this::getUsername);
+
+
+        if (username != null ) {
+            addNonBlankField(queryMap,"hasBoundUser",() -> String.valueOf(this.hasBoundUser));
+        }
 
         if(codes != null &&  !codes.isEmpty()) {
             Preconditions.checkArgument((codes.size() <= 20),"人员编号集合，查询指定的人员，单次请求最多20个编号");
@@ -79,6 +86,9 @@ public class PersonPageQueryRequest {
             String codesParams = String.join(",", codes);
             queryMap.put("codes",codesParams);
         }
+
+        queryMap.put("pageNo", String.valueOf(this.pageNo));
+        queryMap.put("pageSize", String.valueOf(this.pageSize));
 
         return queryMap;
     }
