@@ -611,18 +611,23 @@ public class AlertServiceImpl implements AlertService {
                     PersonPageQueryRequest request = PersonPageQueryRequest.builder()
                             .companyCode(CompanyEnum.DEFAULT.value)
                             .codes(codesParams)
+                            .username(userDTO.getUsername())
+                            .hasBoundUser(true)
                             .build();
                     Result<List<SuposPersonDTO>> peronFromSupos = suposPersonService.searchPeronFromSupos(request);
 
                     if (!peronFromSupos.isSuccess() || peronFromSupos.getData() == null || peronFromSupos.getData().isEmpty()) {
-                        log.error("获取用户信息失败: {}", userDTO.getPersonCode());
+                        log.error("fetch person error: {}", JSON.toJSONString(userDTO));
                     }
 
-                    SavePersonCommand savePersonCommand = new SavePersonCommand(peronFromSupos.getData().get(0));
-                    Result savePerson = suposPersonService.savePerson(savePersonCommand);
-                    if (!savePerson.isSuccess()) {
-                        log.error("保存用户信息失败: {}", savePerson.getMessage());
+                    for (SuposPersonDTO personDTO : peronFromSupos.getData()) {
+                        SavePersonCommand savePersonCommand = new SavePersonCommand(personDTO);
+                        Result savePerson = suposPersonService.savePerson(savePersonCommand);
+                        if (!savePerson.isSuccess()) {
+                            log.error("save person error: {}", savePerson.getMessage());
+                        }
                     }
+
                 }
             }
 
