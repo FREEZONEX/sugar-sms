@@ -9,6 +9,7 @@ import org.niiish32x.sugarsms.user.domain.repo.UserRepo;
 import org.niiish32x.sugarsms.user.persistence.converter.UserConverter;
 import org.niiish32x.sugarsms.user.persistence.dao.UserDAO;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -19,6 +20,7 @@ import java.util.stream.Collectors;
  * @author shenghao ni
  * @date 2025.01.24 14:00
  */
+@Repository
 public class UserRepoImpl implements UserRepo {
 
     @Autowired
