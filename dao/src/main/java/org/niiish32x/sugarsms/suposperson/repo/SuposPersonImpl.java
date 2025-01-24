@@ -50,13 +50,14 @@ public class SuposPersonImpl implements SuposPersonRepo {
     @Override
     public boolean save(SuposPersonEO suposPersonEO) {
         SuposPersonDO suposPersonDO = converter.toDO(suposPersonEO);
-        List<SuposPersonDO> list = suposPersonDAO.lambdaQuery()
-                .eq(SuposPersonDO::getCode, suposPersonDO.getCode())
-                .eq(SuposPersonDO::getDeleted,suposPersonDO.getDeleted())
-                .list();
 
-        if (list != null && !list.isEmpty()) {
-            SuposPersonDO existPerson = list.get(0);
+        SuposPersonDO existPerson = suposPersonDAO.lambdaQuery()
+                .eq(SuposPersonDO::getCode, suposPersonDO.getCode())
+                .eq(SuposPersonDO::getDeleted, suposPersonDO.getDeleted())
+                .eq(SuposPersonDO::getUser, suposPersonDO.getUser())
+                .one();
+
+        if (existPerson != null) {
             LambdaUpdateWrapper<SuposPersonDO> wrapper = Wrappers.<SuposPersonDO>lambdaUpdate()
 //                    .set(SuposPersonDO::getId, existPerson.getId())
                     .eq(SuposPersonDO::getCode, existPerson.getCode())
@@ -85,10 +86,9 @@ public class SuposPersonImpl implements SuposPersonRepo {
                     .set(SuposPersonDO::getDeleted, suposPersonDO.getDeleted());
 //                .set(SuposPersonDO::getCreateTime, suposPersonDO.getCreateTime())
 //                .set(SuposPersonDO::getUpdateTime, suposPersonDO.getUpdateTime());
-            return  suposPersonDAO.update(existPerson, wrapper);
+
+            return  suposPersonDAO.update(existPerson,wrapper);
         }
-
-
 
         return suposPersonDAO.save(suposPersonDO);
     }
