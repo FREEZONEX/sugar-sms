@@ -565,20 +565,24 @@ public class AlertServiceImpl implements AlertService {
             suposPersonRepo.softRemove(personEO);
         }
 
+
         if (personEO == null || personEO.getDeleted() || personEO.getUser().getModifyTime() != userDTO.getModifyTime() ) {
             synchronized (this){
+
+
                 if (personEO == null || personEO.getDeleted()) {
+                    List<String> codesParams = new ArrayList<>();
+                    codesParams.add(personEO.getCode());
+
                     PersonPageQueryRequest request = PersonPageQueryRequest.builder()
                             .companyCode(CompanyEnum.DEFAULT.value)
-                            .hasBoundUser(true)
-                            .username(userDTO.getUsername())
+                            .codes(codesParams)
                             .build();
                     Result<List<SuposPersonDTO>> peronFromSupos = suposPersonService.searchPeronFromSupos(request);
 
                     if (!peronFromSupos.isSuccess() || peronFromSupos.getData() == null || peronFromSupos.getData().isEmpty()) {
                         log.error("获取用户信息失败: {}", userDTO.getPersonCode());
                     }
-
 
                     SavePersonCommand savePersonCommand = new SavePersonCommand(peronFromSupos.getData().get(0));
                     Result savePerson = suposPersonService.savePerson(savePersonCommand);
