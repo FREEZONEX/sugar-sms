@@ -13,11 +13,17 @@ import org.niiish32x.sugarsms.alert.domain.entity.MessageType;
 
 @Getter
 public class AlertRecordsQuery {
+    private boolean status;
+
+
+
     private long page;
     private long limit;
 
 
-    public AlertRecordsQuery(long page, long limit) {
+    public AlertRecordsQuery( boolean status, long page, long limit) {
+
+        this.status = status ;
         this.page = page;
         this.limit = limit;
     }
